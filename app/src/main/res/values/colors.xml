@@ -14,7 +14,8 @@
     <color name="dark_gray_background_3">#303030</color>
     -->
 
-    <color name="stripe_color">#303030</color>
+    <!--<color name="stripe_color">#303030</color>-->
+    <color name="stripe_color">#D92222</color>
     <color name="miniature_background">#F5F4F4</color>
     <color name="app_background">#F5F4F4</color>
     <color name="status_bar_color">#878787</color>
