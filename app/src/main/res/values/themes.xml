@@ -1,0 +1,20 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.MACC" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Colore di sfondo della splash screen -->
+        <item name="android:windowBackground">@color/app_background</item>
+
+        <!-- Icona animata per la splash screen -->
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/safety_hat_foreground</item>
+
+        <!-- Colore del background dietro l'icona animata -->
+        <item name="android:windowSplashScreenBackground">@color/app_background</item>
+
+        <!-- Controlla la durata dell'animazione della splash screen -->
+        <item name="android:windowSplashScreenAnimationDuration">1000</item> <!-- 1000 ms = 1 secondo -->
+
+        <!-- Nasconde lo splash screen animato e mostra la tua splash screen personalizzata -->
+        <item name="postSplashScreenTheme">@style/Theme.MACC</item>
+    </style>
+
+</resources>
