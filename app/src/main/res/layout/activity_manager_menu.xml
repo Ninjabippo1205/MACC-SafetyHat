@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_gravity="center"
     android:background="#C7C7C7"
-    android:layout_gravity="center">
-
-    <!-- Create Site -->
-
-    <!-- Logout Button -->
+    >
 
     <ImageView
         android:id="@+id/menu_icon"
@@ -17,126 +14,76 @@
         android:layout_height="67dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:contentDescription="Menu Icon"
+        android:contentDescription="@string/menù"
         android:foregroundGravity="top|left"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_menu" />
+        app:srcCompat="@drawable/menu_foreground"
+        />
 
-    <LinearLayout
-        android:id="@+id/linearLayout3"
+    <TextView
+        android:id="@+id/sites_info_text"
         android:layout_width="280dp"
         android:layout_height="70dp"
         android:layout_gravity="center"
-        android:layout_marginStart="66dp"
-        android:layout_marginTop="150dp"
-        android:layout_marginEnd="65dp"
-        android:orientation="horizontal"
+        android:layout_marginTop="20dp"
+        android:drawablePadding="0dp"
+        android:gravity="center_vertical"
+        android:text="@string/site"
+        android:textColor="#2C2C2C"
+        android:textSize="30sp"
+        app:drawableStartCompat="@mipmap/bulldozer_foreground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/menu_icon"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/account_info_text"
+        />
 
-        <ImageView
-            android:id="@+id/sites_info_icon"
-            android:layout_width="70dp"
-            android:layout_height="match_parent"
-            android:contentDescription="Sites Info"
-            android:scaleX="1.8"
-            android:scaleY="1.8"
-            android:src="@mipmap/bulldozer_foreground" />
-
-        <TextView
-            android:id="@+id/sites_info_text"
-            android:layout_width="181dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="16dp"
-            android:gravity="center_vertical"
-            android:text="Sites' Info"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout4"
+    <TextView
+        android:id="@+id/account_info_text"
         android:layout_width="280dp"
         android:layout_height="70dp"
         android:layout_gravity="center"
-        android:layout_marginStart="66dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="65dp"
-        android:orientation="horizontal"
+        android:layout_marginTop="200dp"
+        android:drawablePadding="0dp"
+        android:gravity="center_vertical"
+        android:text="@string/account"
+        android:textColor="#2C2C2C"
+        android:textSize="30sp"
+        app:drawableLeftCompat="@mipmap/safety_vest_foreground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout5">
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
-        <ImageView
-            android:id="@+id/account_info_icon"
-            android:layout_width="73dp"
-            android:layout_height="match_parent"
-            android:contentDescription="Account Info"
-            android:scaleX="1.7"
-            android:scaleY="1.7"
-            android:src="@mipmap/safety_vest_foreground" />
-
-        <TextView
-            android:id="@+id/account_info_text"
-            android:layout_width="184dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="16dp"
-            android:gravity="center_vertical"
-            android:text="Account Info"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linearLayout5"
+    <TextView
+        android:id="@+id/create_site_text"
         android:layout_width="280dp"
         android:layout_height="70dp"
-        android:layout_gravity="center"
-        android:layout_marginStart="66dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="65dp"
-        android:orientation="horizontal"
+        android:layout_marginTop="20dp"
+        android:drawablePadding="0dp"
+        android:gravity="center_vertical"
+        android:text="@string/create_site"
+        android:textColor="#2C2C2C"
+        android:textSize="30sp"
+        app:drawableLeftCompat="@mipmap/site_foreground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
-
-        <ImageView
-            android:id="@+id/create_site_icon"
-            android:layout_width="74dp"
-            android:layout_height="match_parent"
-            android:contentDescription="Create Site"
-            android:scaleX="1.8"
-            android:scaleY="1.8"
-            android:src="@mipmap/site_foreground" />
-
-        <TextView
-            android:id="@+id/create_site_text"
-            android:layout_width="174dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="16dp"
-            android:gravity="center_vertical"
-            android:text="Create Site"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp" />
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/sites_info_text"
+        />
 
     <Button
         android:id="@+id/logout_button"
         android:layout_width="280dp"
         android:layout_height="60dp"
-        android:layout_marginStart="65dp"
-        android:layout_marginEnd="66dp"
-        android:layout_marginBottom="130dp"
+        android:layout_marginTop="50dp"
         android:backgroundTint="#2C2C2C"
-        android:text="Logout"
+        android:text="@string/logout"
         android:textAllCaps="false"
         android:textColor="@color/app_background"
         android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/create_site_text"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
