@@ -1,11 +1,13 @@
 package com.safetyhat.macc
 
 import android.app.ActivityManager
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import android.widget.Button
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,10 +30,16 @@ class MainActivity : AppCompatActivity() {
             .setIcon(R.mipmap.safety_hat_foreground)  // Icona della miniatura (resource ID)
             .setPrimaryColor(getColor(R.color.miniature_background))  // Colore di sfondo della miniatura
             .build()
-        // Imposta il colore della barra di stato (quella in cima a tutto con l'orario)
-        window.statusBarColor = getColor(R.color.status_bar_color)
 
-        // Imposta la TaskDescription
+        window.statusBarColor = getColor(R.color.status_bar_color)
         setTaskDescription(taskDescription)
+
+        // Imposta il listener per il bottone "Login"
+        val loginButton = findViewById<Button>(R.id.signInButton)
+        loginButton.setOnClickListener {
+            // Crea l'intent per andare a LoginActivity
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+        }
     }
 }

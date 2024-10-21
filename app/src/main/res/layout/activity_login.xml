@@ -1,36 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+    >
 
     <ImageView
         android:id="@+id/logoImageView"
         android:layout_width="369dp"
         android:layout_height="331dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="7dp"
-        android:contentDescription="Login Logo"
+        android:layout_marginTop="60dp"
+        android:contentDescription="@string/head_foreground_description"
         android:src="@mipmap/head_foreground"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ImageContrastCheck" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="383dp"
-        android:layout_height="318dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginStart="14dp"
-        android:layout_marginEnd="14dp"
-        android:layout_marginBottom="66dp"
+        android:layout_marginTop="30dp"
         android:background="@android:color/white"
         android:elevation="4dp"
         android:orientation="vertical"
         android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoImageView">
@@ -38,23 +36,23 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="CF"
+            android:text="@string/cf"
             android:textColor="?android:textColorPrimary"
             android:textSize="16sp" />
 
         <EditText
             android:id="@+id/CFLogin"
-            android:layout_width="match_parent"
+            android:layout_width="337dp"
             android:layout_height="50dp"
             android:layout_marginBottom="16dp"
-            android:hint="Value"
+            android:autofillHints="username"
+            android:hint="@string/cf_hint"
             android:inputType="text" />
 
-        <!-- Password Field -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Password"
+            android:text="@string/password"
             android:textColor="?android:textColorPrimary"
             android:textSize="16sp" />
 
@@ -63,32 +61,37 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginBottom="24dp"
-            android:hint="Value"
+            android:autofillHints="password"
+            android:hint="@string/password_hint"
             android:inputType="textPassword" />
 
-        <!-- Log In Button -->
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:id="@+id/loginButton"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:backgroundTint="#2C2C2C"
-            android:text="Log In"
+            android:text="@string/login"
+            android:textAlignment="center"
+            android:textAllCaps="false"
             android:textColor="@android:color/white" />
 
-        <!-- Forgot Password Link -->
         <TextView
             android:id="@+id/forgotPassword"
             android:layout_width="wrap_content"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
             android:clickable="true"
-            android:text="Forgot password?"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            android:padding="10dp"
+            android:text="@string/forgot_password"
             android:textColor="#2C2C2C"
             android:textSize="14sp"
             android:textStyle="bold" />
 
-    </LinearLayout>
 
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
