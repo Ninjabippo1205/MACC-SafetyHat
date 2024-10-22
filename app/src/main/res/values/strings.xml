@@ -5,10 +5,23 @@
     <string name="login">Login</string>
     <string name="register">Register</string>
     <string name="head_foreground_description">Head foreground image</string>
-    <string name="cf">CF</string>
+    <string name="cf">CF: </string>
     <string name="cf_hint">Type the CF</string>
     <string name="cf_description">Codice Fiscale Input Field</string>
-    <string name="password">Password</string>
+    <string name="password">Password: </string>
     <string name="password_hint">Type the password</string>
     <string name="forgot_password">Forgot password?</string>
+    <string name="menù">Menu Icon</string>
+    <string name="site">Sites Info</string>
+    <string name="account">Account Info</string>
+    <string name="create_site">Create Site</string>
+    <string name="logout">Logout</string>
+    <string name="your_position">Your Position</string>
+    <string name="map_placeholder">Map Placeholder</string>
+    <string name="first_name">First Name: </string>
+    <string name="last_name">Last Name: </string>
+    <string name="birthday_date">Birthday Date: </string>
+    <string name="telephone">Telephone: </string>
+    <string name="change_password">Change Password</string>"
+    <string name="alerts">Alerts</string>
 </resources>
