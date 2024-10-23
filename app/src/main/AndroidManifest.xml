@@ -40,6 +40,9 @@
         <activity android:name=".LoginActivity">
         </activity>
 
+        <activity android:name=".RegistrationActivity">
+        </activity>
+
         <activity android:name=".ManagerInfoActivity">
         </activity>
 

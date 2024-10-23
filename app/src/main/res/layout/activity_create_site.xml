@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -46,8 +47,8 @@
 
     <ImageView
         android:id="@+id/site_icon"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
+        android:layout_width="151dp"
+        android:layout_height="146dp"
         android:layout_marginTop="16dp"
         android:contentDescription="@string/site_icon_description"
         android:scaleX="1.5"
@@ -59,14 +60,13 @@
 
     <ScrollView
         android:id="@+id/scroll_view"
-        android:layout_width="366dp"
-        android:layout_height="286dp"
-        android:layout_marginTop="-180dp"
+        android:layout_width="370dp"
+        android:layout_height="350dp"
+        android:layout_marginTop="10dp"
         android:fillViewport="true"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/site_icon">
+        app:layout_constraintTop_toBottomOf="@+id/site_icon">
 
         <LinearLayout
             android:id="@+id/form_container"
@@ -90,11 +90,11 @@
                 android:id="@+id/start_date_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="startDate"
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/insert_start_date"
                 android:inputType="date"
-                android:minHeight="48dp"
-                android:autofillHints="startDate" />
+                android:minHeight="48dp" />
 
             <!-- Estimated End Date -->
             <TextView
@@ -111,11 +111,11 @@
                 android:id="@+id/end_date_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="endDate"
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/insert_end_date"
                 android:inputType="date"
-                android:minHeight="48dp"
-                android:autofillHints="endDate"/>
+                android:minHeight="48dp" />
 
             <!-- N° Max Workers -->
             <TextView
@@ -132,11 +132,11 @@
                 android:id="@+id/max_workers_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="maxWorkers"
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/insert_max_workers"
                 android:inputType="number"
-                android:minHeight="48dp"
-                android:autofillHints="maxWorkers"/>
+                android:minHeight="48dp" />
 
             <!-- N° Scaffolding -->
             <TextView
@@ -153,11 +153,11 @@
                 android:id="@+id/scaffolding_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="scaffolding"
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/insert_scaffolding"
                 android:inputType="number"
-                android:minHeight="48dp"
-                android:autofillHints="scaffolding"/>
+                android:minHeight="48dp" />
 
             <!-- Address -->
             <TextView
@@ -174,11 +174,11 @@
                 android:id="@+id/address_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="address"
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/insert_address"
                 android:inputType="textPostalAddress"
-                android:minHeight="48dp"
-                android:autofillHints="address"/>
+                android:minHeight="48dp" />
 
             <!-- Site Radius -->
             <TextView
@@ -195,11 +195,11 @@
                 android:id="@+id/site_radius_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="siteRadius"
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/insert_radius"
                 android:inputType="number"
-                android:minHeight="48dp"
-                android:autofillHints="siteRadius"/>
+                android:minHeight="48dp" />
 
         </LinearLayout>
     </ScrollView>
@@ -207,8 +207,8 @@
 
     <LinearLayout
         android:id="@+id/linearLayout3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="370dp"
+        android:layout_height="48dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
@@ -220,20 +220,20 @@
         <EditText
             android:id="@+id/security_code_field"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
-            android:hint="@string/generated_security_code"
-            android:inputType="number"
-            android:fontFamily="sans-serif-condensed"
-            android:minHeight="48dp"
+            android:autofillHints="securityCode"
             android:enabled="false"
             android:focusable="false"
-            android:autofillHints="securityCode" />
+            android:fontFamily="sans-serif-condensed"
+            android:hint="@string/generated_security_code"
+            android:inputType="number"
+            android:minHeight="48dp" />
 
         <Button
             android:id="@+id/generate_code_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="101dp"
+            android:layout_height="49dp"
             android:backgroundTint="#2C2C2C"
             android:fontFamily="sans-serif-condensed"
             android:text="@string/generate"
@@ -244,18 +244,16 @@
     <!-- Create Site & Generate QR Button -->
     <Button
         android:id="@+id/create_site_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="370dp"
+        android:layout_height="65dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="58dp"
         android:backgroundTint="#2C2C2C"
         android:fontFamily="sans-serif-condensed"
         android:text="@string/create_site_generate_qr"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
