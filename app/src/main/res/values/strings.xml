@@ -24,4 +24,40 @@
     <string name="telephone">Telephone: </string>
     <string name="change_password">Change Password</string>"
     <string name="alerts">Alerts</string>
+    <string name="weather">Weather Conditions</string>
+    <string name="weather_placeholder">Weather Placeholder</string>
+    <string name="site_id">Site ID: </string>
+    <string name="start_date">Start Date: </string>
+    <string name="end_date">End Date: </string>
+    <string name="total_worker">Total Workers: </string>
+    <string name="scaffolding_number">Scaffolding Number: </string>
+    <string name="site_address">Site Address: </string>
+    <string name="site_radius">Site Radius: </string>
+    <string name="site_manager_info">Site Manager Info: </string>
+    <string name="registration">Registration</string>
+    <string name="hint_first_name">type the first name</string>
+    <string name="hint_last_name">type the last name</string>
+    <string name="hint_birthdate">DD/MM/YYYY</string>
+    <string name="hint_telephone">type the telephone number</string>
+    <string name="hint_password">type the password</string>
+    <string name="createAccount">Create Account</string>
+    <string name="hint_cf">type the CF</string>
+    <string name="insert_start_date">DD/MM/YYYY</string>
+    <string name="insert_end_date">DD/MM/YYYY</string>
+    <string name="insert_max_workers">insert the maximum number of workers</string>
+    <string name="insert_scaffolding">insert the scaffolding number</string>
+    <string name="insert_address">insert the site address</string>
+    <string name="insert_radius">insert the site radius</string>
+    <string name="generated_security_code">generated the security code</string>
+    <string name="generate">Generate</string>
+    <string name="create_site_generate_qr">Create Site and Generate QR</string>
+    <string name="scaffolding">Scaffolding</string>"
+    <string name="address">Address</string>
+    <string name="security_code">Security Code</string>
+    <string name="max_workers">Max Workers</string>
+    <string name="site_icon_description">site icon description</string>
+
+
+
+
 </resources>

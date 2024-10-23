@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    android:background="#C7C7C7"
+    android:background="#E0E0E0"
     >
 
     <ImageView
@@ -28,6 +28,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
         android:drawablePadding="0dp"
+        android:fontFamily="sans-serif-condensed"
         android:gravity="center_vertical"
         android:text="@string/site"
         android:textColor="#2C2C2C"
@@ -46,6 +47,7 @@
         android:layout_marginTop="200dp"
         android:drawablePadding="0dp"
         android:gravity="center_vertical"
+        android:fontFamily="sans-serif-condensed"
         android:text="@string/account"
         android:textColor="#2C2C2C"
         android:textSize="30sp"
@@ -63,6 +65,7 @@
         android:drawablePadding="0dp"
         android:gravity="center_vertical"
         android:text="@string/create_site"
+        android:fontFamily="sans-serif-condensed"
         android:textColor="#2C2C2C"
         android:textSize="30sp"
         app:drawableLeftCompat="@mipmap/site_foreground"
@@ -80,6 +83,7 @@
         android:text="@string/logout"
         android:textAllCaps="false"
         android:textColor="@color/app_background"
+        android:fontFamily="sans-serif-condensed"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

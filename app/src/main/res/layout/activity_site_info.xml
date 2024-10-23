@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -22,7 +21,7 @@
         android:layout_marginTop="76dp"
         android:fontFamily="sans-serif-condensed-light"
         android:gravity="center"
-        android:text="@string/account"
+        android:text="@string/site"
         android:textColor="#2C2C2C"
         android:textSize="34sp"
         android:textStyle="bold"
@@ -49,33 +48,35 @@
         android:layout_marginStart="146dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="146dp"
+        android:text="@string/weather"
         android:fontFamily="sans-serif-condensed"
-        android:text="@string/your_position"
         android:textColor="@color/black"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/account_info_title" />
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/map_fragment"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="348dp"
-        android:layout_height="222dp"
-        android:layout_marginTop="8dp"
+    <ImageView
+        android:id="@+id/weather_placeholder"
+        android:layout_width="358dp"
+        android:layout_height="164dp"
+        android:layout_marginStart="26dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="27dp"
+        android:background="@color/white"
+        android:contentDescription="@string/weather_placeholder"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/your_position_label" />
 
-
     <LinearLayout
-        android:id="@+id/info_container"
+        android:id="@+id/site_info_container"
         android:layout_width="356dp"
-        android:layout_height="334dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="27dp"
-        android:layout_marginBottom="32dp"
+        android:layout_height="315dp"
+        android:layout_marginStart="26dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="29dp"
+        android:layout_marginBottom="34dp"
         android:background="#FFFFFF"
         android:elevation="4dp"
         android:orientation="vertical"
@@ -83,26 +84,26 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/map_fragment">
+        app:layout_constraintTop_toBottomOf="@+id/weather_placeholder">
 
         <!-- First Name Label and Text -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/first_name_label"
+                android:id="@+id/site_id_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
-                android:text="@string/first_name"
+                android:text="@string/site_id"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/first_name_text"
+                android:id="@+id/site_id_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
@@ -115,20 +116,20 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/last_name_label"
+                android:id="@+id/start_date_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
-                android:text="@string/last_name"
+                android:text="@string/start_date"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/last_name_text"
+                android:id="@+id/start_date_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
@@ -141,20 +142,20 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/cf_label"
+                android:id="@+id/end_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
-                android:text="@string/cf"
+                android:text="@string/end_date"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/cf_text"
+                android:id="@+id/end_date_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
@@ -167,20 +168,20 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/birthday_label"
+                android:id="@+id/total_worker_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
-                android:text="@string/birthday_date"
+                android:text="@string/total_worker"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/birthday_text"
+                android:id="@+id/total_worker_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
@@ -193,20 +194,20 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/telephone_label"
+                android:id="@+id/scaffolding_number_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
-                android:text="@string/telephone"
+                android:text="@string/scaffolding_number"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/telephone_text"
+                android:id="@+id/scaffolding_number_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
@@ -215,41 +216,83 @@
                 android:textSize="16sp" />
         </LinearLayout>
 
-        <!-- Change Password Section -->
-
-        <TextView
-            android:id="@+id/change_password_label"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="0dp"
-            android:fontFamily="sans-serif-condensed"
-            android:text="@string/change_password"
-            android:textColor="@color/black"
-            android:textSize="17sp" />
+            android:layout_marginBottom="14dp"
+            android:orientation="horizontal">
 
-        <!-- New Password Field -->
+            <TextView
+                android:id="@+id/site_address_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/site_address"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
 
-        <!-- Change Password Button -->
-        <EditText
-            android:id="@+id/new_password_field"
+            <TextView
+                android:id="@+id/site_address_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:autofillHints="password"
-            android:fontFamily="sans-serif-condensed"
-            android:hint="@string/hint_password"
-            android:inputType="textPassword"
-            android:minHeight="48dp" />
+            android:layout_marginBottom="14dp"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/change_password_button"
+            <TextView
+                android:id="@+id/site_radius_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/site_radius"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/site_radius_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="#2C2C2C"
-            android:text="@string/change_password"
-            android:layout_marginTop="10dp"
-            android:textAllCaps="false"
-            android:textColor="@color/white" />
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/site_manager_info_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/site_manager_info"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/site_manager_info_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+        </LinearLayout>
+
 
     </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
