@@ -74,11 +74,12 @@
         android:id="@+id/info_container"
         android:layout_width="356dp"
         android:layout_height="334dp"
-        android:layout_marginStart="26dp"
+        android:layout_marginStart="28dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="29dp"
+        android:layout_marginEnd="27dp"
         android:layout_marginBottom="32dp"
-        android:background="#C3C3C3"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -217,34 +218,37 @@
         </LinearLayout>
 
         <!-- Change Password Section -->
+
         <TextView
             android:id="@+id/change_password_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="0dp"
             android:fontFamily="sans-serif-condensed"
             android:text="@string/change_password"
             android:textColor="@color/black"
             android:textSize="17sp" />
 
         <!-- New Password Field -->
+
+        <!-- Change Password Button -->
         <EditText
             android:id="@+id/new_password_field"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="12dp"
-            android:background="@color/app_background"
-            android:hint="@string/password_hint"
+            android:layout_height="wrap_content"
             android:autofillHints="password"
-            android:inputType="textPassword" />
+            android:fontFamily="sans-serif-condensed"
+            android:hint="@string/hint_password"
+            android:inputType="textPassword"
+            android:minHeight="48dp" />
 
-        <!-- Change Password Button -->
         <Button
             android:id="@+id/change_password_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:backgroundTint="#2C2C2C"
             android:text="@string/change_password"
+            android:layout_marginTop="10dp"
             android:textAllCaps="false"
             android:textColor="@color/white" />
 

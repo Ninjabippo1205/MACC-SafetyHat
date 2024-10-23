@@ -34,6 +34,14 @@
     <string name="site_address">Site Address: </string>
     <string name="site_radius">Site Radius: </string>
     <string name="site_manager_info">Site Manager Info: </string>
+    <string name="registration">Registration</string>
+    <string name="hint_first_name">type the first name</string>
+    <string name="hint_last_name">type the last name</string>
+    <string name="hint_birthdate">DD/MM/YYYY</string>
+    <string name="hint_telephone">type the telephone number</string>
+    <string name="hint_password">type the password</string>
+    <string name="createAccount">Create Account</string>
+    <string name="hint_cf">type the CF</string>
 
 
 </resources>

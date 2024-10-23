@@ -72,12 +72,13 @@
     <LinearLayout
         android:id="@+id/site_info_container"
         android:layout_width="356dp"
-        android:layout_height="334dp"
+        android:layout_height="315dp"
         android:layout_marginStart="26dp"
         android:layout_marginTop="15dp"
         android:layout_marginEnd="29dp"
         android:layout_marginBottom="34dp"
-        android:background="#C3C3C3"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -89,7 +90,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
@@ -115,7 +116,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
@@ -141,7 +142,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
@@ -167,7 +168,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
@@ -193,7 +194,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
@@ -218,7 +219,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView
@@ -243,7 +244,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="14dp"
             android:orientation="horizontal">
 
             <TextView

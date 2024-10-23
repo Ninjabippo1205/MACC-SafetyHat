@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    android:background="#C7C7C7"
+    android:background="#E0E0E0"
     >
 
     <ImageView
@@ -27,6 +27,7 @@
         android:layout_height="70dp"
         android:layout_gravity="center"
         android:layout_marginStart="66dp"
+        android:fontFamily="sans-serif-condensed"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="65dp"
         android:drawablePadding="0dp"
@@ -44,6 +45,7 @@
         android:layout_width="280dp"
         android:layout_height="70dp"
         android:layout_gravity="center"
+        android:fontFamily="sans-serif-condensed"
         android:layout_marginStart="66dp"
         android:layout_marginTop="176dp"
         android:layout_marginEnd="65dp"
@@ -66,6 +68,7 @@
         android:layout_marginEnd="65dp"
         android:drawablePadding="0dp"
         android:gravity="center_vertical"
+        android:fontFamily="sans-serif-condensed"
         android:text="@string/alerts"
         android:textColor="#2C2C2C"
         android:textSize="30sp"
@@ -84,6 +87,7 @@
         android:layout_marginBottom="169dp"
         android:backgroundTint="#2C2C2C"
         android:text="@string/logout"
+        android:fontFamily="sans-serif-condensed"
         android:textAllCaps="false"
         android:textColor="@color/app_background"
         android:textSize="30sp"
