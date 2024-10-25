@@ -27,6 +27,7 @@ androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscree
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version = "4.9.3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
