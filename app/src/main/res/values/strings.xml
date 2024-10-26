@@ -56,8 +56,6 @@
     <string name="security_code">Security Code</string>
     <string name="max_workers">Max Workers</string>
     <string name="site_icon_description">site icon description</string>
-
-
-
+    <string name="back">Back</string>
 
 </resources>
