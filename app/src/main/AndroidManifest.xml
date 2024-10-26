@@ -47,5 +47,11 @@
         <activity android:name=".ManagerInfoActivity">
         </activity>
 
+        <activity android:name=".ManagermenuActivity">
+        </activity>
+
+        <activity android:name=".WorkermenuActivity">
+        </activity>
+
     </application>
 </manifest>
