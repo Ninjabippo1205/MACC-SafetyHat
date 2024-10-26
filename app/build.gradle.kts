@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.androidx.fragment)
     implementation(libs.okhttp)
+    implementation(libs.jbcrypt)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

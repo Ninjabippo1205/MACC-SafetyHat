@@ -14,9 +14,8 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Locale
-
+import java.util.regex.Pattern
+import org.mindrot.jbcrypt.BCrypt
 
 class RegistrationActivity : AppCompatActivity() {
     private val client = OkHttpClient()
@@ -38,17 +37,63 @@ class RegistrationActivity : AppCompatActivity() {
             val lastName = lastNameField.text.toString()
             val birthdate = birthdateField.text.toString()
             val phone = phoneField.text.toString()
-            val cf = cfField.text.toString()
+            val cf = cfField.text.toString().uppercase()
             val password = passwordField.text.toString()
 
-            if (firstName.isNotEmpty() && lastName.isNotEmpty() && birthdate.isNotEmpty() &&
-                phone.isNotEmpty() && cf.isNotEmpty() && password.isNotEmpty()) {
-                // Esegui la registrazione dell'utente
-                registerWorker(firstName, lastName, birthdate, phone, cf, password)
-            } else {
-                Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_SHORT).show()
+            if (isInputValid(firstName, lastName, birthdate, phone, cf, password)) {
+                val hashedPassword = hashPassword(password)
+                registerWorker(firstName, lastName, birthdate, phone, cf, hashedPassword)
             }
         }
+    }
+
+    private fun isInputValid(
+        firstName: String,
+        lastName: String,
+        birthdate: String,
+        phone: String,
+        cf: String,
+        password: String
+    ): Boolean {
+        val namePattern = "^[a-zA-Z]{1,50}$"
+        if (!Pattern.matches(namePattern, firstName)) {
+            Toast.makeText(this, "First name should contain only letters (max 50 characters)", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        if (!Pattern.matches(namePattern, lastName)) {
+            Toast.makeText(this, "Last name should contain only letters (max 50 characters)", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        val phonePattern = "^\\d{1,9}$"
+        if (!Pattern.matches(phonePattern, phone)) {
+            Toast.makeText(this, "Phone number should contain only numbers (max 9 digits)", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        val cfPattern = "^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$"
+        if (!Pattern.matches(cfPattern, cf)) {
+            Toast.makeText(this, "Invalid CF format (6 letters, 2 digits, 1 letter, 2 digits, 1 letter, 3 digits, 1 letter)", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        val birthdatePattern = "^\\d{2}/\\d{2}/\\d{4}$"
+        if (!Pattern.matches(birthdatePattern, birthdate)) {
+            Toast.makeText(this, "Invalid birthdate format (use dd/mm/yyyy)", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        val passwordPattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#\$%^&+=!]).{8,}$"
+        if (!Pattern.matches(passwordPattern, password)) {
+            Toast.makeText(this, "Password must be at least 8 characters,with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
+            return false
+        }
+
+        return true
+    }
+
+    private fun hashPassword(password: String): String {
+        return BCrypt.hashpw(password, BCrypt.gensalt())
     }
 
     private fun registerWorker(
@@ -57,26 +102,16 @@ class RegistrationActivity : AppCompatActivity() {
         birthdate: String,
         phone: String,
         cf: String,
-        password: String
+        hashedPassword: String
     ) {
-
-        val originalFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val targetFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val formattedBirthdate = try {
-            val date = originalFormat.parse(birthdate)
-            targetFormat.format(date)
-        } catch (e: Exception) {
-            birthdate
-        }
-
         val url = "https://noemigiustini01.pythonanywhere.com/worker/create"
         val json = JSONObject()
         json.put("FirstName", firstName)
         json.put("LastName", lastName)
-        json.put("BirthDate", formattedBirthdate)
+        json.put("BirthDate", birthdate)
         json.put("PhoneNumber", phone)
         json.put("CF", cf)
-        json.put("Password", password)
+        json.put("Password", hashedPassword)
         json.put("Presence", "false")
 
         val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
@@ -90,25 +125,18 @@ class RegistrationActivity : AppCompatActivity() {
             client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     runOnUiThread {
-                        // Ottieni il messaggio di errore dall'eccezione
                         val errorMessage = e.localizedMessage ?: "Unknown error occurred"
-
-                        // Mostra un toast con il messaggio dettagliato
                         Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
-
-                        // Puoi anche loggare l'errore per una diagnosi più dettagliata
                         Log.e("RegistrationError", "Failed to register worker: $errorMessage", e)
                     }
                 }
 
                 override fun onResponse(call: Call, response: Response) {
                     runOnUiThread {
-                        val responseBody = response.body?.string() // Ottieni il corpo della risposta come stringa
+                        val responseBody = response.body?.string()
                         if (response.isSuccessful) {
-                            // Se la richiesta è andata a buon fine
                             Toast.makeText(this@RegistrationActivity, "Account created successfully!", Toast.LENGTH_SHORT).show()
                         } else {
-                            // Se c'è un errore, mostra il messaggio di errore
                             val errorMessage = responseBody ?: "Unknown error"
                             Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
                         }
