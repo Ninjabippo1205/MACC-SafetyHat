@@ -14,6 +14,9 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Locale
+
 
 class RegistrationActivity : AppCompatActivity() {
     private val client = OkHttpClient()
@@ -56,11 +59,21 @@ class RegistrationActivity : AppCompatActivity() {
         cf: String,
         password: String
     ) {
+
+        val originalFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val targetFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val formattedBirthdate = try {
+            val date = originalFormat.parse(birthdate)
+            targetFormat.format(date)
+        } catch (e: Exception) {
+            birthdate
+        }
+
         val url = "https://noemigiustini01.pythonanywhere.com/worker/create"
         val json = JSONObject()
         json.put("FirstName", firstName)
         json.put("LastName", lastName)
-        json.put("BirthDate", birthdate)
+        json.put("BirthDate", formattedBirthdate)
         json.put("PhoneNumber", phone)
         json.put("CF", cf)
         json.put("Password", password)
