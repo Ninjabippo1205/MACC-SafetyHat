@@ -1,5 +1,6 @@
 package com.safetyhat.macc
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -136,12 +137,18 @@ class RegistrationActivity : AppCompatActivity() {
                         val responseBody = response.body?.string()
                         if (response.isSuccessful) {
                             Toast.makeText(this@RegistrationActivity, "Account created successfully!", Toast.LENGTH_SHORT).show()
+
+                            // Reindirizza l'utente alla LoginActivity
+                            val intent = Intent(this@RegistrationActivity, LoginActivity::class.java)
+                            startActivity(intent)
+                            finish() // Chiude la RegistrationActivity
                         } else {
                             val errorMessage = responseBody ?: "Unknown error"
                             Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
                         }
                     }
                 }
+
 
             })
         }
