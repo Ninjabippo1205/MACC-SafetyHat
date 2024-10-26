@@ -18,7 +18,6 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import android.app.DatePickerDialog
-import android.content.Intent
 import java.util.Calendar
 import android.widget.ImageView
 import java.util.regex.Pattern
@@ -35,7 +34,7 @@ class RegistrationActivity : AppCompatActivity() {
         backButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
-            finish() // Chiude la RegistrationActivity
+            finish()
         }
 
         val firstNameField = findViewById<EditText>(R.id.first_name_registration_field)
@@ -94,10 +93,9 @@ class RegistrationActivity : AppCompatActivity() {
         cf: String,
         password: String
     ): Boolean {
-        if (firstName.isNotEmpty() && lastName.isNotEmpty() && birthdate.isNotEmpty() && phone.isNotEmpty() && cf.isNotEmpty() && password.isNotEmpty()) {
-            registerWorker(firstName, lastName, birthdate, phone, cf, password)
-        } else {
+        if (!(firstName.isNotEmpty() && lastName.isNotEmpty() && birthdate.isNotEmpty() && phone.isNotEmpty() && cf.isNotEmpty() && password.isNotEmpty())) {
             Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_SHORT).show()
+            return false
         }
       
         val namePattern = "^[a-zA-Z]{1,50}$"
@@ -149,15 +147,25 @@ class RegistrationActivity : AppCompatActivity() {
         cf: String,
         hashedPassword: String
     ) {
+
+        val originalFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val targetFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val formattedBirthdate = try {
+            val date = originalFormat.parse(birthdate)
+            targetFormat.format(date)
+        } catch (e: Exception) {
+            birthdate
+        }
+
         val url = "https://noemigiustini01.pythonanywhere.com/worker/create"
         val json = JSONObject()
         json.put("FirstName", firstName)
         json.put("LastName", lastName)
-        json.put("BirthDate", birthdate)
+        json.put("BirthDate", formattedBirthdate)
         json.put("PhoneNumber", phone)
         json.put("CF", cf)
         json.put("Password", hashedPassword)
-        json.put("Presence", "false")
+        json.put("Presence", "no")
 
         val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
@@ -182,10 +190,9 @@ class RegistrationActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             Toast.makeText(this@RegistrationActivity, "Account created successfully!", Toast.LENGTH_SHORT).show()
 
-                            // Reindirizza l'utente alla LoginActivity
                             val intent = Intent(this@RegistrationActivity, LoginActivity::class.java)
                             startActivity(intent)
-                            finish() // Chiude la RegistrationActivity
+                            finish()
                         } else {
                             val errorMessage = responseBody ?: "Unknown error"
                             Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
