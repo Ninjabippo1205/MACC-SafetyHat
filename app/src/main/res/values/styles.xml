@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <style name="CustomDatePickerDialog" parent="Theme.AppCompat.Light.Dialog">
+        <!-- Colore di sfondo per il dialog -->
+        <item name="colorAccent">#2C2C2C</item> <!-- Grigio -->
+        <item name="android:datePickerDialogTheme">@style/CustomDatePicker</item>
+    </style>
+
+    <style name="CustomDatePicker" parent="android:Widget.Material.DatePicker">
+        <item name="android:headerBackground">#FFFFFF</item>
+        <item name="android:colorAccent">#F4511E</item>
+        <item name="android:calendarTextColor">#2C2C2C</item>
+    </style>
+</resources>

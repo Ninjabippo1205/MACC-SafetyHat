@@ -6,6 +6,20 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <ImageView
+        android:id="@+id/back_icon"
+        android:layout_width="72dp"
+        android:layout_height="67dp"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="-15dp"
+        android:contentDescription="@string/back"
+        android:foregroundGravity="top|left"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/back_foreground" />
+
     <TextView
         android:id="@+id/registration_title"
         android:layout_width="222dp"
@@ -122,6 +136,7 @@
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
+
             <EditText
                 android:id="@+id/birthdate_registration_field"
                 android:layout_width="match_parent"
@@ -130,9 +145,11 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_birthdate"
                 android:inputType="date"
+                android:focusableInTouchMode="false"
+                android:clickable="true"
                 android:minHeight="48dp" />
 
-            <!-- CF -->
+
             <TextView
                 android:id="@+id/cf_registration_label"
                 android:layout_width="wrap_content"

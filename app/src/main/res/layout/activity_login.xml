@@ -7,6 +7,18 @@
         android:layout_height="match_parent"
     >
 
+    <ImageView
+        android:id="@+id/back_icon_login"
+        android:layout_width="72dp"
+        android:layout_height="67dp"
+        android:contentDescription="@string/back"
+        android:foregroundGravity="top|left"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/back_foreground" />
+
     <TextView
         android:id="@+id/account_info_title"
         android:layout_width="222dp"
