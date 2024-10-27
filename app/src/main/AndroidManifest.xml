@@ -53,5 +53,14 @@
         <activity android:name=".WorkermenuActivity">
         </activity>
 
+        <activity android:name=".ManagersiteinfoActivity">
+        </activity>
+
+        <activity android:name=".CreatesiteActivity">
+        </activity>
+
+        <activity android:name=".SiteInfoActivity">
+        </activity>
+
     </application>
 </manifest>

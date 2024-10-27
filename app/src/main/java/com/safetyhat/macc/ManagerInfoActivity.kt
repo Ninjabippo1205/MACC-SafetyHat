@@ -1,10 +1,12 @@
 package com.safetyhat.macc
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -38,6 +40,13 @@ class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manager_info)
+
+        val backButton = findViewById<ImageView>(R.id.menu_icon)
+        backButton.setOnClickListener {
+            val intent = Intent(this, ManagermenuActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
