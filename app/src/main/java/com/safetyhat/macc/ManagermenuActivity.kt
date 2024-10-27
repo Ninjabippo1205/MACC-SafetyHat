@@ -7,6 +7,7 @@ import android.content.Intent
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 
 class ManagermenuActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +25,7 @@ class ManagermenuActivity : AppCompatActivity() {
 
         sitesInfoText.setOnClickListener {
             val intent = Intent(this, ManagersiteinfoActivity::class.java)
+            intent.putExtra("managerCF", cf)
             startActivity(intent)
         }
 
@@ -35,6 +37,7 @@ class ManagermenuActivity : AppCompatActivity() {
 
         createSiteText.setOnClickListener {
             val intent = Intent(this, CreatesiteActivity::class.java)
+            intent.putExtra("managerCF", cf)
             startActivity(intent)
         }
 

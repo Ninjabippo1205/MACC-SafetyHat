@@ -92,6 +92,8 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/insert_start_date"
                 android:inputType="date"
+                android:focusableInTouchMode="false"
+                android:clickable="true"
                 android:minHeight="48dp" />
 
             <!-- Estimated End Date -->
@@ -113,6 +115,8 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/insert_end_date"
                 android:inputType="date"
+                android:focusableInTouchMode="false"
+                android:clickable="true"
                 android:minHeight="48dp" />
 
             <!-- N° Max Workers -->
