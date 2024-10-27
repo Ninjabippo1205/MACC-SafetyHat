@@ -6,6 +6,8 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
@@ -23,8 +25,12 @@ import androidx.core.content.ContextCompat
 import java.util.Locale
 import okhttp3.*
 import android.widget.Toast
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import org.mindrot.jbcrypt.BCrypt
 import java.io.IOException
+import java.util.regex.Pattern
 
 class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -64,6 +70,58 @@ class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
         val cf = intent.getStringExtra("managerCF")
         fetchManagerInfo(cf.toString())
 
+        val changePasswordButton = findViewById<Button>(R.id.change_password_button)
+        changePasswordButton.setOnClickListener {
+            val newPassword = findViewById<EditText>(R.id.new_password_field).text.toString()
+            if (newPassword.isNotEmpty()) {
+                val passwordPattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#\$%^&+=!]).{8,}$"
+                if (!Pattern.matches(passwordPattern, newPassword)) {
+                    Toast.makeText(this, "Password must be at least 8 characters,with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
+                }else {
+                    val hashedPassword = hashPassword(newPassword)
+                    updatePassword(cf.toString(), hashedPassword)
+                }
+            } else {
+                Toast.makeText(this, "Please enter a new password", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
+    private fun hashPassword(password: String): String {
+        return BCrypt.hashpw(password, BCrypt.gensalt())
+    }
+
+    private fun updatePassword(cf: String, newPassword: String) {
+        val url = "https://NoemiGiustini01.pythonanywhere.com/manager/updatepassword/$cf"
+        val requestBody = JSONObject()
+        requestBody.put("Password", newPassword)
+        val body = requestBody.toString()
+            .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+
+        val request = Request.Builder()
+            .url(url)
+            .put(body)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@ManagerInfoActivity, "Failed to update password. Try again.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                runOnUiThread {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@ManagerInfoActivity, "Password updated successfully", Toast.LENGTH_SHORT).show()
+                        findViewById<EditText>(R.id.new_password_field).text.clear()
+                    } else {
+                        Toast.makeText(this@ManagerInfoActivity, "Failed to update password", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
     }
 
     private fun fetchManagerInfo(cf: String) {
