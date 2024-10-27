@@ -9,17 +9,16 @@
     >
 
     <ImageView
-        android:id="@+id/menu_icon"
-        android:layout_width="72dp"
-        android:layout_height="67dp"
+        android:id="@+id/Menu_icon"
+        android:layout_width="70dp"
+        android:layout_height="65dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:contentDescription="@string/menù"
         android:foregroundGravity="top|left"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/menu_foreground"
-        />
+        app:srcCompat="@drawable/menu_foreground" />
 
     <TextView
         android:id="@+id/sites_info_text"

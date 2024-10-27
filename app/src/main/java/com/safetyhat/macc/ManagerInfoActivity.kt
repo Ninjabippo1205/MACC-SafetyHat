@@ -88,7 +88,7 @@ class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
                         val cf = jsonObject.optString("CF", "N/A")
                         val birthday = jsonObject.optString("BirthDate", "N/A")
                         val formattedBirthDate = birthday.split(" ")[1] + " " + birthday.split(" ")[2] + " " + birthday.split(" ")[3]
-                        val phoneNumber = jsonObject.optString("telephone", "N/A")
+                        val phoneNumber = jsonObject.optString("Telephone", "N/A")
 
                         findViewById<TextView>(R.id.first_name_text).text = firstName
                         findViewById<TextView>(R.id.last_name_text).text = lastName
