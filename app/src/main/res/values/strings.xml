@@ -18,10 +18,10 @@
     <string name="logout">Logout</string>
     <string name="your_position">Your Position</string>
     <string name="map_placeholder">Map Placeholder</string>
-    <string name="first_name">First Name: </string>
-    <string name="last_name">Last Name: </string>
-    <string name="birthday_date">Birthday Date: </string>
-    <string name="telephone">Telephone: </string>
+    <string name="first_name">First Name:  </string>
+    <string name="last_name">Last Name:  </string>
+    <string name="birthday_date">Birthday Date:  </string>
+    <string name="telephone">Telephone:  </string>
     <string name="change_password">Change Password</string>"
     <string name="alerts">Alerts</string>
     <string name="weather">Weather Conditions</string>

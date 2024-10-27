@@ -21,12 +21,17 @@ import com.google.android.gms.maps.model.MarkerOptions
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.util.Locale
+import okhttp3.*
+import android.widget.Toast
+import org.json.JSONObject
+import java.io.IOException
 
 class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val locationPermissionRequestCode = 1
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val client = OkHttpClient()
 
     // Lista di colori predefiniti per le circonferenze
     private val circleColors = listOf(
@@ -56,18 +61,46 @@ class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
 
         checkLocationPermission()
 
-        // Dati hardcoded per i test
-        val firstName = "John"
-        val lastName = "Doe"
-        val cf = "JDOE123456789"
-        val birthday = "01/01/1990"
-        val phoneNumber = "+39 123 456 7890"
+        val cf = intent.getStringExtra("managerCF")
+        fetchManagerInfo(cf.toString())
 
-        findViewById<TextView>(R.id.first_name_text).text = firstName
-        findViewById<TextView>(R.id.last_name_text).text = lastName
-        findViewById<TextView>(R.id.cf_text).text = cf
-        findViewById<TextView>(R.id.birthday_text).text = birthday
-        findViewById<TextView>(R.id.telephone_text).text = phoneNumber
+    }
+
+    private fun fetchManagerInfo(cf: String) {
+        val url = "https://NoemiGiustini01.pythonanywhere.com/manager/read?cf=$cf"
+        val request = Request.Builder().url(url).get().build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@ManagerInfoActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                val jsonObject = JSONObject(responseData ?: "")
+
+                runOnUiThread {
+                    if (response.isSuccessful && !jsonObject.has("message")) {
+                        val firstName = jsonObject.optString("FirstName", "N/A")
+                        val lastName = jsonObject.optString("LastName", "N/A")
+                        val cf = jsonObject.optString("CF", "N/A")
+                        val birthday = jsonObject.optString("BirthDate", "N/A")
+                        val formattedBirthDate = birthday.split(" ")[1] + " " + birthday.split(" ")[2] + " " + birthday.split(" ")[3]
+                        val phoneNumber = jsonObject.optString("telephone", "N/A")
+
+                        findViewById<TextView>(R.id.first_name_text).text = firstName
+                        findViewById<TextView>(R.id.last_name_text).text = lastName
+                        findViewById<TextView>(R.id.cf_text).text = cf
+                        findViewById<TextView>(R.id.birthday_text).text = formattedBirthDate
+                        findViewById<TextView>(R.id.telephone_text).text = phoneNumber
+                    } else {
+                        Toast.makeText(this@ManagerInfoActivity, "Manager not found.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
     }
 
     override fun onMapReady(googleMap: GoogleMap) {

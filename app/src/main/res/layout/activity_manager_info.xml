@@ -92,11 +92,11 @@
 
             <TextView
                 android:id="@+id/first_name_label"
-                android:layout_width="wrap_content"
+                android:layout_width="84dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
                 android:text="@string/first_name"
-                android:textColor="@color/black"
+                android:textColor="#212121"
                 android:textSize="16sp" />
 
             <TextView
@@ -118,11 +118,11 @@
 
             <TextView
                 android:id="@+id/last_name_label"
-                android:layout_width="wrap_content"
+                android:layout_width="84dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
                 android:text="@string/last_name"
-                android:textColor="@color/black"
+                android:textColor="#212121"
                 android:textSize="16sp" />
 
             <TextView
@@ -144,11 +144,11 @@
 
             <TextView
                 android:id="@+id/cf_label"
-                android:layout_width="wrap_content"
+                android:layout_width="33dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
                 android:text="@string/cf"
-                android:textColor="@color/black"
+                android:textColor="#212121"
                 android:textSize="16sp" />
 
             <TextView
@@ -170,11 +170,11 @@
 
             <TextView
                 android:id="@+id/birthday_label"
-                android:layout_width="wrap_content"
+                android:layout_width="99dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
                 android:text="@string/birthday_date"
-                android:textColor="@color/black"
+                android:textColor="#212121"
                 android:textSize="16sp" />
 
             <TextView
@@ -196,11 +196,11 @@
 
             <TextView
                 android:id="@+id/telephone_label"
-                android:layout_width="wrap_content"
+                android:layout_width="81dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed"
                 android:text="@string/telephone"
-                android:textColor="@color/black"
+                android:textColor="#212121"
                 android:textSize="16sp" />
 
             <TextView

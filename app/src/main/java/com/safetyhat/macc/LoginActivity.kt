@@ -65,6 +65,7 @@ class LoginActivity : AppCompatActivity() {
                             val storedPasswordHash = jsonObject.getString("Password")
                             if (BCrypt.checkpw(password, storedPasswordHash)) {
                                 val intent = Intent(this@LoginActivity, ManagermenuActivity::class.java)
+                                intent.putExtra("managerCF", cf) // Aggiungi il CF come extra
                                 startActivity(intent)
                                 finish()
                                 //Toast.makeText(this@LoginActivity, "MANAGER LOGGED IN", Toast.LENGTH_SHORT).show()

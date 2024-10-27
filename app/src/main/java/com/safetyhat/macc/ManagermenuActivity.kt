@@ -20,6 +20,8 @@ class ManagermenuActivity : AppCompatActivity() {
         val createSiteText = findViewById<TextView>(R.id.create_site_text)
         val logoutButton = findViewById<Button>(R.id.logout_button)
 
+        val cf = intent.getStringExtra("managerCF")
+
         sitesInfoText.setOnClickListener {
             val intent = Intent(this, ManagersiteinfoActivity::class.java)
             startActivity(intent)
@@ -27,6 +29,7 @@ class ManagermenuActivity : AppCompatActivity() {
 
         accountInfoText.setOnClickListener {
             val intent = Intent(this, ManagerInfoActivity::class.java)
+            intent.putExtra("managerCF", cf)
             startActivity(intent)
         }
 
