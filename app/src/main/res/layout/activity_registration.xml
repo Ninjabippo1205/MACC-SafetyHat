@@ -81,8 +81,9 @@
             android:id="@+id/info_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
+            android:background="@drawable/rounded_background"
             android:orientation="vertical"
+            android:elevation="4dp"
             android:padding="16dp">
             <!-- First Name -->
             <TextView
@@ -221,8 +222,11 @@
         android:layout_marginTop="16dp"
         android:backgroundTint="#2C2C2C"
         android:fontFamily="sans-serif-condensed"
+        android:background="@drawable/rounded_background"
+        android:textSize="20sp"
         android:text="@string/createAccount"
         android:textAllCaps="false"
+        android:elevation="4dp"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

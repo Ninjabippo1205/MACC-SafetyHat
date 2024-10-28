@@ -70,8 +70,8 @@
             android:id="@+id/form_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
             android:orientation="vertical"
+            android:background="@drawable/rounded_background"
             android:padding="16dp">
 
             <!-- Start Date -->
@@ -174,7 +174,7 @@
 
             <EditText
                 android:id="@+id/address_field"
-                android:layout_width="match_parent"
+                android:layout_width="345dp"
                 android:layout_height="wrap_content"
                 android:autofillHints="address"
                 android:fontFamily="sans-serif-condensed"
@@ -240,6 +240,8 @@
             android:fontFamily="sans-serif-condensed"
             android:text="@string/generate"
             android:textAllCaps="false"
+            android:textSize="20sp"
+            android:background="@drawable/rounded_background"
             android:textColor="@color/white" />
     </LinearLayout>
 
@@ -254,6 +256,8 @@
         android:backgroundTint="#2C2C2C"
         android:fontFamily="sans-serif-condensed"
         android:text="@string/create_site_generate_qr"
+        android:background="@drawable/rounded_background"
+        android:textSize="24sp"
         android:textAllCaps="false"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
