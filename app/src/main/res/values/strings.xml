@@ -12,7 +12,7 @@
     <string name="password_hint">Type the password</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="menù">Menu Icon</string>
-    <string name="site">Sites Info</string>
+    <string name="site">Site Info</string>
     <string name="account">Account Info</string>
     <string name="create_site">Create Site</string>
     <string name="logout">Logout</string>
@@ -57,5 +57,10 @@
     <string name="max_workers">Max Workers</string>
     <string name="site_icon_description">site icon description</string>
     <string name="back">Back</string>
+    <string name="crane_foreground_description">Crane foreground image</string>
+    <string name="security_code_title">Site Security Code</string>
+    <string name="insert_sc">Security Code</string>
+    <string name="hint_sc"> Type Security Code</string>
+    <string name="verify_sc">Verify Security Code</string>
 
 </resources>

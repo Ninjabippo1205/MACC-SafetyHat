@@ -13,8 +13,6 @@ class WorkermenuActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_worker_menu)
 
-        val qr_scanned_text = intent.getStringExtra("qr_scanned_text")
-        Toast.makeText(this, "Scan result on WorkermenuActivity: ${qr_scanned_text}", Toast.LENGTH_LONG).show()
-
+        val workerCF = intent.getStringExtra("workerCF")
     }
 }
