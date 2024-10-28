@@ -97,7 +97,6 @@ class CreatesiteActivity : AppCompatActivity() {
                     val json = JSONObject(it)
                     val securityCode = json.getString("security_code")
 
-                    // Aggiorna il campo di testo con id "securityCodeField"
                     runOnUiThread {
                         securityCodeField.setText(securityCode)
                     }
@@ -141,14 +140,12 @@ class CreatesiteActivity : AppCompatActivity() {
             return false
         }
 
-        // Pattern per un indirizzo che accetta lettere, numeri, spazi e massimo 100 caratteri
         val addressPattern = "^[a-zA-Z0-9\\s]{1,100}$"
         if (!Pattern.matches(addressPattern, address)) {
             Toast.makeText(this, "Address should contain only letters, numbers, and spaces (max 100 characters)", Toast.LENGTH_SHORT).show()
             return false
         }
 
-        // Pattern numerico per min. 1 cifra
         val numericPattern = "^\\d{1,}$"
         if (!Pattern.matches(numericPattern, maxWorkers)) {
             Toast.makeText(this, "Number of workers should contain only numbers with at least 1 digit", Toast.LENGTH_SHORT).show()
@@ -163,7 +160,6 @@ class CreatesiteActivity : AppCompatActivity() {
             return false
         }
 
-        // Pattern per la data nel formato dd/mm/yyyy
         val datePattern = "^\\d{2}/\\d{2}/\\d{4}$"
         if (!Pattern.matches(datePattern, startDate)) {
             Toast.makeText(this, "Invalid start date format (use dd/mm/yyyy)", Toast.LENGTH_SHORT).show()
@@ -174,7 +170,6 @@ class CreatesiteActivity : AppCompatActivity() {
             return false
         }
 
-        // Controllo che la data di inizio sia precedente alla data di fine
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val start = dateFormat.parse(startDate)
         val end = dateFormat.parse(endDate)
@@ -247,7 +242,15 @@ class CreatesiteActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             Toast.makeText(this@CreatesiteActivity, "Site created successfully!", Toast.LENGTH_SHORT).show()
 
-                            val intent = Intent(this@CreatesiteActivity, CreatesiteActivity::class.java)
+                            val intent = Intent(this@CreatesiteActivity, QRGenerationActivity::class.java)
+                            intent.putExtra("StartDate", formattedStartDate)
+                            intent.putExtra("EstimatedEndDate", formattedEndDate)
+                            intent.putExtra("TotalWorkers", maxWorkers)
+                            intent.putExtra("ScaffoldingCount", scaffolding)
+                            intent.putExtra("Address", address)
+                            intent.putExtra("SiteRadius", siteRadius)
+                            intent.putExtra("SecurityCode", securityCode)
+                            intent.putExtra("ManagerCF", managerCF)
                             startActivity(intent)
                             finish()
                         } else {

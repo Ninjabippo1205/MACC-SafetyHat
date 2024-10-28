@@ -48,11 +48,14 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.jbcrypt)
     implementation(libs.code.scanner)
-
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.camera26)
     implementation(libs.androidx.camera.lifecycle.v110)
     implementation(libs.androidx.camera.core)
+
+    implementation(libs.zxing.core)
+    implementation(libs.zxing.android.embedded)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

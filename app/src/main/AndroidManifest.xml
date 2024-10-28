@@ -70,5 +70,8 @@
         <activity android:name=".QrScanningActivity">
         </activity>
 
+        <activity android:name=".QRGenerationActivity">
+        </activity>
+
     </application>
 </manifest>
