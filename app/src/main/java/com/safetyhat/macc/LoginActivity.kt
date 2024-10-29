@@ -104,6 +104,7 @@ class LoginActivity : AppCompatActivity() {
                             val storedPasswordHash = jsonObject.getString("Password")
                             if (BCrypt.checkpw(password, storedPasswordHash)) {
                                 val intent = Intent(this@LoginActivity, QrScanningActivity::class.java)
+                                intent.putExtra("workerCF", cf)
                                 startActivity(intent)
                                 finish()
                                 //Toast.makeText(this@LoginActivity, "WORKER LOGGED IN", Toast.LENGTH_SHORT).show()

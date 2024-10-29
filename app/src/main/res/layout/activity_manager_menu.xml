@@ -1,92 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    android:background="#E0E0E0"
+    android:id="@+id/drawer_layout"
     >
 
-    <ImageView
-        android:id="@+id/Menu_icon"
-        android:layout_width="70dp"
-        android:layout_height="65dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:contentDescription="@string/menù"
-        android:foregroundGravity="top|left"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/menu_foreground" />
+    <!-- Contenuto principale dell'attività -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#E0E0E0">
 
-    <TextView
+        <ImageView
+            android:id="@+id/Menu_icon"
+            android:layout_width="72dp"
+            android:layout_height="67dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:contentDescription="@string/menù"
+            android:foregroundGravity="top|left"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/menu_foreground" />
+
+        <TextView
         android:id="@+id/sites_info_text"
         android:layout_width="280dp"
-        android:layout_height="70dp"
+        android:layout_height="100dp"
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
+        android:background="@drawable/rounded_background"
         android:drawablePadding="0dp"
         android:fontFamily="sans-serif-condensed"
         android:gravity="center_vertical"
         android:text="@string/site"
+        android:elevation="4dp"
         android:textColor="#2C2C2C"
         android:textSize="30sp"
         app:drawableStartCompat="@mipmap/bulldozer_foreground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/account_info_text"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/account_info_text" />
 
     <TextView
         android:id="@+id/account_info_text"
         android:layout_width="280dp"
-        android:layout_height="70dp"
+        android:layout_height="100dp"
         android:layout_gravity="center"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="160dp"
+        android:background="@drawable/rounded_background"
         android:drawablePadding="0dp"
-        android:gravity="center_vertical"
         android:fontFamily="sans-serif-condensed"
+        android:gravity="center_vertical"
+        android:elevation="4dp"
         android:text="@string/account"
         android:textColor="#2C2C2C"
         android:textSize="30sp"
         app:drawableLeftCompat="@mipmap/safety_vest_foreground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/create_site_text"
         android:layout_width="280dp"
-        android:layout_height="70dp"
+        android:layout_height="100dp"
         android:layout_marginTop="20dp"
+        android:background="@drawable/rounded_background"
         android:drawablePadding="0dp"
-        android:gravity="center_vertical"
-        android:text="@string/create_site"
         android:fontFamily="sans-serif-condensed"
+        android:gravity="center_vertical"
+        android:elevation="4dp"
+        android:text="@string/create_site"
         android:textColor="#2C2C2C"
         android:textSize="30sp"
         app:drawableLeftCompat="@mipmap/site_foreground"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sites_info_text"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/sites_info_text" />
 
     <Button
         android:id="@+id/logout_button"
         android:layout_width="280dp"
-        android:layout_height="60dp"
+        android:layout_height="70dp"
         android:layout_marginTop="50dp"
         android:backgroundTint="#2C2C2C"
+        android:elevation="4dp"
+        android:fontFamily="sans-serif-condensed"
+        android:background="@drawable/rounded_background"
         android:text="@string/logout"
         android:textAllCaps="false"
         android:textColor="@color/app_background"
-        android:fontFamily="sans-serif-condensed"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/create_site_text"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/create_site_text" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigation_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/navbar_menu"
+        app:itemTextAppearance="@style/NavMenuTextAppearance"
+        app:itemIconSize="100dp"
+    />
+
+</androidx.drawerlayout.widget.DrawerLayout>

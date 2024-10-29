@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
+
     <style name="CustomDatePickerDialog" parent="Theme.AppCompat.Light.Dialog">
-        <!-- Colore di sfondo per il dialog -->
-        <item name="colorAccent">#2C2C2C</item> <!-- Grigio -->
+        <item name="colorAccent">#2C2C2C</item>
         <item name="android:datePickerDialogTheme">@style/CustomDatePicker</item>
     </style>
 
@@ -12,4 +12,14 @@
         <item name="android:colorAccent">#F4511E</item>
         <item name="android:calendarTextColor">#2C2C2C</item>
     </style>
+
+    <style name="NavMenuTextAppearance" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="NavMenuIconSize">
+        <item name="android:minWidth">100dp</item>
+        <item name="android:minHeight">100dp</item>
+    </style>
+
 </resources>

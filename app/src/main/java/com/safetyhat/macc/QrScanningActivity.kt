@@ -45,6 +45,7 @@ class QrScanningActivity : AppCompatActivity() {
     private fun initializeScanner() {
         val scannerView = findViewById<CodeScannerView>(R.id.scanner_view)
         codeScanner = CodeScanner(this, scannerView)
+        val workerCF = intent.getStringExtra("workerCF")
 
         // Configurazione dei parametri CodeScanner
         codeScanner.camera = CodeScanner.CAMERA_BACK
@@ -57,12 +58,11 @@ class QrScanningActivity : AppCompatActivity() {
         // Callback per la scansione e gestione errori
         codeScanner.decodeCallback = DecodeCallback {
             runOnUiThread {
-                // Mostra il risultato della scansione in un Toast
-                Toast.makeText(this, "Scan result: ${it.text}", Toast.LENGTH_LONG).show()
                 // Chiudi la fotocamera
                 releaseScanner()
-                val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
+                val intent = Intent(this@QrScanningActivity, SiteinfofromqrActivity::class.java)
                 intent.putExtra("qr_scanned_text", it.text)
+                intent.putExtra("workerCF", workerCF)
                 startActivity(intent)
                 finish()
             }
