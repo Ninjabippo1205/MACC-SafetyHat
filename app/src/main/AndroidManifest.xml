@@ -70,6 +70,9 @@
         <activity android:name=".QrScanningActivity">
         </activity>
 
+        <activity android:name=".SiteinfofromqrActivity">
+        </activity>
+          
         <activity android:name=".QRGenerationActivity">
         </activity>
 

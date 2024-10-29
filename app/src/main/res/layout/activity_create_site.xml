@@ -70,8 +70,8 @@
             android:id="@+id/form_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#FFFFFF"
             android:orientation="vertical"
+            android:background="@drawable/rounded_background"
             android:padding="16dp">
 
             <!-- Start Date -->
@@ -181,6 +181,27 @@
                 android:inputType="number"
                 android:minHeight="48dp" />
 
+            <!-- Address -->
+            <TextView
+                android:id="@+id/address_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/address"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/address_field"
+                android:layout_width="345dp"
+                android:layout_height="wrap_content"
+                android:autofillHints="address"
+                android:fontFamily="sans-serif-condensed"
+                android:hint="@string/insert_address"
+                android:inputType="textPostalAddress"
+                android:minHeight="48dp" />
+
             <!-- Site Radius -->
             <TextView
                 android:id="@+id/site_radius_label"
@@ -238,6 +259,8 @@
             android:fontFamily="sans-serif-condensed"
             android:text="@string/generate"
             android:textAllCaps="false"
+            android:textSize="20sp"
+            android:background="@drawable/rounded_background"
             android:textColor="@color/white" />
     </LinearLayout>
 
@@ -252,6 +275,8 @@
         android:backgroundTint="#2C2C2C"
         android:fontFamily="sans-serif-condensed"
         android:text="@string/create_site_generate_qr"
+        android:background="@drawable/rounded_background"
+        android:textSize="24sp"
         android:textAllCaps="false"
         android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
