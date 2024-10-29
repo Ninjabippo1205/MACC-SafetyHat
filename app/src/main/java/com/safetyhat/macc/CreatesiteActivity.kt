@@ -1,12 +1,17 @@
 package com.safetyhat.macc
 
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
+import com.google.android.libraries.places.api.net.PlacesClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,18 +21,25 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.Locale
-import android.app.DatePickerDialog
-import java.util.Calendar
-import android.widget.ImageView
+import java.util.*
 import java.util.regex.Pattern
 
 class CreatesiteActivity : AppCompatActivity() {
     private val client = OkHttpClient()
+    private lateinit var placesClient: PlacesClient
+    private var isAddressSelected = false
+    private val placeholderText = "@string/address_hint"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_site)
+
+        if (!Places.isInitialized()) {
+            Places.initialize(applicationContext, getString(R.string.google_maps_key))
+        }
+        placesClient = Places.createClient(this)
+
+        setupAutocomplete()
 
         val managerCF = intent.getStringExtra("managerCF").toString()
 
@@ -50,7 +62,7 @@ class CreatesiteActivity : AppCompatActivity() {
 
         val maxWorkersField = findViewById<EditText>(R.id.max_workers_field)
         val scaffoldingField = findViewById<EditText>(R.id.scaffolding_field)
-        val addressField = findViewById<EditText>(R.id.address_field)
+        val addressField = findViewById<AutoCompleteTextView>(R.id.address_field)
         val siteRadiusField = findViewById<EditText>(R.id.site_radius_field)
         val securityCodeField = findViewById<EditText>(R.id.security_code_field)
 
@@ -60,7 +72,6 @@ class CreatesiteActivity : AppCompatActivity() {
         }
 
         val submitButton = findViewById<Button>(R.id.create_site_button)
-
         submitButton.setOnClickListener {
             val startDate = startDateField.text.toString()
             val endDate = endDateField.text.toString()
@@ -69,10 +80,80 @@ class CreatesiteActivity : AppCompatActivity() {
             val address = addressField.text.toString()
             val siteRadius = siteRadiusField.text.toString()
             val securityCode = securityCodeField.text.toString()
-            if (isInputValid(startDate, endDate, maxWorkers, scaffolding, address, siteRadius, securityCode)) {
-                registerSite(startDate, endDate, maxWorkers, scaffolding, address, siteRadius, securityCode, managerCF)
+
+            if (isAddressSelected && address != placeholderText) {
+                if (containsStreetNumber(address)) {
+                    if (isInputValid(startDate, endDate, maxWorkers, scaffolding, address, siteRadius, securityCode)) {
+                        registerSite(startDate, endDate, maxWorkers, scaffolding, address, siteRadius, securityCode, managerCF)
+                    }
+                } else {
+                    Toast.makeText(this, "Please include a street number in the address.", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Toast.makeText(this, "Please select a valid address from the suggestions.", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun setupAutocomplete() {
+        val addressInput = findViewById<AutoCompleteTextView>(R.id.address_field)
+        val token = AutocompleteSessionToken.newInstance()
+
+        // Inizializza il TextWatcher per il completamento automatico
+        val textWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (!isAddressSelected) {
+                    val request = FindAutocompletePredictionsRequest.builder()
+                        .setSessionToken(token)
+                        .setQuery(s.toString())
+                        .build()
+
+                    placesClient.findAutocompletePredictions(request)
+                        .addOnSuccessListener { response ->
+                            val suggestions = response.autocompletePredictions.map { prediction ->
+                                prediction.getFullText(null).toString()
+                            }
+                            val adapter = ArrayAdapter(this@CreatesiteActivity, android.R.layout.simple_list_item_1, suggestions)
+                            addressInput.setAdapter(adapter)
+                            addressInput.showDropDown()
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.e("CreatesiteActivity", "Error getting autocomplete predictions: $exception")
+                        }
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        }
+
+        // Aggiungi il TextWatcher all'indirizzo input
+        addressInput.addTextChangedListener(textWatcher)
+
+        // Gestisci il click sul suggerimento
+        addressInput.setOnItemClickListener { parent, _, position, _ ->
+            val selectedAddress = parent?.getItemAtPosition(position) as? String
+            if (selectedAddress != null) {
+                // Rimuovi temporaneamente il TextWatcher per evitare che i suggerimenti riappaiano
+                addressInput.removeTextChangedListener(textWatcher)
+
+                // Imposta il testo selezionato e nascondi il menu dei suggerimenti
+                addressInput.setText(selectedAddress)
+                isAddressSelected = true
+                addressInput.dismissDropDown()
+
+                // Riattiva il TextWatcher quando l'utente modifica il testo
+                addressInput.post {
+                    addressInput.addTextChangedListener(textWatcher)
+                }
+            }
+        }
+    }
+
+    private fun containsStreetNumber(address: String): Boolean {
+        val pattern = Regex("\\b\\d{1,4}\\b(?!\\s?\\d{5})")
+        return pattern.containsMatchIn(address)
     }
 
     private fun generateSecurityCode() {
@@ -86,7 +167,6 @@ class CreatesiteActivity : AppCompatActivity() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                // Gestisce l'errore se la richiesta fallisce
                 runOnUiThread {
                     Toast.makeText(applicationContext, "Unable to generate security code", Toast.LENGTH_SHORT).show()
                 }
@@ -97,7 +177,6 @@ class CreatesiteActivity : AppCompatActivity() {
                     val json = JSONObject(it)
                     val securityCode = json.getString("security_code")
 
-                    // Aggiorna il campo di testo con id "securityCodeField"
                     runOnUiThread {
                         securityCodeField.setText(securityCode)
                     }
@@ -141,14 +220,12 @@ class CreatesiteActivity : AppCompatActivity() {
             return false
         }
 
-        // Pattern per un indirizzo che accetta lettere, numeri, spazi e massimo 100 caratteri
-        val addressPattern = "^[a-zA-Z0-9\\s]{1,100}$"
-        if (!Pattern.matches(addressPattern, address)) {
-            Toast.makeText(this, "Address should contain only letters, numbers, and spaces (max 100 characters)", Toast.LENGTH_SHORT).show()
+        // Verifica che l'indirizzo sia lungo al massimo 100 caratteri
+        if (address.length > 500) {
+            Toast.makeText(this, "Address should be at most 100 characters long", Toast.LENGTH_SHORT).show()
             return false
         }
 
-        // Pattern numerico per min. 1 cifra
         val numericPattern = "^\\d{1,}$"
         if (!Pattern.matches(numericPattern, maxWorkers)) {
             Toast.makeText(this, "Number of workers should contain only numbers with at least 1 digit", Toast.LENGTH_SHORT).show()
@@ -163,7 +240,6 @@ class CreatesiteActivity : AppCompatActivity() {
             return false
         }
 
-        // Pattern per la data nel formato dd/mm/yyyy
         val datePattern = "^\\d{2}/\\d{2}/\\d{4}$"
         if (!Pattern.matches(datePattern, startDate)) {
             Toast.makeText(this, "Invalid start date format (use dd/mm/yyyy)", Toast.LENGTH_SHORT).show()
@@ -174,7 +250,6 @@ class CreatesiteActivity : AppCompatActivity() {
             return false
         }
 
-        // Controllo che la data di inizio sia precedente alla data di fine
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val start = dateFormat.parse(startDate)
         val end = dateFormat.parse(endDate)
@@ -185,7 +260,6 @@ class CreatesiteActivity : AppCompatActivity() {
 
         return true
     }
-
 
     private fun registerSite(
         startdate: String,
@@ -247,7 +321,15 @@ class CreatesiteActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             Toast.makeText(this@CreatesiteActivity, "Site created successfully!", Toast.LENGTH_SHORT).show()
 
-                            val intent = Intent(this@CreatesiteActivity, CreatesiteActivity::class.java)
+                            val intent = Intent(this@CreatesiteActivity, QRGenerationActivity::class.java)
+                            intent.putExtra("StartDate", formattedStartDate)
+                            intent.putExtra("EstimatedEndDate", formattedEndDate)
+                            intent.putExtra("TotalWorkers", maxWorkers)
+                            intent.putExtra("ScaffoldingCount", scaffolding)
+                            intent.putExtra("Address", address)
+                            intent.putExtra("SiteRadius", siteRadius)
+                            intent.putExtra("SecurityCode", securityCode)
+                            intent.putExtra("ManagerCF", managerCF)
                             startActivity(intent)
                             finish()
                         } else {
@@ -256,8 +338,6 @@ class CreatesiteActivity : AppCompatActivity() {
                         }
                     }
                 }
-
-
             })
         }
     }

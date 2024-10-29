@@ -52,6 +52,7 @@
     <string name="generate">Generate</string>
     <string name="create_site_generate_qr">Create Site and Generate QR</string>
     <string name="scaffolding">Scaffolding</string>"
+    <string name="qr_code_frame_description">QR code frame where generated QR code will be inserted</string>
     <string name="address">Address</string>
     <string name="security_code">Security Code</string>
     <string name="max_workers">Max Workers</string>
@@ -62,5 +63,7 @@
     <string name="insert_sc">Security Code</string>
     <string name="hint_sc"> Type Security Code</string>
     <string name="verify_sc">Verify Security Code</string>
+    <string name="download_qr_button">Download QR Code</string>
+    <string name="address_hint">"Street Name, Number, City, Region, Country"</string>
 
 </resources>

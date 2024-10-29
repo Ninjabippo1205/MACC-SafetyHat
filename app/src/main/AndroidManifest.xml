@@ -72,6 +72,12 @@
 
         <activity android:name=".SiteinfofromqrActivity">
         </activity>
+          
+        <activity android:name=".QRGenerationActivity">
+        </activity>
+
+        <activity android:name=".SitesOverviewActivity">
+        </activity>
 
     </application>
 </manifest>
