@@ -12,9 +12,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.*
 import org.json.JSONObject
+import java.io.IOException
 
 class QRGenerationActivity : AppCompatActivity() {
+    private val client = OkHttpClient()
+    private lateinit var qrBitmap: Bitmap
+    private var siteID: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_generation)
@@ -28,20 +37,34 @@ class QRGenerationActivity : AppCompatActivity() {
         val securityCode = intent.getStringExtra("SecurityCode")
         val managerCF = intent.getStringExtra("ManagerCF")
 
-        val jsonInfo = JSONObject().apply {
-            put("StartDate", startDate)
-            put("EstimatedEndDate", estimatedEndDate)
-            put("TotalWorkers", totalWorkers)
-            put("ScaffoldingCount", scaffoldingCount)
-            put("Address", address)
-            put("SiteRadius", siteRadius)
-            put("SecurityCode", securityCode)
-            put("ManagerCF", managerCF)
+        // Ottieni l'ID del sito dal server
+        getSiteID(securityCode) { siteID ->
+            if (siteID != null) {
+                this.siteID = siteID
+                // Genera il QR code dopo aver ottenuto l'ID del sito
+                /*
+                val jsonInfo = JSONObject().apply {
+                    put("StartDate", startDate)
+                    put("EstimatedEndDate", estimatedEndDate)
+                    put("TotalWorkers", totalWorkers)
+                    put("ScaffoldingCount", scaffoldingCount)
+                    put("Address", address)
+                    put("SiteRadius", siteRadius)
+                    put("SecurityCode", securityCode)
+                    put("ManagerCF", managerCF)
+                    put("SiteID", siteID) // Aggiungi l'ID del sito
+                }
+                */
+                val jsonInfo = JSONObject().apply {
+                    put("SiteID", siteID) // Aggiungi l'ID del sito
+                }
+                val qrCodeImageView = findViewById<ImageView>(R.id.qr_code_frame)
+                qrBitmap = generateQRCode(jsonInfo.toString())
+                qrCodeImageView.setImageBitmap(qrBitmap)
+            } else {
+                Toast.makeText(this, "Failed to retrieve site ID", Toast.LENGTH_SHORT).show()
+            }
         }
-
-        val qrCodeImageView = findViewById<ImageView>(R.id.qr_code_frame)
-        val qrBitmap = generateQRCode(jsonInfo.toString())
-        qrCodeImageView.setImageBitmap(qrBitmap)
 
         val downloadButton = findViewById<Button>(R.id.download_qr_button)
         downloadButton.setOnClickListener {
@@ -53,6 +76,40 @@ class QRGenerationActivity : AppCompatActivity() {
             val intent = Intent(this, ManagermenuActivity::class.java)
             intent.putExtra("managerCF", managerCF)
             startActivity(intent)
+        }
+    }
+
+    private fun getSiteID(securityCode: String?, callback: (String?) -> Unit) {
+        val url = "https://noemigiustini01.pythonanywhere.com/site/read_id_by_securitycode?SecurityCode=$securityCode"
+        val request = Request.Builder()
+            .url(url)
+            .build()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    runOnUiThread {
+                        callback(null)
+                        Toast.makeText(this@QRGenerationActivity, "Failed to fetch site ID", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (response.isSuccessful) {
+                        val responseBody = response.body?.string()
+                        val jsonResponse = JSONObject(responseBody ?: "{}")
+                        val siteID = jsonResponse.optString("id", null)
+                        runOnUiThread {
+                            callback(siteID)
+                        }
+                    } else {
+                        runOnUiThread {
+                            callback(null)
+                            Toast.makeText(this@QRGenerationActivity, "Failed to fetch site ID", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            })
         }
     }
 

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- ID -->
+        <TextView
+            android:id="@+id/siteID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ID"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Address -->
+        <TextView
+            android:id="@+id/siteAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Address"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Radius -->
+        <TextView
+            android:id="@+id/siteRadius"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Radius"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Total Workers -->
+        <TextView
+            android:id="@+id/totalWorkers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Total Workers"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Scaffolding Count -->
+        <TextView
+            android:id="@+id/scaffoldingCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Scaffolding Count"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Start Date -->
+        <TextView
+            android:id="@+id/startDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Start Date"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- End Date -->
+        <TextView
+            android:id="@+id/estimatedEndDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="End Date"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Security Code -->
+        <TextView
+            android:id="@+id/securityCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Security Code"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Bottoni -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <!-- Bottone View Details -->
+            <Button
+                android:id="@+id/viewDetailsButton"
+                android:layout_width="0dp"
+                android:layout_height="63dp"
+                android:layout_weight="1"
+                android:text="View Details" />
+
+            <!-- Bottone QR -->
+            <Button
+                android:id="@+id/qrButton"
+                android:layout_width="0dp"
+                android:layout_height="63dp"
+                android:layout_weight="1"
+                android:text="QR" />
+
+            <!-- Bottone Delete -->
+            <ImageButton
+                android:id="@+id/binButton"
+                android:layout_width="52dp"
+                android:layout_height="63dp"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackground"
+                android:contentDescription="Delete"
+                android:src="@mipmap/red_bin_foreground" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

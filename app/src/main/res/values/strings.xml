@@ -59,5 +59,6 @@
     <string name="site_icon_description">site icon description</string>
     <string name="back">Back</string>
     <string name="download_qr_button">Download QR Code</string>
+    <string name="address_hint">"Street Name, Number, City, Region, Country"</string>
 
 </resources>
