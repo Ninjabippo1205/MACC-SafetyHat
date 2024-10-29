@@ -13,7 +13,19 @@
         android:layout_height="match_parent"
         android:background="#E0E0E0">
 
-    <TextView
+        <ImageView
+            android:id="@+id/Menu_icon"
+            android:layout_width="72dp"
+            android:layout_height="67dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:contentDescription="@string/menù"
+            android:foregroundGravity="top|left"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/menu_foreground" />
+
+        <TextView
         android:id="@+id/sites_info_text"
         android:layout_width="280dp"
         android:layout_height="100dp"
@@ -85,19 +97,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/create_site_text" />
-
-        <Button
-            android:id="@+id/logout_button"
-            android:layout_width="280dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="50dp"
-            android:backgroundTint="#2C2C2C"
-            android:text="@string/logout"
-            android:textColor="@color/app_background"
-            android:textSize="30sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/create_site_text" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

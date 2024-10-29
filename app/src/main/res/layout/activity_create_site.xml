@@ -181,27 +181,6 @@
                 android:inputType="number"
                 android:minHeight="48dp" />
 
-            <!-- Address -->
-            <TextView
-                android:id="@+id/address_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:fontFamily="sans-serif-condensed"
-                android:text="@string/address"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-
-            <EditText
-                android:id="@+id/address_field"
-                android:layout_width="345dp"
-                android:layout_height="wrap_content"
-                android:autofillHints="address"
-                android:fontFamily="sans-serif-condensed"
-                android:hint="@string/insert_address"
-                android:inputType="textPostalAddress"
-                android:minHeight="48dp" />
-
             <!-- Site Radius -->
             <TextView
                 android:id="@+id/site_radius_label"

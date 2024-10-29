@@ -22,7 +22,7 @@ import java.io.IOException
 class QRGenerationActivity : AppCompatActivity() {
     private val client = OkHttpClient()
     private lateinit var qrBitmap: Bitmap
-    private var siteID: String? = null
+    private var ID: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,9 +38,9 @@ class QRGenerationActivity : AppCompatActivity() {
         val managerCF = intent.getStringExtra("ManagerCF")
 
         // Ottieni l'ID del sito dal server
-        getSiteID(securityCode) { siteID ->
-            if (siteID != null) {
-                this.siteID = siteID
+        getID(securityCode) { ID ->
+            if (ID != null) {
+                this.ID = ID
                 // Genera il QR code dopo aver ottenuto l'ID del sito
                 /*
                 val jsonInfo = JSONObject().apply {
@@ -52,11 +52,11 @@ class QRGenerationActivity : AppCompatActivity() {
                     put("SiteRadius", siteRadius)
                     put("SecurityCode", securityCode)
                     put("ManagerCF", managerCF)
-                    put("SiteID", siteID) // Aggiungi l'ID del sito
+                    put("ID", ID) // Aggiungi l'ID del sito
                 }
                 */
                 val jsonInfo = JSONObject().apply {
-                    put("SiteID", siteID) // Aggiungi l'ID del sito
+                    put("ID", ID.toInt())
                 }
                 val qrCodeImageView = findViewById<ImageView>(R.id.qr_code_frame)
                 qrBitmap = generateQRCode(jsonInfo.toString())
@@ -79,7 +79,7 @@ class QRGenerationActivity : AppCompatActivity() {
         }
     }
 
-    private fun getSiteID(securityCode: String?, callback: (String?) -> Unit) {
+    private fun getID(securityCode: String?, callback: (String?) -> Unit) {
         val url = "https://noemigiustini01.pythonanywhere.com/site/read_id_by_securitycode?SecurityCode=$securityCode"
         val request = Request.Builder()
             .url(url)
@@ -98,9 +98,9 @@ class QRGenerationActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         val responseBody = response.body?.string()
                         val jsonResponse = JSONObject(responseBody ?: "{}")
-                        val siteID = jsonResponse.optString("id", null)
+                        val ID = jsonResponse.optString("id", null)
                         runOnUiThread {
-                            callback(siteID)
+                            callback(ID)
                         }
                     } else {
                         runOnUiThread {
