@@ -71,7 +71,7 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val changePasswordButton = findViewById<Button>(R.id.change_password_button)
         changePasswordButton.setOnClickListener {
-            val newPassword = findViewById<EditText>(R.id.new_password_field).text.toString()
+            val newPassword = findViewById<EditText>(R.id.new_password_worker_field).text.toString()
             if (newPassword.isNotEmpty()) {
                 val passwordPattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#\$%^&+=!]).{8,}$"
                 if (!Pattern.matches(passwordPattern, newPassword)) {
@@ -114,7 +114,7 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                 runOnUiThread {
                     if (response.isSuccessful) {
                         Toast.makeText(this@WorkerinfoActivity, "Password updated successfully", Toast.LENGTH_SHORT).show()
-                        findViewById<EditText>(R.id.new_password_field).text.clear()
+                        findViewById<EditText>(R.id.new_password_worker_field).text.clear()
                     } else {
                         Toast.makeText(this@WorkerinfoActivity, "Failed to update password", Toast.LENGTH_SHORT).show()
                     }
@@ -145,7 +145,7 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                         val cf = jsonObject.optString("CF", "N/A")
                         val birthday = jsonObject.optString("BirthDate", "N/A")
                         val formattedBirthDate = birthday.split(" ")[1] + " " + birthday.split(" ")[2] + " " + birthday.split(" ")[3]
-                        val phoneNumber = jsonObject.optString("Telephone", "N/A")
+                        val phoneNumber = jsonObject.optString("PhoneNumber", "N/A")
 
                         findViewById<TextView>(R.id.first_name_worker_text).text = firstName
                         findViewById<TextView>(R.id.last_name_worker_text).text = lastName
