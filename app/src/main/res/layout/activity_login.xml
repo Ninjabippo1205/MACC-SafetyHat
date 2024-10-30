@@ -94,7 +94,8 @@
             android:autofillHints="username"
             android:hint="@string/cf_hint"
             android:inputType="text"
-            android:text="SMTHJN90D50A001K" />
+            android:text="frnlfs71e08h501k"
+            />
 
         <TextView
             android:layout_width="match_parent"
@@ -111,7 +112,9 @@
             android:autofillHints="password"
             android:hint="@string/password_hint"
             android:inputType="textPassword"
-            android:text="Ci@o2001" />
+            android:text="BimbeDiFr@nco71"
+        />
+
 
         <Button
             android:id="@+id/loginButton"

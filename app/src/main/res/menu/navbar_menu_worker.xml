@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home_worker"
+        android:icon="@mipmap/safety_hat_big_foreground"
+        android:title="@string/home" />
+    <item
+        android:id="@+id/nav_account_info_worker"
+        android:icon="@mipmap/head_foreground"
+        android:title="@string/account" />
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/logout_foreground"
+        android:title="@string/logout" />
+</menu>
