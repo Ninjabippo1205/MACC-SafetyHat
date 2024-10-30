@@ -12,7 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+    >
 
         <!-- ID -->
         <TextView
@@ -21,7 +22,8 @@
             android:layout_height="wrap_content"
             android:text="ID"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+        />
 
         <!-- Address -->
         <TextView
@@ -31,7 +33,8 @@
             android:layout_marginTop="8dp"
             android:text="Address"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+        />
 
         <!-- Radius -->
         <TextView
@@ -41,7 +44,8 @@
             android:layout_marginTop="8dp"
             android:text="Radius"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+        />
 
         <!-- Total Workers -->
         <TextView
@@ -51,7 +55,8 @@
             android:layout_marginTop="8dp"
             android:text="Total Workers"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+        />
 
         <!-- Scaffolding Count -->
         <TextView
@@ -61,7 +66,8 @@
             android:layout_marginTop="8dp"
             android:text="Scaffolding Count"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+        />
 
         <!-- Start Date -->
         <TextView
@@ -71,7 +77,8 @@
             android:layout_marginTop="8dp"
             android:text="Start Date"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+        />
 
         <!-- End Date -->
         <TextView
@@ -81,7 +88,8 @@
             android:layout_marginTop="8dp"
             android:text="End Date"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+        />
 
         <!-- Security Code -->
         <TextView
@@ -91,7 +99,8 @@
             android:layout_marginTop="8dp"
             android:text="Security Code"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+        />
 
         <!-- Bottoni -->
         <LinearLayout
@@ -99,33 +108,37 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:orientation="horizontal">
-
-            <!-- Bottone View Details -->
-            <Button
-                android:id="@+id/viewDetailsButton"
-                android:layout_width="0dp"
-                android:layout_height="63dp"
-                android:layout_weight="1"
-                android:text="View Details" />
+            android:orientation="horizontal"
+        >
 
             <!-- Bottone QR -->
             <Button
                 android:id="@+id/qrButton"
-                android:layout_width="0dp"
-                android:layout_height="63dp"
+                android:layout_width="284dp"
+                android:layout_height="55dp"
+                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
-                android:text="QR" />
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="#2C2C2C"
+                android:elevation="4dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/see_qr_button"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+            />
 
             <!-- Bottone Delete -->
             <ImageButton
                 android:id="@+id/binButton"
-                android:layout_width="52dp"
-                android:layout_height="63dp"
+                android:layout_width="80dp"
+                android:layout_height="65dp"
                 android:layout_gravity="center"
+                android:layout_marginBottom="3dp"
                 android:background="?attr/selectableItemBackground"
                 android:contentDescription="Delete"
-                android:src="@mipmap/red_bin_foreground" />
+                android:src="@mipmap/red_bin_foreground"
+            />
         </LinearLayout>
     </LinearLayout>
 

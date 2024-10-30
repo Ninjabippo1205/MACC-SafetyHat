@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -318,20 +319,23 @@ class CreatesiteActivity : AppCompatActivity() {
                 override fun onResponse(call: Call, response: Response) {
                     runOnUiThread {
                         val responseBody = response.body?.string()
-                        if (response.isSuccessful) {
-                            Toast.makeText(this@CreatesiteActivity, "Site created successfully!", Toast.LENGTH_SHORT).show()
+                        if (response.isSuccessful && responseBody != null) {
+                            try {
+                                // Parse JSON response to get the site_id
+                                val jsonResponse = JSONObject(responseBody)
+                                val siteId = jsonResponse.getInt("site_id")
 
-                            val intent = Intent(this@CreatesiteActivity, QRGenerationActivity::class.java)
-                            intent.putExtra("StartDate", formattedStartDate)
-                            intent.putExtra("EstimatedEndDate", formattedEndDate)
-                            intent.putExtra("TotalWorkers", maxWorkers)
-                            intent.putExtra("ScaffoldingCount", scaffolding)
-                            intent.putExtra("Address", address)
-                            intent.putExtra("SiteRadius", siteRadius)
-                            intent.putExtra("SecurityCode", securityCode)
-                            intent.putExtra("ManagerCF", managerCF)
-                            startActivity(intent)
-                            finish()
+                                Toast.makeText(this@CreatesiteActivity, "Site created successfully!", Toast.LENGTH_SHORT).show()
+
+                                val intent = Intent(this@CreatesiteActivity, QRGenerationActivity::class.java)
+                                intent.putExtra("ManagerCF", managerCF)
+                                intent.putExtra("SiteID", siteId.toString())
+                                startActivity(intent)
+                                finish()
+                            } catch (e: JSONException) {
+                                Toast.makeText(this@CreatesiteActivity, "Failed to parse response", Toast.LENGTH_LONG).show()
+                                Log.e("ResponseParsingError", "Error parsing site_id from response", e)
+                            }
                         } else {
                             val errorMessage = responseBody ?: "Unknown error"
                             Toast.makeText(this@CreatesiteActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
@@ -340,5 +344,6 @@ class CreatesiteActivity : AppCompatActivity() {
                 }
             })
         }
+
     }
 }

@@ -1,5 +1,7 @@
 package com.safetyhat.macc
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
@@ -43,10 +45,12 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
         // Configura la RecyclerView
         sitesRecyclerView = findViewById(R.id.sitesRecyclerView)
         sitesRecyclerView.layoutManager = LinearLayoutManager(this)
-        sitesAdapter = SitesAdapter(sitesList)
-        sitesRecyclerView.adapter = sitesAdapter
 
         val managerCF = intent.getStringExtra("managerCF").toString()
+
+        sitesAdapter = SitesAdapter(sitesList, managerCF)
+        sitesRecyclerView.adapter = sitesAdapter
+
 
         // Imposta il LinearSnapHelper per centrare l'elemento
         val snapHelper = LinearSnapHelper()
@@ -102,6 +106,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             val jsonArray = JSONArray(json)
             for (i in 0 until jsonArray.length()) {
                 val jsonObject = jsonArray.getJSONObject(i)
+                val id = jsonObject.getInt("ID")  // Assumi che l'ID sia un campo restituito dall'API
                 val address = jsonObject.getString("Address")
                 val siteRadius = jsonObject.getDouble("SiteRadius")
                 val totalWorkers = jsonObject.optInt("TotalWorkers", 0)
@@ -110,8 +115,8 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                 val estimatedEndDate = jsonObject.optString("EstimatedEndDate", "")
                 val securityCode = jsonObject.optString("SecurityCode", "")
 
-                // Passa tutti i valori a geocodeAddress
-                geocodeAddress(address, siteRadius, totalWorkers, scaffoldingCount, startDate, estimatedEndDate, securityCode)
+                // Aggiungi il sito usando il vero ID
+                geocodeAddress(id, address, siteRadius, totalWorkers, scaffoldingCount, startDate, estimatedEndDate, securityCode)
             }
         } catch (e: JSONException) {
             runOnUiThread {
@@ -120,7 +125,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun geocodeAddress(address: String, siteRadius: Double, totalWorkers: Int, scaffoldingCount: Int, startDate: String, estimatedEndDate: String, securityCode: String) {
+    private fun geocodeAddress(id: Int, address: String, siteRadius: Double, totalWorkers: Int, scaffoldingCount: Int, startDate: String, estimatedEndDate: String, securityCode: String) {
         val geocodeUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${getString(R.string.google_maps_key)}"
         val request = Request.Builder().url(geocodeUrl).build()
 
@@ -136,53 +141,39 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                     try {
                         val jsonObject = JSONObject(responseBody)
                         val results = jsonObject.getJSONArray("results")
+                        val lat: Double
+                        val lng: Double
+
                         if (results.length() > 0) {
                             val location = results.getJSONObject(0)
                                 .getJSONObject("geometry")
                                 .getJSONObject("location")
-                            val lat = location.getDouble("lat")
-                            val lng = location.getDouble("lng")
-
-                            val site = Site(
-                                id = sitesList.size + 1,
-                                address = address,
-                                siteRadius = siteRadius,
-                                lat = lat,
-                                lng = lng,
-                                isValidLocation = true,
-                                totalWorkers = totalWorkers,
-                                scaffoldingCount = scaffoldingCount,
-                                startDate = startDate,
-                                estimatedEndDate = estimatedEndDate,
-                                securityCode = securityCode
-                            )
-                            sitesList.add(site)
-
-                            runOnUiThread {
-                                sitesAdapter.notifyDataSetChanged()
-                                if (isMapInitialized) {
-                                    addMarkersToMap()
-                                }
-                            }
+                            lat = location.getDouble("lat")
+                            lng = location.getDouble("lng")
                         } else {
-                            val site = Site(
-                                id = sitesList.size + 1,
-                                address = address,
-                                siteRadius = siteRadius,
-                                lat = 0.0,
-                                lng = 0.0,
-                                isValidLocation = false,
-                                totalWorkers = totalWorkers,
-                                scaffoldingCount = scaffoldingCount,
-                                startDate = startDate,
-                                estimatedEndDate = estimatedEndDate,
-                                securityCode = securityCode
-                            )
-                            sitesList.add(site)
+                            lat = 0.0
+                            lng = 0.0
+                        }
 
-                            runOnUiThread {
-                                sitesAdapter.notifyDataSetChanged()
-                                Toast.makeText(this@SitesOverviewActivity, "Address not found: $address", Toast.LENGTH_SHORT).show()
+                        val site = Site(
+                            id = id,  // Usa l'ID reale
+                            address = address,
+                            siteRadius = siteRadius,
+                            lat = lat,
+                            lng = lng,
+                            isValidLocation = results.length() > 0,
+                            totalWorkers = totalWorkers,
+                            scaffoldingCount = scaffoldingCount,
+                            startDate = startDate,
+                            estimatedEndDate = estimatedEndDate,
+                            securityCode = securityCode
+                        )
+                        sitesList.add(site)
+
+                        runOnUiThread {
+                            sitesAdapter.notifyDataSetChanged()
+                            if (isMapInitialized) {
+                                addMarkersToMap()
                             }
                         }
                     } catch (e: JSONException) {
@@ -194,6 +185,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
     }
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
@@ -251,7 +243,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
         val securityCode: String
     )
 
-    inner class SitesAdapter(private val sites: List<Site>) :
+    inner class SitesAdapter(private val sites: List<Site>, private val managerCF: String) :
         RecyclerView.Adapter<SitesAdapter.SiteViewHolder>() {
 
         inner class SiteViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -263,7 +255,6 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             val startDate: TextView = view.findViewById(R.id.startDate)
             val estimatedEndDate: TextView = view.findViewById(R.id.estimatedEndDate)
             val securityCode: TextView = view.findViewById(R.id.securityCode)
-            val viewDetailsButton: Button = view.findViewById(R.id.viewDetailsButton)
             val qrButton: Button = view.findViewById(R.id.qrButton)
             val binButton: ImageButton = view.findViewById(R.id.binButton)
 
@@ -349,19 +340,50 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             holder.estimatedEndDate.text = "Estimated End Date: ${site.estimatedEndDate}"
             holder.securityCode.text = "Security Code: ${site.securityCode}"
 
-            holder.viewDetailsButton.setOnClickListener {
-                Toast.makeText(holder.itemView.context, "Viewing details for site: ${site.id}", Toast.LENGTH_SHORT).show()
-            }
-
             holder.qrButton.setOnClickListener {
-                Toast.makeText(holder.itemView.context, "Generating QR for site: ${site.id}", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this@SitesOverviewActivity, QRGenerationActivity::class.java)
+                intent.putExtra("ManagerCF", managerCF)
+                intent.putExtra("SiteID", site.id.toString())
+                startActivity(intent)
+                finish()
             }
 
             holder.binButton.setOnClickListener {
-                Toast.makeText(holder.itemView.context, "Deleting site: ${site.id}", Toast.LENGTH_SHORT).show()
+                val context = holder.itemView.context
+                Toast.makeText(context, "Deleting site: ${site.id}", Toast.LENGTH_SHORT).show()
+
+                val url = "https://noemigiustini01.pythonanywhere.com/site/delete/${site.id}"
+                val request = Request.Builder()
+                    .url(url)
+                    .delete()
+                    .build()
+
+                client.newCall(request).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        (context as? Activity)?.runOnUiThread {
+                            Toast.makeText(context, "Failed to delete site: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        (context as? Activity)?.runOnUiThread {
+                            if (response.isSuccessful) {
+                                Toast.makeText(context, "Site deleted successfully", Toast.LENGTH_SHORT).show()
+
+                                // Rimuovi il sito dalla lista e aggiorna la RecyclerView
+                                val position = holder.adapterPosition
+                                sitesList.removeAt(position) // Rimuovi il sito dalla lista
+                                notifyItemRemoved(position) // Notifica l'eliminazione dell'elemento
+                                notifyItemRangeChanged(position, sitesList.size) // Aggiorna l'intervallo di elementi
+                            } else {
+                                val errorMessage = response.body?.string() ?: "Unknown error"
+                                Toast.makeText(context, "Failed to delete site: $errorMessage", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                })
             }
         }
-
         override fun getItemCount() = sites.size
     }
 }
