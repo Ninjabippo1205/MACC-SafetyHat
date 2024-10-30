@@ -28,47 +28,23 @@ class QRGenerationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_qr_generation)
 
-        val startDate = intent.getStringExtra("StartDate")
-        val estimatedEndDate = intent.getStringExtra("EstimatedEndDate")
-        val totalWorkers = intent.getStringExtra("TotalWorkers")
-        val scaffoldingCount = intent.getStringExtra("ScaffoldingCount")
-        val address = intent.getStringExtra("Address")
-        val siteRadius = intent.getStringExtra("SiteRadius")
-        val securityCode = intent.getStringExtra("SecurityCode")
+        val siteID = intent.getStringExtra("SiteID")
         val managerCF = intent.getStringExtra("ManagerCF")
 
-        // Ottieni l'ID del sito dal server
-        getID(securityCode) { ID ->
-            if (ID != null) {
-                this.ID = ID
-                // Genera il QR code dopo aver ottenuto l'ID del sito
-                /*
-                val jsonInfo = JSONObject().apply {
-                    put("StartDate", startDate)
-                    put("EstimatedEndDate", estimatedEndDate)
-                    put("TotalWorkers", totalWorkers)
-                    put("ScaffoldingCount", scaffoldingCount)
-                    put("Address", address)
-                    put("SiteRadius", siteRadius)
-                    put("SecurityCode", securityCode)
-                    put("ManagerCF", managerCF)
-                    put("ID", ID) // Aggiungi l'ID del sito
-                }
-                */
-                val jsonInfo = JSONObject().apply {
-                    put("ID", ID.toInt())
-                }
-                val qrCodeImageView = findViewById<ImageView>(R.id.qr_code_frame)
-                qrBitmap = generateQRCode(jsonInfo.toString())
-                qrCodeImageView.setImageBitmap(qrBitmap)
-            } else {
-                Toast.makeText(this, "Failed to retrieve site ID", Toast.LENGTH_SHORT).show()
+        if (siteID != null) {
+            val jsonInfo = JSONObject().apply {
+                put("ID", siteID.toInt())
             }
+            val qrCodeImageView = findViewById<ImageView>(R.id.qr_code_frame)
+            qrBitmap = generateQRCode(jsonInfo.toString())
+            qrCodeImageView.setImageBitmap(qrBitmap)
+        } else {
+            Toast.makeText(this, "Failed to retrieve site ID", Toast.LENGTH_SHORT).show()
         }
 
         val downloadButton = findViewById<Button>(R.id.download_qr_button)
         downloadButton.setOnClickListener {
-            saveQRCodeToGallery(qrBitmap)
+            saveQRCodeToGallery(qrBitmap, siteID.toString())
         }
 
         val menuIcon = findViewById<ImageView>(R.id.menu_icon)
@@ -76,40 +52,6 @@ class QRGenerationActivity : AppCompatActivity() {
             val intent = Intent(this, ManagermenuActivity::class.java)
             intent.putExtra("managerCF", managerCF)
             startActivity(intent)
-        }
-    }
-
-    private fun getID(securityCode: String?, callback: (String?) -> Unit) {
-        val url = "https://noemigiustini01.pythonanywhere.com/site/read_id_by_securitycode?SecurityCode=$securityCode"
-        val request = Request.Builder()
-            .url(url)
-            .build()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    runOnUiThread {
-                        callback(null)
-                        Toast.makeText(this@QRGenerationActivity, "Failed to fetch site ID", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    if (response.isSuccessful) {
-                        val responseBody = response.body?.string()
-                        val jsonResponse = JSONObject(responseBody ?: "{}")
-                        val ID = jsonResponse.optString("id", null)
-                        runOnUiThread {
-                            callback(ID)
-                        }
-                    } else {
-                        runOnUiThread {
-                            callback(null)
-                            Toast.makeText(this@QRGenerationActivity, "Failed to fetch site ID", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            })
         }
     }
 
@@ -128,8 +70,8 @@ class QRGenerationActivity : AppCompatActivity() {
         return bitmap
     }
 
-    private fun saveQRCodeToGallery(bitmap: Bitmap) {
-        val filename = "QRCode_${System.currentTimeMillis()}.png"
+    private fun saveQRCodeToGallery(bitmap: Bitmap, siteID: String) {
+        val filename = "QRCode_${siteID}.png"
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
             put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
