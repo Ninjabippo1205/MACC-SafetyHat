@@ -57,34 +57,32 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/account_info_title" />
 
-    <ImageView
-        android:id="@+id/map_worker_placeholder"
-        android:layout_width="358dp"
-        android:layout_height="164dp"
-        android:layout_marginStart="26dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="27dp"
-        android:background="@color/white"
-        android:contentDescription="@string/map_placeholder"
-        android:src="@mipmap/crane_foreground"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map_fragment"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="348dp"
+        android:layout_height="222dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/your_position_label" />
+
 
     <LinearLayout
         android:id="@+id/info_worker_container"
         android:layout_width="358dp"
         android:layout_height="334dp"
         android:layout_marginStart="28dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="27dp"
         android:background="@drawable/rounded_background"
         android:elevation="4dp"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/map_worker_placeholder">
+        app:layout_constraintTop_toBottomOf="@+id/map_fragment">
 
         <!-- First Name Label and Text -->
         <LinearLayout
@@ -244,12 +242,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:backgroundTint="#2C2C2C"
             android:background="@drawable/rounded_background"
-            android:textSize="20sp"
+            android:backgroundTint="#2C2C2C"
             android:text="@string/change_password"
             android:textAllCaps="false"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            android:textSize="20sp" />
 
     </LinearLayout>
 
