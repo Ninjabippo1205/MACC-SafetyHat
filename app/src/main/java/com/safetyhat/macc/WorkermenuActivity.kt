@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -33,10 +34,17 @@ class WorkermenuActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home_worker -> {
-                    startActivity(Intent(this, MainActivity::class.java))
+                    val intent = Intent(this, WorkermenuActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    startActivity(intent)
                 }
                 R.id.nav_account_info_worker -> {
                     val intent = Intent(this, WorkerinfoActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    startActivity(intent)
+                }
+                R.id.nav_logout_worker -> {
+                    val intent = Intent(this, MainActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
                     startActivity(intent)
                 }
@@ -46,16 +54,8 @@ class WorkermenuActivity : AppCompatActivity() {
         }
 
         // Inizializza gli elementi dell'interfaccia e imposta i listener
-        val accountInfoText = findViewById<TextView>(R.id.account_worker_info_text)
-        val sitesInfoText = findViewById<TextView>(R.id.sites_worker_info_text)
-        val alertsText = findViewById<TextView>(R.id.alerts_text)
-        val logoutButton = findViewById<Button>(R.id.logout_button_worker)
-
-        accountInfoText.setOnClickListener {
-            val intent = Intent(this, WorkerinfoActivity::class.java)
-            intent.putExtra("workerCF", workerCF)
-            startActivity(intent)
-        }
+        val sitesInfoText = findViewById<LinearLayout>(R.id.sites_worker_info_field)
+        val alertsText = findViewById<LinearLayout>(R.id.alerts_field)
 
         sitesInfoText.setOnClickListener {
             val intent = Intent(this, SiteInfoActivity::class.java)
@@ -67,13 +67,6 @@ class WorkermenuActivity : AppCompatActivity() {
             val intent = Intent(this, AlertActivity::class.java)
             intent.putExtra("workerCF", workerCF)
             startActivity(intent)
-        }
-
-        logoutButton.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
-            finish()
         }
     }
 }

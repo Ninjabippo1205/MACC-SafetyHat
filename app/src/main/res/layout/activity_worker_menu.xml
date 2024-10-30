@@ -2,16 +2,16 @@
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:id="@+id/drawer_layout"
-    >
+    android:id="@+id/drawer_layout">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#E0E0E0">
+
         <ImageView
             android:id="@+id/worker_menu_icon"
             android:layout_width="72dp"
@@ -24,86 +24,89 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/menu_foreground"/>
 
-        <TextView
-            android:id="@+id/sites_worker_info_text"
-            android:layout_width="280dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginStart="66dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="65dp"
-            android:background="@drawable/rounded_background"
-            android:drawablePadding="0dp"
-            android:elevation="4dp"
-            android:fontFamily="sans-serif-condensed"
-            android:gravity="center_vertical"
-            android:text="@string/site"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp"
-            app:drawableStartCompat="@mipmap/bulldozer_foreground"
+        <!-- Contenitore dei bottoni in fondo alla pagina -->
+        <LinearLayout
+            android:id="@+id/button_container"
+            android:layout_width="350dp"
+            android:layout_height="65dp"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/account_worker_info_text" />
+            app:layout_constraintStart_toStartOf="parent">
 
-        <TextView
-            android:id="@+id/account_worker_info_text"
-            android:layout_width="280dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginStart="66dp"
-            android:layout_marginTop="160dp"
-            android:layout_marginEnd="65dp"
-            android:elevation="4dp"
-            android:background="@drawable/rounded_background"
-            android:drawablePadding="0dp"
-            android:fontFamily="sans-serif-condensed"
-            android:gravity="center_vertical"
-            android:text="@string/account"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp"
-            app:drawableStartCompat="@mipmap/head_foreground"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            <!-- Coppia Immagine e Testo 1 -->
+            <LinearLayout
+                android:id="@+id/sites_worker_info_field"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/rounded_background">
 
-        <TextView
-            android:id="@+id/alerts_text"
-            android:layout_width="280dp"
-            android:layout_height="100dp"
-            android:layout_marginStart="66dp"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="65dp"
-            android:background="@drawable/rounded_background"
-            android:drawablePadding="0dp"
-            android:fontFamily="sans-serif-condensed"
-            android:gravity="center_vertical"
-            android:text="@string/alerts"
-            android:elevation="4dp"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp"
-            app:drawableLeftCompat="@mipmap/traffic_cone_foreground"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/sites_worker_info_text" />
+                <ImageView
+                    android:id="@+id/image_bulldozer"
+                    android:layout_width="59dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="2dp"
+                    android:scaleX="1.4"
+                    android:scaleY="1.4"
+                    android:src="@mipmap/bulldozer_foreground" />
 
-        <Button
-            android:id="@+id/logout_button_worker"
-            android:layout_width="280dp"
-            android:layout_height="70dp"
-            android:layout_marginStart="66dp"
-            android:layout_marginTop="68dp"
-            android:layout_marginEnd="66dp"
-            android:backgroundTint="#2C2C2C"
-            android:elevation="4dp"
-            android:fontFamily="sans-serif-condensed"
-            android:background="@drawable/rounded_background"
-            android:text="@string/logout"
-            android:textAllCaps="false"
-            android:textColor="@color/app_background"
-            android:textSize="30sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/alerts_text" />
+                <TextView
+                    android:id="@+id/sites_worker_info_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="sans-serif-condensed"
+                    android:gravity="center_vertical"
+                    android:text="@string/site"
+                    android:textAlignment="center"
+                    android:textColor="#2C2C2C"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <!-- Coppia Immagine e Testo 2 -->
+            <LinearLayout
+                android:id="@+id/alerts_field"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_marginStart="10dp"
+                android:gravity="center_vertical"
+                android:background="@drawable/rounded_background">
+
+                <ImageView
+                    android:id="@+id/image_cone"
+                    android:layout_width="56dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="7dp"
+                    android:scaleX="1.4"
+                    android:scaleY="1.4"
+                    android:src="@mipmap/traffic_cone_foreground"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/alerts_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="8dp"
+                    android:fontFamily="sans-serif-condensed"
+                    android:gravity="center_vertical"
+                    android:text="@string/alerts"
+                    android:textAlignment="textStart"
+                    android:textColor="#2C2C2C"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
