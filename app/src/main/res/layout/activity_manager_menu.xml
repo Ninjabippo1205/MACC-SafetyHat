@@ -4,19 +4,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:id="@+id/drawer_layout"
->
+    android:id="@+id/drawer_layout">
 
-    <!-- Contenuto principale dell'attività -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#E0E0E0"
-    >
+        android:background="#E0E0E0">
 
         <ImageView
-            android:id="@+id/Menu_icon"
+            android:id="@+id/manager_menu_icon"
             android:layout_width="72dp"
             android:layout_height="67dp"
             android:layout_marginStart="16dp"
@@ -25,96 +21,96 @@
             android:foregroundGravity="top|left"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/menu_foreground"
-        />
+            app:srcCompat="@drawable/menu_foreground"/>
 
-        <TextView
-            android:id="@+id/sites_info_text"
-            android:layout_width="280dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/rounded_background"
-            android:drawablePadding="0dp"
-            android:fontFamily="sans-serif-condensed"
-            android:gravity="center_vertical"
-            android:text="@string/site"
-            android:elevation="4dp"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp"
-            app:drawableStartCompat="@mipmap/bulldozer_foreground"
+        <!-- Contenitore dei bottoni in fondo alla pagina -->
+        <LinearLayout
+            android:id="@+id/button_container"
+            android:layout_width="350dp"
+            android:layout_height="65dp"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/account_info_text"
-        />
+            app:layout_constraintStart_toStartOf="parent">
 
-        <TextView
-            android:id="@+id/account_info_text"
-            android:layout_width="280dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="160dp"
-            android:background="@drawable/rounded_background"
-            android:drawablePadding="0dp"
-            android:fontFamily="sans-serif-condensed"
-            android:gravity="center_vertical"
-            android:elevation="4dp"
-            android:text="@string/account"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp"
-            app:drawableLeftCompat="@mipmap/safety_vest_foreground"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-        />
+            <LinearLayout
+                android:id="@+id/sites_manager_info_field"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/rounded_background">
 
-        <TextView
-            android:id="@+id/create_site_text"
-            android:layout_width="280dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/rounded_background"
-            android:drawablePadding="0dp"
-            android:fontFamily="sans-serif-condensed"
-            android:gravity="center_vertical"
-            android:elevation="4dp"
-            android:text="@string/create_site"
-            android:textColor="#2C2C2C"
-            android:textSize="30sp"
-            app:drawableLeftCompat="@mipmap/site_foreground"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/sites_info_text"
-        />
+                <ImageView
+                    android:id="@+id/image_bulldozer"
+                    android:layout_width="59dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="2dp"
+                    android:scaleX="1.4"
+                    android:scaleY="1.4"
+                    android:src="@mipmap/bulldozer_foreground" />
 
-        <Button
-            android:id="@+id/logout_button"
-            android:layout_width="280dp"
-            android:layout_height="70dp"
-            android:layout_marginTop="50dp"
-            android:backgroundTint="#2C2C2C"
-            android:elevation="4dp"
-            android:fontFamily="sans-serif-condensed"
-            android:background="@drawable/rounded_background"
-            android:text="@string/logout"
-            android:textAllCaps="false"
-            android:textColor="@color/app_background"
-            android:textSize="30sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/create_site_text"
-        />
+                <TextView
+                    android:id="@+id/sites_manager_info_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fontFamily="sans-serif-condensed"
+                    android:gravity="center_vertical"
+                    android:text="@string/sites_overview"
+                    android:textAlignment="center"
+                    android:textColor="#2C2C2C"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/alerts_field"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_marginStart="10dp"
+                android:gravity="center_vertical"
+                android:background="@drawable/rounded_background">
+
+                <ImageView
+                    android:id="@+id/image_cone"
+                    android:layout_width="56dp"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="7dp"
+                    android:scaleX="1.4"
+                    android:scaleY="1.4"
+                    android:src="@mipmap/traffic_cone_foreground"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/alerts_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="8dp"
+                    android:fontFamily="sans-serif-condensed"
+                    android:gravity="center_vertical"
+                    android:text="@string/create_site"
+                    android:textAlignment="textStart"
+                    android:textColor="#2C2C2C"
+                    android:textSize="20sp" />
+            </LinearLayout>
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navigation_view"
-        android:layout_width="wrap_content"
+        android:id="@+id/navigation_view_manager"
+        android:layout_width="300dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/navbar_menu"
-        app:itemTextAppearance="@style/NavMenuTextAppearance"
         app:itemIconSize="100dp"
-    />
+        app:itemTextAppearance="@style/NavMenuTextAppearance"
+        app:menu="@menu/navbar_menu_manager_menu_page" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

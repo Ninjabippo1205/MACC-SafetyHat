@@ -56,16 +56,20 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
+        val workerCF = intent.getStringExtra("workerCF")
+
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home_worker -> {
-                    startActivity(Intent(this, WorkermenuActivity::class.java))
-                }
-                R.id.nav_account_info_worker -> {
-                    startActivity(Intent(this, WorkerinfoActivity::class.java))
+                    val intent = Intent(this, WorkermenuActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    startActivity(intent)
+                    finish()
                 }
                 R.id.nav_logout_worker -> {
-                    startActivity(Intent(this, MainActivity::class.java))
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -80,8 +84,7 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
 
         checkLocationPermission()
 
-        val cf = intent.getStringExtra("workerCF")
-        fetchWorkerInfo(cf.toString())
+        fetchWorkerInfo(workerCF.toString())
 
         val changePasswordButton = findViewById<Button>(R.id.change_password_button)
         changePasswordButton.setOnClickListener {
@@ -92,7 +95,7 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                     Toast.makeText(this, "Password must be at least 8 characters, with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
                 } else {
                     val hashedPassword = hashPassword(newPassword)
-                    updatePassword(cf.toString(), hashedPassword)
+                    updatePassword(workerCF.toString(), hashedPassword)
                 }
             } else {
                 Toast.makeText(this, "Please enter a new password", Toast.LENGTH_SHORT).show()

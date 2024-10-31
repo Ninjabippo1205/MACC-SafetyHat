@@ -3,6 +3,7 @@ package com.safetyhat.macc
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -31,16 +32,18 @@ class AlertActivity : AppCompatActivity(){
                     val intent = Intent(this, WorkermenuActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
                     startActivity(intent)
+                    finish()
                 }
                 R.id.nav_account_info_worker -> {
                     val intent = Intent(this, WorkerinfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
                     startActivity(intent)
+                    finish()
                 }
                 R.id.nav_logout_worker -> {
                     val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("workerCF", workerCF)
                     startActivity(intent)
+                    finish()
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)

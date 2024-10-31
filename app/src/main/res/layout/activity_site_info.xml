@@ -12,7 +12,7 @@
 
         <!-- Menu Icon -->
         <ImageView
-            android:id="@+id/menu_icon"
+            android:id="@+id/menu_icon_worker"
             android:layout_width="79dp"
             android:layout_height="81dp"
             android:contentDescription="@string/menù"

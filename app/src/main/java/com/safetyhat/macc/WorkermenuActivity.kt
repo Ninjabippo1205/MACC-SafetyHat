@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -33,20 +34,16 @@ class WorkermenuActivity : AppCompatActivity() {
         // Impostazioni della navigazione tramite il menu
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_home_worker -> {
-                    val intent = Intent(this, WorkermenuActivity::class.java)
-                    intent.putExtra("workerCF", workerCF)
-                    startActivity(intent)
-                }
                 R.id.nav_account_info_worker -> {
                     val intent = Intent(this, WorkerinfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
                     startActivity(intent)
+                    finish()
                 }
                 R.id.nav_logout_worker -> {
                     val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("workerCF", workerCF)
                     startActivity(intent)
+                    finish()
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -61,12 +58,14 @@ class WorkermenuActivity : AppCompatActivity() {
             val intent = Intent(this, SiteInfoActivity::class.java)
             intent.putExtra("workerCF", workerCF)
             startActivity(intent)
+            finish()
         }
 
         alertsText.setOnClickListener {
             val intent = Intent(this, AlertActivity::class.java)
             intent.putExtra("workerCF", workerCF)
             startActivity(intent)
+            finish()
         }
     }
 }

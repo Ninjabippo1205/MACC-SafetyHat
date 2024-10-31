@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -21,20 +22,31 @@ class SiteInfoActivity : AppCompatActivity() {
         navigationView = findViewById(R.id.navigation_view_worker)
         navigationView.itemIconTintList = null
 
-        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+        findViewById<ImageView>(R.id.menu_icon_worker).setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
+        val workerCF = intent.getStringExtra("workerCF")
+
+        // Impostazioni della navigazione tramite il menu
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home_worker -> {
-                    startActivity(Intent(this, WorkermenuActivity::class.java))
+                    val intent = Intent(this, WorkermenuActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    startActivity(intent)
+                    finish()
                 }
                 R.id.nav_account_info_worker -> {
-                    startActivity(Intent(this, WorkerinfoActivity::class.java))
+                    val intent = Intent(this, WorkerinfoActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    startActivity(intent)
+                    finish()
                 }
                 R.id.nav_logout_worker -> {
-                    startActivity(Intent(this, MainActivity::class.java))
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
                 }
             }
             drawerLayout.closeDrawer(GravityCompat.START)

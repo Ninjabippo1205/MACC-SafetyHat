@@ -2,7 +2,6 @@
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout">
@@ -105,8 +104,6 @@
 
         </LinearLayout>
 
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
@@ -116,6 +113,6 @@
         android:layout_gravity="start"
         app:itemIconSize="100dp"
         app:itemTextAppearance="@style/NavMenuTextAppearance"
-        app:menu="@menu/navbar_menu_worker" />
+        app:menu="@menu/navbar_menu_worker_menu_page" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

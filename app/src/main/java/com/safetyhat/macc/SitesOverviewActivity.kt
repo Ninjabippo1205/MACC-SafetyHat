@@ -9,9 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.LinearSnapHelper
@@ -23,6 +26,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.navigation.NavigationView
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONException
@@ -35,6 +39,8 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var sitesRecyclerView: RecyclerView
     private lateinit var sitesAdapter: SitesAdapter
     private lateinit var mMap: GoogleMap
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
     private val sitesList = mutableListOf<Site>()
     private var isMapInitialized = false
 
@@ -47,6 +53,38 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
         sitesRecyclerView.layoutManager = LinearLayoutManager(this)
 
         val managerCF = intent.getStringExtra("managerCF").toString()
+
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.navigation_view_manager)
+        navigationView.itemIconTintList = null
+
+        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_home_manager -> {
+                    val intent = Intent(this, ManagermenuActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_account_info_manager -> {
+                    val intent = Intent(this, ManagerInfoActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_logout_manager -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
 
         sitesAdapter = SitesAdapter(sitesList, managerCF)
         sitesRecyclerView.adapter = sitesAdapter
