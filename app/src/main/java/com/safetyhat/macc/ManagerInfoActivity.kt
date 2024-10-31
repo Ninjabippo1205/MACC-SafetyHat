@@ -25,6 +25,9 @@ import androidx.core.content.ContextCompat
 import java.util.Locale
 import okhttp3.*
 import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
@@ -38,6 +41,8 @@ class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val client = OkHttpClient()
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
 
     // Lista di colori predefiniti per le circonferenze
     private val circleColors = listOf(
@@ -52,11 +57,32 @@ class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manager_info)
 
-        val backButton = findViewById<ImageView>(R.id.menu_icon)
-        backButton.setOnClickListener {
-            val intent = Intent(this, ManagermenuActivity::class.java)
-            startActivity(intent)
-            finish()
+        val managerCF = intent.getStringExtra("managerCF").toString()
+
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.navigation_view_manager)
+        navigationView.itemIconTintList = null
+
+        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_home_manager -> {
+                    val intent = Intent(this, ManagermenuActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_logout_manager -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
         }
 
         val mapFragment = supportFragmentManager
@@ -67,8 +93,7 @@ class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
 
         checkLocationPermission()
 
-        val cf = intent.getStringExtra("managerCF")
-        fetchManagerInfo(cf.toString())
+        fetchManagerInfo(managerCF.toString())
 
         val changePasswordButton = findViewById<Button>(R.id.change_password_button)
         changePasswordButton.setOnClickListener {
@@ -79,7 +104,7 @@ class ManagerInfoActivity : AppCompatActivity(), OnMapReadyCallback {
                     Toast.makeText(this, "Password must be at least 8 characters,with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
                 }else {
                     val hashedPassword = hashPassword(newPassword)
-                    updatePassword(cf.toString(), hashedPassword)
+                    updatePassword(managerCF.toString(), hashedPassword)
                 }
             } else {
                 Toast.makeText(this, "Please enter a new password", Toast.LENGTH_SHORT).show()

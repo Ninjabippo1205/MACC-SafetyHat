@@ -7,11 +7,11 @@
     android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/menu_worker_icon"
+        android:id="@+id/back_icon"
         android:layout_width="79dp"
         android:layout_height="81dp"
         android:contentDescription="@string/menù"
-        android:src="@drawable/menu_foreground"
+        android:src="@drawable/back_foreground"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

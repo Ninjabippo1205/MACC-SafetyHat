@@ -40,6 +40,7 @@ class MainActivity : AppCompatActivity() {
             // Crea l'intent per andare a LoginActivity
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
+            finish()
         }
 
         val registerButton = findViewById<Button>(R.id.registerButton)
@@ -47,6 +48,7 @@ class MainActivity : AppCompatActivity() {
             // Crea l'intent per andare a ManagerInfoActivity
             val intent = Intent(this, RegistrationActivity::class.java)
             startActivity(intent)
+            finish()
         }
     }
 }

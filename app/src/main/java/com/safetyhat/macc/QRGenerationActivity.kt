@@ -10,6 +10,9 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +25,8 @@ import java.io.IOException
 class QRGenerationActivity : AppCompatActivity() {
     private val client = OkHttpClient()
     private lateinit var qrBitmap: Bitmap
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
     private var ID: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,7 +34,39 @@ class QRGenerationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_qr_generation)
 
         val siteID = intent.getStringExtra("SiteID")
-        val managerCF = intent.getStringExtra("ManagerCF")
+        val managerCF = intent.getStringExtra("managerCF").toString()
+
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.navigation_view_manager)
+        navigationView.itemIconTintList = null
+
+        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_home_manager -> {
+                    val intent = Intent(this, ManagermenuActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_account_info_manager -> {
+                    val intent = Intent(this, ManagerInfoActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_logout_manager -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
 
         if (siteID != null) {
             val jsonInfo = JSONObject().apply {
@@ -45,13 +82,6 @@ class QRGenerationActivity : AppCompatActivity() {
         val downloadButton = findViewById<Button>(R.id.download_qr_button)
         downloadButton.setOnClickListener {
             saveQRCodeToGallery(qrBitmap, siteID.toString())
-        }
-
-        val menuIcon = findViewById<ImageView>(R.id.menu_icon)
-        menuIcon.setOnClickListener {
-            val intent = Intent(this, ManagermenuActivity::class.java)
-            intent.putExtra("managerCF", managerCF)
-            startActivity(intent)
         }
     }
 

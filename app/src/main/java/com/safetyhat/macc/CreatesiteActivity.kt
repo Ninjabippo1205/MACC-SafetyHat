@@ -8,10 +8,13 @@ import android.text.TextWatcher
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,11 +32,47 @@ class CreatesiteActivity : AppCompatActivity() {
     private val client = OkHttpClient()
     private lateinit var placesClient: PlacesClient
     private var isAddressSelected = false
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
     private val placeholderText = "@string/address_hint"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_site)
+
+        val managerCF = intent.getStringExtra("managerCF").toString()
+
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.navigation_view_manager)
+        navigationView.itemIconTintList = null
+
+        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_home_manager -> {
+                    val intent = Intent(this, ManagermenuActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_account_info_manager -> {
+                    val intent = Intent(this, ManagerInfoActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_logout_manager -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
 
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, getString(R.string.google_maps_key))
@@ -41,15 +80,6 @@ class CreatesiteActivity : AppCompatActivity() {
         placesClient = Places.createClient(this)
 
         setupAutocomplete()
-
-        val managerCF = intent.getStringExtra("managerCF").toString()
-
-        val backButton = findViewById<ImageView>(R.id.menu_icon)
-        backButton.setOnClickListener {
-            val intent = Intent(this, ManagermenuActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
 
         val startDateField = findViewById<EditText>(R.id.start_date_field)
         startDateField.setOnClickListener {
@@ -312,7 +342,6 @@ class CreatesiteActivity : AppCompatActivity() {
                     runOnUiThread {
                         val errorMessage = e.localizedMessage ?: "Unknown error occurred"
                         Toast.makeText(this@CreatesiteActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
-                        Log.e("RegistrationError", "Failed to register site: $errorMessage", e)
                     }
                 }
 
@@ -328,13 +357,12 @@ class CreatesiteActivity : AppCompatActivity() {
                                 Toast.makeText(this@CreatesiteActivity, "Site created successfully!", Toast.LENGTH_SHORT).show()
 
                                 val intent = Intent(this@CreatesiteActivity, QRGenerationActivity::class.java)
-                                intent.putExtra("ManagerCF", managerCF)
+                                intent.putExtra("managerCF", managerCF)
                                 intent.putExtra("SiteID", siteId.toString())
                                 startActivity(intent)
                                 finish()
                             } catch (e: JSONException) {
                                 Toast.makeText(this@CreatesiteActivity, "Failed to parse response", Toast.LENGTH_LONG).show()
-                                Log.e("ResponseParsingError", "Error parsing site_id from response", e)
                             }
                         } else {
                             val errorMessage = responseBody ?: "Unknown error"

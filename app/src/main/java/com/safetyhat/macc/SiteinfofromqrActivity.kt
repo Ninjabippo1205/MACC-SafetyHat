@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +27,12 @@ class SiteinfofromqrActivity : AppCompatActivity(){
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_site_info_from_qr)
+
+        findViewById<ImageView>(R.id.back_icon).setOnClickListener {
+            val intent = Intent(this, QrScanningActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         val jsonStringID = intent.getStringExtra("qr_scanned_text")
         val jsonObjectID = JSONObject(jsonStringID)
@@ -109,7 +116,7 @@ class SiteinfofromqrActivity : AppCompatActivity(){
             override fun onResponse(call: Call, response: Response) {
                 runOnUiThread {
                     if (response.isSuccessful) {
-                        Toast.makeText(this@SiteinfofromqrActivity, "Site Code updated successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@SiteinfofromqrActivity, "Site Code is correct", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(this@SiteinfofromqrActivity, "Failed to update Site Code", Toast.LENGTH_SHORT).show()
                     }

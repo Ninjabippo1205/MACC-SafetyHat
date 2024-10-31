@@ -30,8 +30,7 @@ class RegistrationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
 
-        val backButton = findViewById<ImageView>(R.id.back_icon)
-        backButton.setOnClickListener {
+        findViewById<ImageView>(R.id.back_icon).setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
