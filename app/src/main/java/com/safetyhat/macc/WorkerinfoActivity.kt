@@ -25,6 +25,9 @@ import androidx.core.content.ContextCompat
 import java.util.Locale
 import okhttp3.*
 import android.widget.Toast
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
@@ -38,24 +41,35 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val client = OkHttpClient()
 
-    // Lista di colori predefiniti per le circonferenze
-    private val circleColors = listOf(
-        0x2200FF00, // Verde trasparente
-        0x22FF0000, // Rosso trasparente
-        0x220000FF, // Blu trasparente
-        0x22FFFF00  // Giallo trasparente
-    )
-    private var colorIndex = 0
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_worker_info)
 
-        val backButton = findViewById<ImageView>(R.id.menu_icon)
-        backButton.setOnClickListener {
-            val intent = Intent(this, WorkermenuActivity::class.java)
-            startActivity(intent)
-            finish()
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.navigation_view_worker)
+        navigationView.itemIconTintList = null
+
+        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_home_worker -> {
+                    startActivity(Intent(this, WorkermenuActivity::class.java))
+                }
+                R.id.nav_account_info_worker -> {
+                    startActivity(Intent(this, WorkerinfoActivity::class.java))
+                }
+                R.id.nav_logout_worker -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
         }
 
         val mapFragment = supportFragmentManager
@@ -75,8 +89,8 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
             if (newPassword.isNotEmpty()) {
                 val passwordPattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#\$%^&+=!]).{8,}$"
                 if (!Pattern.matches(passwordPattern, newPassword)) {
-                    Toast.makeText(this, "Password must be at least 8 characters,with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
-                }else {
+                    Toast.makeText(this, "Password must be at least 8 characters, with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
+                } else {
                     val hashedPassword = hashPassword(newPassword)
                     updatePassword(cf.toString(), hashedPassword)
                 }
@@ -84,7 +98,6 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(this, "Please enter a new password", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 
     private fun hashPassword(password: String): String {
@@ -186,6 +199,14 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         addPOIFromAddress(address1, 200.0)
         addPOIFromAddress(address2, 150.0)
     }
+
+    private val circleColors = listOf(
+        0x2200FF00.toInt(), // Verde trasparente
+        0x22FF0000.toInt(), // Rosso trasparente
+        0x220000FF.toInt(), // Blu trasparente
+        0x22FFFF00.toInt()  // Giallo trasparente
+    )
+    private var colorIndex = 0
 
     // Funzione per aggiungere un POI e disegnare un cerchio con un colore assegnato automaticamente
     private fun addPOIFromAddress(address: String, radius: Double) {

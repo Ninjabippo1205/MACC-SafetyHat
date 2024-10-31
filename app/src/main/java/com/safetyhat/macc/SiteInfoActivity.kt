@@ -1,29 +1,54 @@
 package com.safetyhat.macc
+
+import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 
 class SiteInfoActivity : AppCompatActivity() {
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_site_info)
 
-        val siteId = "12345"
-        val startDate = "01/01/2023"
-        val endDate = "31/12/2023"
-        val totalWorkers = 10
-        val scaffoldingNumber = "ABC123"
-        val siteAddress = "123 Main St"
-        val siteRadius = 100.0
-        val siteManagerInfo = "John Doe"
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.navigation_view_worker)
+        navigationView.itemIconTintList = null
 
-        findViewById<TextView>(R.id.site_id_text).text = siteId
-        findViewById<TextView>(R.id.start_date_text).text = startDate
-        findViewById<TextView>(R.id.end_date_text).text = endDate
-        findViewById<TextView>(R.id.total_worker_text).text = totalWorkers.toString()
-        findViewById<TextView>(R.id.scaffolding_number_text).text = scaffoldingNumber
-        findViewById<TextView>(R.id.site_address_text).text = siteAddress
-        findViewById<TextView>(R.id.site_radius_text).text = siteRadius.toString()
-        findViewById<TextView>(R.id.site_manager_info_text).text = siteManagerInfo
+        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_home_worker -> {
+                    startActivity(Intent(this, WorkermenuActivity::class.java))
+                }
+                R.id.nav_account_info_worker -> {
+                    startActivity(Intent(this, WorkerinfoActivity::class.java))
+                }
+                R.id.nav_logout_worker -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
+
+        // Imposta i dati nei campi di testo
+        findViewById<TextView>(R.id.site_id_text).text = "12345"
+        findViewById<TextView>(R.id.start_date_text).text = "01/01/2023"
+        findViewById<TextView>(R.id.end_date_text).text = "31/12/2023"
+        findViewById<TextView>(R.id.total_worker_text).text = "10"
+        findViewById<TextView>(R.id.scaffolding_number_text).text = "ABC123"
+        findViewById<TextView>(R.id.site_address_text).text = "123 Main St"
+        findViewById<TextView>(R.id.site_radius_text).text = "100.0"
+        findViewById<TextView>(R.id.site_manager_info_text).text = "John Doe"
     }
 }
