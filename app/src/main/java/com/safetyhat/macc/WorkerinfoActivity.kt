@@ -174,14 +174,53 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                         val birthday = jsonObject.optString("BirthDate", "N/A")
                         val formattedBirthDate = birthday.split(" ")[1] + " " + birthday.split(" ")[2] + " " + birthday.split(" ")[3]
                         val phoneNumber = jsonObject.optString("PhoneNumber", "N/A")
+                        val SiteID = jsonObject.optString("SiteCode", "N/A")
 
                         findViewById<TextView>(R.id.first_name_worker_text).text = firstName
                         findViewById<TextView>(R.id.last_name_worker_text).text = lastName
                         findViewById<TextView>(R.id.cf_worker_text).text = cf
                         findViewById<TextView>(R.id.birthday_worker_text).text = formattedBirthDate
                         findViewById<TextView>(R.id.telephone_worker_text).text = phoneNumber
+
+                        fetchSiteInfo(SiteID.toInt())
                     } else {
                         Toast.makeText(this@WorkerinfoActivity, "Worker not found.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
+
+    private fun fetchSiteInfo(ID: Int) {
+        val url = "https://NoemiGiustini01.pythonanywhere.com/site/read?id=$ID"
+        val request = Request.Builder().url(url).get().build()
+
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(
+                        this@WorkerinfoActivity,
+                        "Network error. Please try again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                val jsonObject = JSONObject(responseData ?: "")
+
+                runOnUiThread {
+                    if (response.isSuccessful && !jsonObject.has("message")) {
+
+                        val Address = jsonObject.optString("Address", "N/A")
+                        val SiteRadius = jsonObject.optString("SiteRadius", "N/A")
+
+                        addPOIFromAddress(Address, SiteRadius.toDouble())
+
+                    } else {
+                        Toast.makeText(this@WorkerinfoActivity, "Site not found.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -207,19 +246,10 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
 
-        // Aggiungi i POI sulla mappa con i rispettivi cerchi e colori automatici
-        val address1 = "2000 N Shoreline Blvd, Mountain View, CA 94043, Stati Uniti"
-        val address2 = "2195 N Shoreline Blvd, Mountain View, CA 94043, Stati Uniti"
-
-        addPOIFromAddress(address1, 200.0)
-        addPOIFromAddress(address2, 150.0)
     }
 
     private val circleColors = listOf(
-        0x2200FF00.toInt(), // Verde trasparente
         0x22FF0000.toInt(), // Rosso trasparente
-        0x220000FF.toInt(), // Blu trasparente
-        0x22FFFF00.toInt()  // Giallo trasparente
     )
     private var colorIndex = 0
 
