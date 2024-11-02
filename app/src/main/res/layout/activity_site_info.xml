@@ -308,6 +308,6 @@
         android:layout_gravity="start"
         app:itemIconSize="100dp"
         app:itemTextAppearance="@style/NavMenuTextAppearance"
-        app:menu="@menu/navbar_menu_worker" />
+        app:menu="@menu/navbar_menu_worker_site_info" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

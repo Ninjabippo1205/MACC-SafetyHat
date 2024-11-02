@@ -51,6 +51,12 @@ class SiteInfoActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 }
+                R.id.nav_alert_worker -> {
+                    val intent = Intent(this, AlertActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    startActivity(intent)
+                    finish()
+                }
                 R.id.nav_logout_worker -> {
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)

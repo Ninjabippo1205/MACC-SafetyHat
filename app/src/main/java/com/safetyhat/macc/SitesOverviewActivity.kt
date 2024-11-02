@@ -76,6 +76,12 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                     startActivity(intent)
                     finish()
                 }
+                R.id.nav_create_site_manager -> {
+                    val intent = Intent(this, CreatesiteActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
                 R.id.nav_logout_manager -> {
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
