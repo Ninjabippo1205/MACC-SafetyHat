@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/border_style"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/communication_text_view"
+        android:layout_width="3dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginEnd="8dp"
+        android:textColor="#2C2C2C"
+        android:textSize="16sp" />
+
+    <ImageView
+        android:id="@+id/thumbs_up_icon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:contentDescription="@string/thumbs_up"
+        android:src="@mipmap/safety_vest_foreground" />
+
+    <TextView
+        android:id="@+id/view_count_text_view"
+        android:layout_width="24dp"
+        android:layout_height="34dp"
+        android:layout_marginStart="8dp"
+        android:textColor="#2C2C2C"
+        android:textSize="16sp" />
+</LinearLayout>
