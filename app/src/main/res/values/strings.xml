@@ -68,5 +68,6 @@
     <string name="home">Home</string>
     <string name="see_qr_button">Show QR Code</string>
     <string name="sites_overview">Sites Overview</string>
+    <string name="site_info">Site Info</string>
 
 </resources>
