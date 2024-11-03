@@ -61,7 +61,7 @@
                     android:layout_height="match_parent"
                     android:fontFamily="sans-serif-condensed"
                     android:gravity="center_vertical"
-                    android:text="@string/site"
+                    android:text="@string/site_info"
                     android:textAlignment="center"
                     android:textColor="#2C2C2C"
                     android:textSize="20sp" />

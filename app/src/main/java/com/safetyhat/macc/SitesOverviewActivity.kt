@@ -76,6 +76,12 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                     startActivity(intent)
                     finish()
                 }
+                R.id.nav_create_site_manager -> {
+                    val intent = Intent(this, CreatesiteActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
                 R.id.nav_logout_manager -> {
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
@@ -379,12 +385,18 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             holder.securityCode.text = "Security Code: ${site.securityCode}"
 
             holder.qrButton.setOnClickListener {
-                val intent = Intent(this@SitesOverviewActivity, QRGenerationActivity::class.java)
-                intent.putExtra("ManagerCF", managerCF)
-                intent.putExtra("SiteID", site.id.toString())
-                startActivity(intent)
-                finish()
+                val mCF = this@SitesOverviewActivity.intent.getStringExtra("managerCF") ?: ""
+                if (mCF.isNotEmpty()) {
+                    val intent = Intent(this@SitesOverviewActivity, QRGenerationActivity::class.java)
+                    intent.putExtra("mCF", mCF)
+                    intent.putExtra("SiteID", site.id.toString())
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(this@SitesOverviewActivity, "ManagerCF is missing.", Toast.LENGTH_SHORT).show()
+                }
             }
+
 
             holder.binButton.setOnClickListener {
                 val context = holder.itemView.context

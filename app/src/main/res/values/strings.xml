@@ -68,5 +68,12 @@
     <string name="home">Home</string>
     <string name="see_qr_button">Show QR Code</string>
     <string name="sites_overview">Sites Overview</string>
+    <string name="site_info">Site Info</string>
+    <string name="new_communication">New Communication</string>
+    <string name="enter_communication">Write Communication</string>
+    <string name="send_communication">Send Communication</string>
+    <string name="communications">Communications</string>
+    <string name="select_site_id">Select Site ID</string>
+    <string name="thumbs_up">Thumbs Up</string>
 
 </resources>

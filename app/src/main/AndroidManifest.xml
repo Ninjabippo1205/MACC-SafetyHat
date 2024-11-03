@@ -26,6 +26,10 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"
         />
+        <meta-data
+            android:name="com.accuweather.API_KEY"
+            android:value="@string/accuweather_api_key"
+        />
 
         <activity
             android:name=".SplashActivity"
