@@ -71,6 +71,7 @@
     <string name="new_communication">New Communication</string>
     <string name="enter_communication">Write Communication</string>
     <string name="send_communication">Send Communication</string>
+    <string name="communications">Communications</string>
     <string name="select_site_id">Select Site ID</string>
     <string name="thumbs_up">Thumbs Up</string>
 

@@ -167,6 +167,34 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/create_site_title2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dp"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:text="@string/communications"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/separator_line2"
+            android:layout_width="200dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="100dp"
+            android:background="#2C2C2C"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.523"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/create_site_title2" />
+
         <ScrollView
             android:id="@+id/scrollView2"
             android:layout_width="377dp"
@@ -181,6 +209,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/communications_recycler_view"
                 android:layout_width="377dp"
+                android:background="@drawable/rounded_background"
                 android:layout_height="208dp"
                 android:padding="8dp" />
         </ScrollView>
