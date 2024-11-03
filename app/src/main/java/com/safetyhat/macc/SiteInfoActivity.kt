@@ -297,7 +297,7 @@ class SiteInfoActivity : AppCompatActivity() {
                 val forecastArray = JSONArray(forecastData ?: "")
                 val weatherForecasts = mutableListOf<WeatherForecast>()
 
-                for (i in 0 until minOf(6, forecastArray.length())) {
+                for (i in 0 until minOf(8, forecastArray.length())) {
                     val forecast = forecastArray.getJSONObject(i)
                     val temperature = forecast.getJSONObject("Temperature").getDouble("Value").toString()
                     val hour = forecast.getString("DateTime").substring(11, 16)
