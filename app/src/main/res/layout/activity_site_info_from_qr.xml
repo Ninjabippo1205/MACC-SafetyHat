@@ -97,7 +97,8 @@
                 android:fontFamily="sans-serif-condensed"
                 android:text=""
                 android:textColor="@color/black"
-                android:textSize="20sp" />
+                android:textSize="20sp"
+                android:textStyle="bold"/>
         </LinearLayout>
 
         <TextView

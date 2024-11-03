@@ -57,20 +57,21 @@
             android:text="@string/weather"
             android:fontFamily="sans-serif-condensed"
             android:textColor="@color/black"
-            android:textSize="16sp"
+            android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/account_info_title" />
 
         <LinearLayout
             android:id="@+id/weather_placeholder"
-            android:layout_width="match_parent"
-            android:layout_height="130dp"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="40dp"
-            android:background="@color/white"
+            android:layout_width="380dp"
+            android:layout_height="140dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
             android:orientation="vertical"
+            android:elevation="4dp"
+            android:background="@drawable/rounded_background"
             android:padding="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -90,22 +91,23 @@
             android:layout_marginTop="20dp"
             android:layout_marginEnd="5dp"
             android:background="@drawable/rounded_background"
-            android:elevation="4dp"
+            android:elevation="6dp"
             android:orientation="vertical"
-            android:padding="16dp"
+            android:padding="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/weather_placeholder">
 
+            <!-- Site ID Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
 
                 <TextView
                     android:id="@+id/site_id_label"
-                    android:layout_width="55dp"
+                    android:layout_width="102dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="@string/site_id"
@@ -119,18 +121,20 @@
                     android:fontFamily="sans-serif-condensed"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
+            <!-- Start Date Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
 
                 <TextView
                     android:id="@+id/start_date_label"
-                    android:layout_width="78dp"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="@string/start_date"
@@ -144,18 +148,20 @@
                     android:fontFamily="sans-serif-condensed"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
+            <!-- End Date Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
 
                 <TextView
-                    android:id="@+id/end_date"
-                    android:layout_width="74dp"
+                    android:id="@+id/end_date_label"
+                    android:layout_width="102dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="@string/end_date"
@@ -169,18 +175,20 @@
                     android:fontFamily="sans-serif-condensed"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
 
+            <!-- Total Worker Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
 
                 <TextView
                     android:id="@+id/total_worker_label"
-                    android:layout_width="105dp"
+                    android:layout_width="103dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="@string/total_worker"
@@ -194,18 +202,20 @@
                     android:fontFamily="sans-serif-condensed"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
 
+            <!-- Scaffolding Number Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
 
                 <TextView
                     android:id="@+id/scaffolding_number_label"
-                    android:layout_width="143dp"
+                    android:layout_width="103dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="@string/scaffolding_number"
@@ -219,18 +229,20 @@
                     android:fontFamily="sans-serif-condensed"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
 
+            <!-- Site Address Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
 
                 <TextView
                     android:id="@+id/site_address_label"
-                    android:layout_width="97dp"
+                    android:layout_width="103dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="@string/site_address"
@@ -244,18 +256,20 @@
                     android:fontFamily="sans-serif-condensed"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
 
+            <!-- Site Radius Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="14dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="12dp">
 
                 <TextView
                     android:id="@+id/site_radius_label"
-                    android:layout_width="86dp"
+                    android:layout_width="105dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="@string/site_radius"
@@ -269,9 +283,11 @@
                     android:fontFamily="sans-serif-condensed"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
 
+            <!-- Site Manager Info Row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -280,7 +296,7 @@
 
                 <TextView
                     android:id="@+id/site_manager_info_label"
-                    android:layout_width="127dp"
+                    android:layout_width="106dp"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed"
                     android:text="@string/site_manager_info"
@@ -294,9 +310,12 @@
                     android:fontFamily="sans-serif-condensed"
                     android:text=""
                     android:textColor="@color/black"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
             </LinearLayout>
+
         </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView

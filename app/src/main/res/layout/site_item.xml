@@ -12,8 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp"
-    >
+        android:padding="16dp">
 
         <!-- ID -->
         <TextView
@@ -22,8 +21,8 @@
             android:layout_height="wrap_content"
             android:text="ID"
             android:textSize="16sp"
-            android:textStyle="bold"
-        />
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#2C2C2C"/>
 
         <!-- Address -->
         <TextView
@@ -33,8 +32,8 @@
             android:layout_marginTop="8dp"
             android:text="Address"
             android:textSize="16sp"
-            android:textStyle="bold"
-        />
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#2C2C2C"/>
 
         <!-- Radius -->
         <TextView
@@ -44,8 +43,8 @@
             android:layout_marginTop="8dp"
             android:text="Radius"
             android:textSize="16sp"
-            android:textStyle="bold"
-        />
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#2C2C2C" />
 
         <!-- Total Workers -->
         <TextView
@@ -55,8 +54,8 @@
             android:layout_marginTop="8dp"
             android:text="Total Workers"
             android:textSize="16sp"
-            android:textStyle="bold"
-        />
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#2C2C2C" />
 
         <!-- Scaffolding Count -->
         <TextView
@@ -66,8 +65,8 @@
             android:layout_marginTop="8dp"
             android:text="Scaffolding Count"
             android:textSize="16sp"
-            android:textStyle="bold"
-        />
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#2C2C2C" />
 
         <!-- Start Date -->
         <TextView
@@ -77,8 +76,8 @@
             android:layout_marginTop="8dp"
             android:text="Start Date"
             android:textSize="16sp"
-            android:textStyle="bold"
-        />
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#2C2C2C"/>
 
         <!-- End Date -->
         <TextView
@@ -88,8 +87,8 @@
             android:layout_marginTop="8dp"
             android:text="End Date"
             android:textSize="16sp"
-            android:textStyle="bold"
-        />
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#2C2C2C" />
 
         <!-- Security Code -->
         <TextView
@@ -99,8 +98,8 @@
             android:layout_marginTop="8dp"
             android:text="Security Code"
             android:textSize="16sp"
-            android:textStyle="bold"
-        />
+            android:fontFamily="sans-serif-condensed"
+            android:textColor="#2C2C2C"/>
 
         <!-- Bottoni -->
         <LinearLayout
