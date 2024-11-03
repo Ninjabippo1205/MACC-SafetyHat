@@ -375,14 +375,14 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
 
         override fun onBindViewHolder(holder: SiteViewHolder, position: Int) {
             val site = sites[position]
-            holder.id.text = "ID: ${site.id}"
-            holder.address.text = "Address: ${site.address}"
-            holder.radius.text = "Radius: ${site.siteRadius} meters"
-            holder.totalWorkers.text = "Total Workers: ${site.totalWorkers}"
-            holder.scaffoldingCount.text = "Scaffolding Count: ${site.scaffoldingCount}"
-            holder.startDate.text = "Start Date: ${site.startDate}"
-            holder.estimatedEndDate.text = "Estimated End Date: ${site.estimatedEndDate}"
-            holder.securityCode.text = "Security Code: ${site.securityCode}"
+            holder.id.text = "${site.id}"
+            holder.address.text = "${site.address}"
+            holder.radius.text = "${site.siteRadius} meters"
+            holder.totalWorkers.text = "${site.totalWorkers}"
+            holder.scaffoldingCount.text = "${site.scaffoldingCount}"
+            holder.startDate.text = "${site.startDate}"
+            holder.estimatedEndDate.text = "${site.estimatedEndDate}"
+            holder.securityCode.text = "${site.securityCode}"
 
             holder.qrButton.setOnClickListener {
                 val mCF = this@SitesOverviewActivity.intent.getStringExtra("managerCF") ?: ""
