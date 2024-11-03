@@ -57,7 +57,6 @@ dependencies {
     implementation(libs.zxing.android.embedded)
     implementation(libs.places)
 
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
