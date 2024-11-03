@@ -64,6 +64,12 @@ class CreatesiteActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 }
+                R.id.nav_site_overview_manager -> {
+                    val intent = Intent(this, SitesOverviewActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
                 R.id.nav_logout_manager -> {
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)

@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_home_manager"
         android:icon="@mipmap/safety_hat_big_foreground"
-        android:title="Home" />
-    <item
-        android:id="@+id/nav_site_overview_manager"
-        android:icon="@mipmap/crane_foreground"
-        android:title="Sites Overview"
-    />
+        android:title="Home"
+        />
     <item
         android:id="@+id/nav_create_site_manager"
         android:icon="@mipmap/site_foreground"
         android:title="Create Site"
-    />
+        />
+    <item
+        android:id="@+id/nav_account_info_manager"
+        android:icon="@mipmap/head_foreground"
+        android:title="Account Info"
+        />
     <item
         android:id="@+id/nav_logout_manager"
         android:icon="@drawable/logout_foreground"
         android:title="Logout"
-    />
+        />
 </menu>
