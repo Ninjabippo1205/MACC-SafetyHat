@@ -77,6 +77,7 @@ class SiteinfofromqrActivity : AppCompatActivity(){
                                 updateWorkerSite(siteID, workerCF)
                                 val intent = Intent(this@SiteinfofromqrActivity, WorkermenuActivity::class.java)
                                 intent.putExtra("workerCF", workerCF)
+                                intent.putExtra("siteID", siteID.toString())
                                 startActivity(intent)
                                 finish()
                             } else {

@@ -2,6 +2,7 @@
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout">
@@ -23,7 +24,55 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/menu_foreground"/>
 
+        <TextView
+            android:id="@+id/create_site_title2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="100dp"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:text="@string/communications"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/separator_line2"
+            android:layout_width="200dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="100dp"
+            android:background="#2C2C2C"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.523"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/create_site_title2" />
+
         <!-- Contenitore dei bottoni in fondo alla pagina -->
+
+        <ScrollView
+            android:id="@+id/scrollView2"
+            android:layout_width="379dp"
+            android:layout_height="433dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="39dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/separator_line2">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/communications_recycler_view"
+                android:layout_width="377dp"
+                android:layout_height="208dp"
+                android:background="@drawable/rounded_background"
+                android:padding="8dp" />
+        </ScrollView>
+
         <LinearLayout
             android:id="@+id/button_container"
             android:layout_width="350dp"
@@ -50,7 +99,7 @@
                     android:layout_width="59dp"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="2dp"
+                    android:layout_marginStart="2dp"
                     android:scaleX="1.4"
                     android:scaleY="1.4"
                     android:src="@mipmap/bulldozer_foreground" />
@@ -64,7 +113,8 @@
                     android:text="@string/site_info"
                     android:textAlignment="center"
                     android:textColor="#2C2C2C"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    tools:ignore="RtlCompat" />
             </LinearLayout>
 
             <!-- Coppia Immagine e Testo 2 -->
@@ -83,23 +133,25 @@
                     android:layout_width="56dp"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="7dp"
+                    android:layout_marginStart="7dp"
                     android:scaleX="1.4"
                     android:scaleY="1.4"
                     android:src="@mipmap/traffic_cone_foreground"
-                    android:textAlignment="center" />
+                    android:textAlignment="center"
+                    tools:ignore="RtlCompat" />
 
                 <TextView
                     android:id="@+id/alerts_text"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="8dp"
                     android:fontFamily="sans-serif-condensed"
                     android:gravity="center_vertical"
                     android:text="@string/alerts"
                     android:textAlignment="textStart"
                     android:textColor="#2C2C2C"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    tools:ignore="RtlCompat" />
             </LinearLayout>
 
         </LinearLayout>
