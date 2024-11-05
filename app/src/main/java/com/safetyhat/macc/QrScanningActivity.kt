@@ -30,17 +30,10 @@ class QrScanningActivity : AppCompatActivity() {
             finish()
         }
 
-        val workerCF = intent.getStringExtra("workerCF")
-        val intent = Intent(this@QrScanningActivity, SiteinfofromqrActivity::class.java)
-        intent.putExtra("qr_scanned_text", "{'ID'=34}")
-        intent.putExtra("workerCF", workerCF)
-        startActivity(intent)
-        finish()
-
         // Verifica e richiesta del permesso fotocamera
-        /*if (checkCameraPermission()) {
+        if (checkCameraPermission()) {
             initializeScanner()
-        }*/
+        }
     }
 
     // Funzione per controllare e richiedere il permesso della fotocamera

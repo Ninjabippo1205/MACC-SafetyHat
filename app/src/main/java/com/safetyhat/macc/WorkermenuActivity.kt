@@ -197,13 +197,13 @@ class WorkermenuActivity : AppCompatActivity() {
                                 }
 
                                 // Converte la risposta in booleano
-                                val exists = responseBody.toBoolean()
-                                if (exists) {
-                                    // Visualizzazione già esistente
-                                    Toast.makeText(context, "Visualization already exists", Toast.LENGTH_SHORT).show()
-                                } else {
-                                    // Creare una nuova visualizzazione
+                                val exists = responseBody.trim()
+                                if (exists == "true") {
+                                    Toast.makeText(context, "Communication already visualized", Toast.LENGTH_SHORT).show()
+                                } else if (exists == "false") {
                                     createVisualization(context, communicationID, workerCF, siteID)
+                                } else {
+                                    Toast.makeText(context, "Unexpected response format", Toast.LENGTH_SHORT).show()
                                 }
                             } else {
                                 // Gestione del caso in cui la risposta non sia un successo (es. codice 404 o 500)
@@ -237,12 +237,10 @@ class WorkermenuActivity : AppCompatActivity() {
                     override fun onResponse(call: Call, response: Response) {
                         if (response.isSuccessful) {
                             (context as? AppCompatActivity)?.runOnUiThread {
-                                Toast.makeText(context, "Visualization created successfully", Toast.LENGTH_SHORT).show()
                                 val intent = Intent(context, WorkermenuActivity::class.java).apply {
                                     putExtra("workerCF", workerCF)
                                     putExtra("siteID", siteID)
                                 }
-                                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
                                 context.startActivity(intent)
                             }
                         }

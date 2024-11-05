@@ -54,24 +54,35 @@
 
         <!-- Contenitore dei bottoni in fondo alla pagina -->
 
-        <ScrollView
-            android:id="@+id/scrollView2"
-            android:layout_width="379dp"
-            android:layout_height="433dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="39dp"
-            android:layout_marginEnd="16dp"
+        <LinearLayout
+            android:id="@+id/communications_container"
+            android:layout_width="400dp"
+            android:layout_height="400dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="11dp"
+            android:elevation="4dp"
+            android:background="@drawable/rounded_background"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/separator_line2">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/communications_recycler_view"
-                android:layout_width="377dp"
-                android:layout_height="208dp"
-                android:background="@drawable/rounded_background"
-                android:padding="8dp" />
-        </ScrollView>
+            <ScrollView
+                android:id="@+id/scrollView2"
+                android:layout_width="390dp"
+                android:layout_height="380dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginBottom="10dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/communications_recycler_view"
+                    android:layout_width="390dp"
+                    android:layout_height="380dp"
+                    android:background="@drawable/rounded_background" />
+            </ScrollView>
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/button_container"
