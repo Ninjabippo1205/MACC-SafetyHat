@@ -63,6 +63,7 @@ class WorkermenuActivity : AppCompatActivity() {
                 R.id.nav_account_info_worker -> {
                     val intent = Intent(this, WorkerinfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID.toString())
                     startActivity(intent)
                     finish()
                 }
@@ -83,6 +84,7 @@ class WorkermenuActivity : AppCompatActivity() {
         sitesInfoText.setOnClickListener {
             val intent = Intent(this, SiteInfoActivity::class.java)
             intent.putExtra("workerCF", workerCF)
+            intent.putExtra("siteID", siteID.toString())
             startActivity(intent)
             finish()
         }
@@ -90,6 +92,7 @@ class WorkermenuActivity : AppCompatActivity() {
         alertsText.setOnClickListener {
             val intent = Intent(this, AlertActivity::class.java)
             intent.putExtra("workerCF", workerCF)
+            intent.putExtra("siteID", siteID.toString())
             startActivity(intent)
             finish()
         }
