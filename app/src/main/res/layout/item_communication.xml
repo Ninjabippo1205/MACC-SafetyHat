@@ -42,5 +42,5 @@
         android:layout_marginTop="13dp"
         android:textAlignment="center"
         android:textColor="#2C2C2C"
-        android:textSize="16sp" />
+        android:textSize="20sp" />
 </LinearLayout>

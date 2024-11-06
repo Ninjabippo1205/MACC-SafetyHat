@@ -134,8 +134,8 @@ class ManagermenuActivity : AppCompatActivity() {
                         for (i in 0 until jsonArray.length()) {
                             val communicationJson = jsonArray.getJSONObject(i)
                             val text = communicationJson.getString("Text")
-                            // Inizializza il contatore a 0 come valore di default
-                            val communication = Communication(text, 0)
+                            val communicationID = communicationJson.getInt("ID")
+                            val communication = Communication(text, 0, communicationID)
                             communicationsList.add(communication)
                         }
 
@@ -249,11 +249,13 @@ class ManagermenuActivity : AppCompatActivity() {
 
     data class Communication(
         val message: String,
-        val thumbsUpCount: Int
+        val thumbsUpCount: Int,
+        val communicationID: Int,
     )
 
     class CommunicationsAdapter(private val communications: List<Communication>) :
         RecyclerView.Adapter<CommunicationsAdapter.CommunicationViewHolder>() {
+        private val client = OkHttpClient()
 
         inner class CommunicationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val communicationTextView: TextView = view.findViewById(R.id.communication_text_view)
@@ -267,10 +269,35 @@ class ManagermenuActivity : AppCompatActivity() {
             return CommunicationViewHolder(view)
         }
 
-        override fun onBindViewHolder(holder: CommunicationViewHolder, position: Int) {
+        override fun onBindViewHolder(holder: com.safetyhat.macc.ManagermenuActivity.CommunicationsAdapter.CommunicationViewHolder, position: Int) {
             val communication = communications[position]
             holder.communicationTextView.text = communication.message  // Mostra il testo della comunicazione
-            holder.viewCountTextView.text = "0" // Imposta il contatore iniziale a 0
+
+            // Esegui una chiamata API per ottenere il numero di visualizzazioni per il CommunicationID
+            val countUrl = "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communication.communicationID}"
+            val countRequest = Request.Builder().url(countUrl).build()
+
+            client.newCall(countRequest).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    (holder.itemView.context as? AppCompatActivity)?.runOnUiThread {
+                        Toast.makeText(holder.itemView.context, "Failed to load view count", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    if (response.isSuccessful) {
+                        response.body?.string()?.let { responseBody ->
+                            val json = JSONObject(responseBody)
+                            val viewCount = json.optInt("count", 0)  // Estrai il valore di 'count' dalla risposta
+
+                            // Aggiorna viewCountTextView sul thread principale
+                            (holder.itemView.context as? AppCompatActivity)?.runOnUiThread {
+                                holder.viewCountTextView.text = viewCount.toString()
+                            }
+                        }
+                    }
+                }
+            })
         }
 
 
