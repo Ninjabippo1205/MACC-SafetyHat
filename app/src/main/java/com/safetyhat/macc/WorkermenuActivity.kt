@@ -31,6 +31,7 @@ import org.json.JSONObject
 import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import android.os.Handler
 
 class WorkermenuActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -40,6 +41,8 @@ class WorkermenuActivity : AppCompatActivity() {
     private lateinit var communicationsRecyclerView: RecyclerView
     private lateinit var communicationsAdapter: CommunicationsAdapter
     private val communicationsList = mutableListOf<Communication>()
+    private lateinit var handler: Handler
+    private lateinit var runnable: Runnable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +66,7 @@ class WorkermenuActivity : AppCompatActivity() {
                 R.id.nav_account_info_worker -> {
                     val intent = Intent(this, WorkerinfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID.toString())
                     startActivity(intent)
                     finish()
                 }
@@ -83,6 +87,7 @@ class WorkermenuActivity : AppCompatActivity() {
         sitesInfoText.setOnClickListener {
             val intent = Intent(this, SiteInfoActivity::class.java)
             intent.putExtra("workerCF", workerCF)
+            intent.putExtra("siteID", siteID.toString())
             startActivity(intent)
             finish()
         }
@@ -90,6 +95,7 @@ class WorkermenuActivity : AppCompatActivity() {
         alertsText.setOnClickListener {
             val intent = Intent(this, AlertActivity::class.java)
             intent.putExtra("workerCF", workerCF)
+            intent.putExtra("siteID", siteID.toString())
             startActivity(intent)
             finish()
         }
@@ -100,9 +106,17 @@ class WorkermenuActivity : AppCompatActivity() {
         communicationsRecyclerView.isNestedScrollingEnabled = true
         communicationsRecyclerView.adapter = communicationsAdapter
 
-        if (siteID != null) {
-            fetchCommunications(siteID.toInt(), workerCF.toString())
+        handler = Handler(mainLooper)
+
+        // Definisci il runnable
+        runnable = Runnable {
+            if (siteID != null && workerCF != null) {
+                fetchCommunications(siteID.toInt(), workerCF)
+            }
+            handler.postDelayed(runnable, 10000)
         }
+
+        handler.post(runnable)
     }
 
     private fun fetchCommunications(siteID: Int, workerCF: String) {
@@ -236,12 +250,33 @@ class WorkermenuActivity : AppCompatActivity() {
 
                     override fun onResponse(call: Call, response: Response) {
                         if (response.isSuccessful) {
-                            (context as? AppCompatActivity)?.runOnUiThread {
-                                val intent = Intent(context, WorkermenuActivity::class.java).apply {
-                                    putExtra("workerCF", workerCF)
-                                    putExtra("siteID", siteID)
+                            update_visualizations(context, communicationID, workerCF, siteID)
+                        }
+                    }
+                })
+            }
+
+            private fun update_visualizations(context: Context, communicationID: String, workerCF: String, siteID: String) {
+                // Esegui una chiamata API per ottenere il numero di visualizzazioni per il CommunicationID
+                val countUrl = "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communicationID}"
+                val countRequest = Request.Builder().url(countUrl).build()
+
+                client.newCall(countRequest).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        (itemView.context as? AppCompatActivity)?.runOnUiThread {
+                            Toast.makeText(itemView.context, "Failed to load view count", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        if (response.isSuccessful) {
+                            response.body?.string()?.let { responseBody ->
+                                val json = JSONObject(responseBody)
+                                val viewCount = json.optInt("count", 0)  // Estrai il valore di 'count' dalla risposta
+
+                                (itemView.context as? AppCompatActivity)?.runOnUiThread {
+                                    viewCountTextView.text = viewCount.toString()
                                 }
-                                context.startActivity(intent)
                             }
                         }
                     }
@@ -276,7 +311,6 @@ class WorkermenuActivity : AppCompatActivity() {
                             val json = JSONObject(responseBody)
                             val viewCount = json.optInt("count", 0)  // Estrai il valore di 'count' dalla risposta
 
-                            // Aggiorna viewCountTextView sul thread principale
                             (holder.itemView.context as? AppCompatActivity)?.runOnUiThread {
                                 holder.viewCountTextView.text = viewCount.toString()
                             }

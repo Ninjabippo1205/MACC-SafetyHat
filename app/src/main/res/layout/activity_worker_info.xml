@@ -2,6 +2,7 @@
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout">
@@ -82,14 +83,12 @@
             android:layout_width="358dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="28dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="24dp"
             android:layout_marginEnd="27dp"
-            android:layout_marginBottom="164dp"
             android:background="@drawable/rounded_background"
             android:elevation="4dp"
             android:orientation="vertical"
             android:padding="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/map_fragment">
@@ -118,7 +117,7 @@
                     android:text=""
                     android:textColor="@color/black"
                     android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- Last Name Label and Text -->
@@ -145,7 +144,7 @@
                     android:text=""
                     android:textColor="@color/black"
                     android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- CF Label and Text -->
@@ -172,7 +171,7 @@
                     android:text=""
                     android:textColor="@color/black"
                     android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- Birthday Date Label and Text -->
@@ -199,7 +198,7 @@
                     android:text=""
                     android:textColor="@color/black"
                     android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- Phone Number Label and Text -->
@@ -226,7 +225,7 @@
                     android:text=""
                     android:textColor="@color/black"
                     android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <!-- Change Password Section -->
@@ -245,12 +244,12 @@
                 android:id="@+id/new_password_worker_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
                 android:autofillHints="password"
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_password"
                 android:inputType="textPassword"
-                android:minHeight="48dp"
-                android:layout_marginBottom="10dp" />
+                android:minHeight="48dp" />
 
             <!-- Change Password Button -->
             <Button

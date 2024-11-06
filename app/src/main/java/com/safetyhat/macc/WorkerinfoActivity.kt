@@ -57,24 +57,28 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         val workerCF = intent.getStringExtra("workerCF")
+        val siteID = intent.getStringExtra("siteID")
 
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home_worker -> {
                     val intent = Intent(this, WorkermenuActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID.toString())
                     startActivity(intent)
                     finish()
                 }
                 R.id.nav_site_info_worker -> {
                     val intent = Intent(this, SiteInfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID.toString())
                     startActivity(intent)
                     finish()
                 }
                 R.id.nav_alert_worker -> {
                     val intent = Intent(this, AlertActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID.toString())
                     startActivity(intent)
                     finish()
                 }

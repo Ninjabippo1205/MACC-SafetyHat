@@ -28,6 +28,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import android.os.Handler
 
 class ManagermenuActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -37,6 +38,8 @@ class ManagermenuActivity : AppCompatActivity() {
     private lateinit var communicationsRecyclerView: RecyclerView
     private lateinit var communicationsAdapter: CommunicationsAdapter
     private val communicationsList = mutableListOf<Communication>()
+    private lateinit var handler: Handler
+    private lateinit var runnable: Runnable
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,7 +114,17 @@ class ManagermenuActivity : AppCompatActivity() {
         communicationsRecyclerView.isNestedScrollingEnabled = true
         communicationsRecyclerView.adapter = communicationsAdapter
 
-        fetchCommunications(managerCF.toString())
+        handler = Handler(mainLooper)
+
+        // Definisci il runnable
+        runnable = Runnable {
+            if (managerCF != null) {
+                fetchCommunications(managerCF)
+            }
+            handler.postDelayed(runnable, 10000)
+        }
+
+        handler.post(runnable)
     }
 
     private fun fetchCommunications(managerCF: String) {
@@ -129,20 +142,19 @@ class ManagermenuActivity : AppCompatActivity() {
                 response.body?.string()?.let { responseBody ->
                     try {
                         val jsonArray = JSONArray(responseBody)
-                        val communicationsList = mutableListOf<Communication>()
+                        val newCommunicationsList = mutableListOf<Communication>()
 
                         for (i in 0 until jsonArray.length()) {
                             val communicationJson = jsonArray.getJSONObject(i)
                             val text = communicationJson.getString("Text")
                             val communicationID = communicationJson.getInt("ID")
                             val communication = Communication(text, 0, communicationID)
-                            communicationsList.add(communication)
+                            newCommunicationsList.add(communication)
                         }
 
                         // Aggiorna l'adattatore sul thread principale
                         runOnUiThread {
-                            communicationsAdapter = CommunicationsAdapter(communicationsList)
-                            communicationsRecyclerView.adapter = communicationsAdapter
+                            updateCommunicationsList(newCommunicationsList)
                         }
                     } catch (e: JSONException) {
                         runOnUiThread {
@@ -154,8 +166,26 @@ class ManagermenuActivity : AppCompatActivity() {
         })
     }
 
+    private fun updateCommunicationsList(newCommunications: List<Communication>) {
+        // Mantieni la visualizzazione corrente nel RecyclerView
+        val existingIds = communicationsList.map { it.communicationID }.toSet()
 
-
+        // Aggiungi o aggiorna le comunicazioni esistenti
+        newCommunications.forEach { newCommunication ->
+            if (existingIds.contains(newCommunication.communicationID)) {
+                // Trova l'indice della comunicazione esistente e aggiornala
+                val index = communicationsList.indexOfFirst { it.communicationID == newCommunication.communicationID }
+                if (index != -1) {
+                    communicationsList[index] = newCommunication // Aggiorna la comunicazione esistente
+                    communicationsAdapter.notifyItemChanged(index) // Notifica che l'elemento è stato aggiornato
+                }
+            } else {
+                // Se è una nuova comunicazione, aggiungila alla lista
+                communicationsList.add(newCommunication)
+                communicationsAdapter.notifyItemInserted(communicationsList.size - 1) // Notifica che è stata aggiunta una nuova comunicazione
+            }
+        }
+    }
 
     private fun fetchSites(managerCF: String) {
         val url = "https://noemigiustini01.pythonanywhere.com/site/read_all?CF=$managerCF"

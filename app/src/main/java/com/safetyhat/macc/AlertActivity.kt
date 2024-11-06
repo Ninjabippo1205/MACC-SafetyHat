@@ -18,6 +18,7 @@ class AlertActivity : AppCompatActivity(){
 
         drawerLayout = findViewById(R.id.drawer_layout)
         val workerCF = intent.getStringExtra("workerCF")
+        val siteID = intent.getStringExtra("siteID")
 
         navigationView = findViewById(R.id.navigation_view_worker)
         navigationView.itemIconTintList = null
@@ -31,18 +32,21 @@ class AlertActivity : AppCompatActivity(){
                 R.id.nav_home_worker -> {
                     val intent = Intent(this, WorkermenuActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID.toString())
                     startActivity(intent)
                     finish()
                 }
                 R.id.nav_account_info_worker -> {
                     val intent = Intent(this, WorkerinfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID.toString())
                     startActivity(intent)
                     finish()
                 }
                 R.id.nav_site_info_worker -> {
                     val intent = Intent(this, SiteInfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID.toString())
                     startActivity(intent)
                     finish()
                 }
