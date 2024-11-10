@@ -12,6 +12,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.location.Location
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.os.Handler
@@ -28,8 +29,21 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.navigation.NavigationView
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import org.json.JSONObject
+import java.io.IOException
+import kotlin.math.acos
+import kotlin.math.cos
 import kotlin.math.log10
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 class AlertActivity : AppCompatActivity(), SensorEventListener {
@@ -44,6 +58,8 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
     private var gyroscope: Sensor? = null
+    private val client = OkHttpClient()
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val bufferSize = AudioRecord.getMinBufferSize(
         44100,
@@ -70,6 +86,8 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
         drawerLayout = findViewById(R.id.drawer_layout)
         val workerCF = intent.getStringExtra("workerCF")
         val siteID = intent.getStringExtra("siteID")
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         navigationView = findViewById(R.id.navigation_view_worker)
         navigationView.itemIconTintList = null
@@ -126,7 +144,104 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
             startMonitoring()
         }
 
+        fetchSiteInfo(siteID.toString().toInt())
 
+    }
+
+    private fun getTargetLocation(address: String, radius: Double) {
+        // Converti l'indirizzo in LatLng usando Google Geocoding API
+        val myKey = getString(R.string.google_maps_key)
+        Thread {
+            try {
+                val response = client.newCall(
+                    Request.Builder()
+                        .url("https://maps.googleapis.com/maps/api/geocode/json?address=${address.replace(" ", "+")}&key=$myKey")
+                        .build()
+                ).execute()
+
+                val json = JSONObject(response.body?.string())
+                val location = json.getJSONArray("results")
+                    .getJSONObject(0)
+                    .getJSONObject("geometry")
+                    .getJSONObject("location")
+
+                runOnUiThread {
+                    Toast.makeText(this@AlertActivity, "2222222222", Toast.LENGTH_SHORT).show()
+                }
+
+                val targetLat = location.getDouble("lat")
+                val targetLng = location.getDouble("lng")
+
+                // Controlla la posizione dell'utente in tempo reale
+                monitorLocation(LatLng(targetLat, targetLng), radius)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+    }
+
+    private fun monitorLocation(targetLatLng: LatLng, radius: Double) {
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                location?.let {
+                    val currentLatLng = LatLng(it.latitude, it.longitude)
+                    val distance = calculateDistance(currentLatLng, targetLatLng)
+
+                    if (distance <= radius) {
+                        val alertMessage = "Wear Personal Protective Equipment"
+                        alertAdapter.addAlert(alertMessage, R.mipmap.safety_vest_foreground)
+                    }
+                }
+            }
+        }catch (e: SecurityException) {
+            Toast.makeText(this, "Unable to access the gps. Permission is required.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun calculateDistance(loc1: LatLng, loc2: LatLng): Double {
+        val earthRadius = 6371000.0 // metri
+        val dLat = Math.toRadians(loc2.latitude - loc1.latitude)
+        val dLng = Math.toRadians(loc2.longitude - loc1.longitude)
+
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(loc1.latitude)) * cos(Math.toRadians(loc2.latitude)) *
+                sin(dLng / 2) * sin(dLng / 2)
+
+        return 2 * earthRadius * acos(sin(Math.toRadians(loc1.latitude)) * sin(Math.toRadians(loc2.latitude)) + cos(Math.toRadians(loc1.latitude)) * cos(Math.toRadians(loc2.latitude)) * cos(dLng))
+    }
+
+    private fun fetchSiteInfo(ID: Int) {
+        val url = "https://NoemiGiustini01.pythonanywhere.com/site/read?id=$ID"
+        val request = Request.Builder().url(url).get().build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@AlertActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                val jsonObject = JSONObject(responseData ?: "")
+
+                runOnUiThread {
+                    if (response.isSuccessful && !jsonObject.has("message")) {
+                        val address = jsonObject.optString("Address", "N/A")
+                        val radius = jsonObject.optString("SiteRadius", "N/A").toString().toDouble()
+
+                        if (ActivityCompat.checkSelfPermission(this@AlertActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(this@AlertActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+                        } else {
+                            getTargetLocation(address, radius)
+                        }
+
+                    } else {
+                        Toast.makeText(this@AlertActivity, "Site not found.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
     }
 
     override fun onResume() {
