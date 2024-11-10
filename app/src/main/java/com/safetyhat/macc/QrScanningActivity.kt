@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -15,10 +16,18 @@ import com.budiyev.android.codescanner.CodeScannerView
 import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import org.json.JSONObject
+import java.io.IOException
 
 class QrScanningActivity : AppCompatActivity() {
     private lateinit var codeScanner: CodeScanner
     private val CAMERA_PERMISSION_CODE = 101
+    private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,11 +76,9 @@ class QrScanningActivity : AppCompatActivity() {
             runOnUiThread {
                 // Chiudi la fotocamera
                 releaseScanner()
-                val intent = Intent(this@QrScanningActivity, SiteinfofromqrActivity::class.java)
-                intent.putExtra("qr_scanned_text", it.text)
-                intent.putExtra("workerCF", workerCF)
-                startActivity(intent)
-                finish()
+                val jsonObjectID = JSONObject(it.text)
+                val siteID = jsonObjectID.getInt("ID")
+                getCurrentWorkerSite(workerCF.toString(), siteID, it.text)
             }
         }
 
@@ -86,6 +93,45 @@ class QrScanningActivity : AppCompatActivity() {
         scannerView.setOnClickListener {
             codeScanner.startPreview()
         }
+    }
+
+    private fun getCurrentWorkerSite(workerCF: String, siteID: Int, scannedText: String) {
+        val url = "https://NoemiGiustini01.pythonanywhere.com/worker/read?cf=$workerCF"
+        val request = Request.Builder().url(url).get().build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@QrScanningActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                val jsonObject = JSONObject(responseData ?: "")
+
+                runOnUiThread {
+                    if (response.isSuccessful && !jsonObject.has("message")) {
+                        val currentSiteID = jsonObject.optString("SiteCode", "N/A")
+                        if (currentSiteID.toInt() == siteID) {
+                            val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
+                            intent.putExtra("workerCF", workerCF)
+                            intent.putExtra("siteID", siteID.toString())
+                            startActivity(intent)
+                            finish()
+                        }else{
+                            val intent = Intent(this@QrScanningActivity, SiteinfofromqrActivity::class.java)
+                            intent.putExtra("qr_scanned_text", scannedText)
+                            intent.putExtra("workerCF", workerCF)
+                            startActivity(intent)
+                            finish()
+                        }
+                    } else {
+                        Toast.makeText(this@QrScanningActivity, "Worker not found.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
     }
 
     // Rilascia risorse della fotocamera
