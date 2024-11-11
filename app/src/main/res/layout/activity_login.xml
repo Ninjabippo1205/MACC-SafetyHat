@@ -94,7 +94,7 @@
             android:autofillHints="username"
             android:hint="@string/cf_hint"
             android:inputType="text"
-            android:text="SMTHJN90D50A001K"
+            android:text="FRNLFS71E08H501K"
             />
 
         <TextView
@@ -112,7 +112,7 @@
             android:autofillHints="password"
             android:hint="@string/password_hint"
             android:inputType="textPassword"
-            android:text="Ci@o2001"
+            android:text="BimbeDiFr@nco71"
         />
 
 

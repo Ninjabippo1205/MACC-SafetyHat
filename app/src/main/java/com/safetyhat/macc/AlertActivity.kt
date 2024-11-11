@@ -105,6 +105,7 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
                     startActivity(intent)
                     finish()
                 }
+
                 R.id.nav_account_info_worker -> {
                     val intent = Intent(this, WorkerinfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
@@ -112,6 +113,7 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
                     startActivity(intent)
                     finish()
                 }
+
                 R.id.nav_site_info_worker -> {
                     val intent = Intent(this, SiteInfoActivity::class.java)
                     intent.putExtra("workerCF", workerCF)
@@ -119,6 +121,7 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
                     startActivity(intent)
                     finish()
                 }
+
                 R.id.nav_logout_worker -> {
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
@@ -138,8 +141,16 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), RECORD_AUDIO_PERMISSION_CODE)
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.RECORD_AUDIO),
+                RECORD_AUDIO_PERMISSION_CODE
+            )
         } else {
             startMonitoring()
         }
@@ -366,39 +377,40 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
         audioRecord?.stop()
         audioRecord?.release()
     }
-}
 
-class AlertAdapter(private val alertList: MutableList<Pair<String, Int>>) : RecyclerView.Adapter<AlertAdapter.AlertViewHolder>() {
+    inner class AlertAdapter(private val alertList: MutableList<Pair<String, Int>>) :
+        RecyclerView.Adapter<AlertAdapter.AlertViewHolder>() {
 
-    class AlertViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val alertTextView: TextView = view.findViewById(R.id.view_count_text_view)
-        val alertIcon: ImageView = view.findViewById(R.id.thumbs_up_icon)
-    }
+        inner class AlertViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val alertTextView: TextView = view.findViewById(R.id.view_count_text_view)
+            val alertIcon: ImageView = view.findViewById(R.id.thumbs_up_icon)
+        }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlertViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.alert_item, parent, false)
-        return AlertViewHolder(view)
-    }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlertViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.alert_item, parent, false)
+            return AlertViewHolder(view)
+        }
 
-    override fun onBindViewHolder(holder: AlertViewHolder, position: Int) {
-        val (message, imageResId) = alertList[position]
-        holder.alertTextView.text = message
-        holder.alertIcon.setImageResource(imageResId)
-    }
+        override fun onBindViewHolder(holder: AlertViewHolder, position: Int) {
+            val (message, imageResId) = alertList[position]
+            holder.alertTextView.text = message
+            holder.alertIcon.setImageResource(imageResId)
+        }
 
-    override fun getItemCount(): Int {
-        return alertList.size
-    }
+        override fun getItemCount(): Int {
+            return alertList.size
+        }
 
-    fun addAlert(alertMessage: String, @DrawableRes imageResId: Int) {
-        alertList.add(Pair(alertMessage, imageResId))
-        notifyItemInserted(alertList.size - 1)
-    }
+        fun addAlert(alertMessage: String, @DrawableRes imageResId: Int) {
+            alertList.add(Pair(alertMessage, imageResId))
+            notifyItemInserted(alertList.size - 1)
+        }
 
-    fun removeAlert() {
-        if (alertList.isNotEmpty()) {
-            alertList.removeAt(0)
-            notifyItemRemoved(0)
+        fun removeAlert() {
+            if (alertList.isNotEmpty()) {
+                alertList.removeAt(0)
+                notifyItemRemoved(0)
+            }
         }
     }
 }
