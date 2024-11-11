@@ -35,9 +35,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.material.navigation.NavigationView
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import kotlin.math.acos
@@ -66,6 +68,15 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
         AudioFormat.CHANNEL_IN_MONO,
         AudioFormat.ENCODING_PCM_16BIT
     )
+
+    private val weatherUpdateHandler = Handler(Looper.getMainLooper())
+    private val weatherUpdateRunnable = object : Runnable {
+        override fun run() {
+            fetchWeatherByCityKey(lastLocationKey)
+            weatherUpdateHandler.postDelayed(this, 3600000L) // 1 ora in millisecondi
+        }
+    }
+    private var lastLocationKey: String = ""
 
     companion object {
         const val RECORD_AUDIO_PERMISSION_CODE = 100
@@ -159,30 +170,11 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
 
     }
 
-    private fun getTargetLocation(address: String, radius: Double) {
+    private fun getTargetLocation(targetLat: Double, targetLng: Double, radius: Double) {
         // Converti l'indirizzo in LatLng usando Google Geocoding API
         val myKey = getString(R.string.google_maps_key)
         Thread {
             try {
-                val response = client.newCall(
-                    Request.Builder()
-                        .url("https://maps.googleapis.com/maps/api/geocode/json?address=${address.replace(" ", "+")}&key=$myKey")
-                        .build()
-                ).execute()
-
-                val json = JSONObject(response.body?.string())
-                val location = json.getJSONArray("results")
-                    .getJSONObject(0)
-                    .getJSONObject("geometry")
-                    .getJSONObject("location")
-
-                runOnUiThread {
-                    Toast.makeText(this@AlertActivity, "2222222222", Toast.LENGTH_SHORT).show()
-                }
-
-                val targetLat = location.getDouble("lat")
-                val targetLng = location.getDouble("lng")
-
                 // Controlla la posizione dell'utente in tempo reale
                 monitorLocation(LatLng(targetLat, targetLng), radius)
             } catch (e: Exception) {
@@ -238,18 +230,72 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
 
                 runOnUiThread {
                     if (response.isSuccessful && !jsonObject.has("message")) {
-                        val address = jsonObject.optString("Address", "N/A")
-                        val radius = jsonObject.optString("SiteRadius", "N/A").toString().toDouble()
-
-                        if (ActivityCompat.checkSelfPermission(this@AlertActivity, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            ActivityCompat.requestPermissions(this@AlertActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
-                        } else {
-                            getTargetLocation(address, radius)
-                        }
-
+                        val locationKey = jsonObject.optString("LocationKey", "N/A")
+                        lastLocationKey = locationKey
+                        fetchWeatherByCityKey(locationKey)
+                        startWeatherUpdates() // Avvia aggiornamenti orari
                     } else {
                         Toast.makeText(this@AlertActivity, "Site not found.", Toast.LENGTH_SHORT).show()
                     }
+                }
+            }
+        })
+    }
+
+    private fun fetchWeatherByCityKey(cityKey: String) {
+        val apiKey = getString(R.string.accuweather_api_key)
+        val forecastUrl = "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/$cityKey"
+        val forecastParams = forecastUrl.toHttpUrlOrNull()?.newBuilder()
+            ?.addQueryParameter("apikey", apiKey)
+            ?.addQueryParameter("language", "en-us")
+            ?.addQueryParameter("details", "true")
+            ?.addQueryParameter("metric", "true")
+            ?.build()
+
+        val forecastRequest = Request.Builder().url(forecastParams.toString()).get().build()
+
+        client.newCall(forecastRequest).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@AlertActivity, "Failed to retrieve weather information.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val forecastData = response.body?.string()
+                val forecastArray = JSONArray(forecastData ?: "")
+
+                var maxRain = 0.0
+                var maxSnow = 0.0
+                var maxIce = 0.0
+                var maxWindSpeed = 0.0
+                var maxTemp = Double.MIN_VALUE
+                var minTemp = Double.MAX_VALUE
+                var maxUVIndex = 0
+
+                for (i in 0 until forecastArray.length()) {
+                    val forecast = forecastArray.getJSONObject(i)
+                    val temp = forecast.getJSONObject("Temperature").getDouble("Value")
+                    maxTemp = maxOf(maxTemp, temp)
+                    minTemp = minOf(minTemp, temp)
+                    maxRain = maxOf(maxRain, forecast.getJSONObject("Rain").getDouble("Value"))
+                    maxSnow = maxOf(maxSnow, forecast.getJSONObject("Snow").getDouble("Value"))
+                    maxIce = maxOf(maxIce, forecast.getJSONObject("Ice").getDouble("Value"))
+                    maxWindSpeed = maxOf(maxWindSpeed, forecast.getJSONObject("Wind").getJSONObject("Speed").getDouble("Value"))
+                    maxUVIndex = maxOf(maxUVIndex, forecast.getInt("UVIndex"))
+                }
+
+                runOnUiThread {
+                    // Aggiorna gli alert basati sulle soglie specificate
+                    alertAdapter.updateAlerts(
+                        rain = maxRain,
+                        snow = maxSnow,
+                        ice = maxIce,
+                        windSpeed = maxWindSpeed,
+                        maxTemp = maxTemp,
+                        minTemp = minTemp,
+                        uvIndex = maxUVIndex
+                    )
                 }
             }
         })
@@ -372,6 +418,10 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    private fun startWeatherUpdates() {
+        weatherUpdateHandler.post(weatherUpdateRunnable)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         audioRecord?.stop()
@@ -397,19 +447,62 @@ class AlertActivity : AppCompatActivity(), SensorEventListener {
             holder.alertIcon.setImageResource(imageResId)
         }
 
-        override fun getItemCount(): Int {
-            return alertList.size
-        }
+        override fun getItemCount(): Int = alertList.size
 
         fun addAlert(alertMessage: String, @DrawableRes imageResId: Int) {
-            alertList.add(Pair(alertMessage, imageResId))
-            notifyItemInserted(alertList.size - 1)
+            // Controlla se l'alert esiste già nella lista
+            if (!alertList.any { it.first == alertMessage }) {
+                alertList.add(Pair(alertMessage, imageResId))
+                notifyItemInserted(alertList.size - 1)
+            }
         }
 
         fun removeAlert() {
             if (alertList.isNotEmpty()) {
                 alertList.removeAt(0)
                 notifyItemRemoved(0)
+            }
+        }
+
+        // Metodo per aggiornare gli alert in base alle condizioni meteo
+        fun updateAlerts(
+            rain: Double,
+            snow: Double,
+            ice: Double,
+            windSpeed: Double,
+            maxTemp: Double,
+            minTemp: Double,
+            uvIndex: Int
+        ) {
+            val updatedAlerts = mutableListOf<Pair<String, Int>>()
+
+            if (rain >= 2.0) {
+                updatedAlerts.add("High rain: $rain mm. \nBring an umbrella or raincoat." to R.mipmap.weather_foreground)
+            }
+            if (snow >= 2.0) {
+                updatedAlerts.add("High snowfall: $snow mm. \nPrepare winter clothing." to R.mipmap.snow_foreground)
+            }
+            if (ice > 2.0) {
+                updatedAlerts.add("High ice: $ice mm. \nBe cautious of icy roads." to R.mipmap.ice_foreground)
+            }
+            if (windSpeed > 10.0) {
+                updatedAlerts.add("High wind speed: $windSpeed km/h. \nSecure exposed areas and be cautious." to R.mipmap.windy_foreground)
+            }
+            if (maxTemp > 30.0) {
+                updatedAlerts.add("High temperature: $maxTemp°C. \nBring plenty of water and use sun protection." to R.mipmap.hot_foreground)
+            }
+            if (minTemp < 0.0) {
+                updatedAlerts.add("Low temperature: $minTemp°C. \nDress warmly for cold weather." to R.mipmap.cold_foreground)
+            }
+            if (uvIndex > 2) {
+                updatedAlerts.add("High UV index: $uvIndex. \nApply sunscreen and protect your skin." to R.mipmap.weather_foreground)
+            }
+
+            // Aggiorna la lista degli alert solo se ci sono cambiamenti
+            if (alertList != updatedAlerts) {
+                alertList.clear()
+                alertList.addAll(updatedAlerts)
+                notifyDataSetChanged()
             }
         }
     }
