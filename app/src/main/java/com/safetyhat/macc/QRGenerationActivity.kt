@@ -34,7 +34,7 @@ class QRGenerationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_qr_generation)
 
         val siteID = intent.getStringExtra("SiteID")
-        val managerCF = intent.getStringExtra("mCF")
+        val managerCF = intent.getStringExtra("managerCF")
 
         drawerLayout = findViewById(R.id.drawer_layout)
         navigationView = findViewById(R.id.navigation_view_manager)

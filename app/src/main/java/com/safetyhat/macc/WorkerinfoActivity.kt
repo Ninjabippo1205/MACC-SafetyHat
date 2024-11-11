@@ -199,15 +199,10 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         val url = "https://NoemiGiustini01.pythonanywhere.com/site/read?id=$ID"
         val request = Request.Builder().url(url).get().build()
 
-
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
-                    Toast.makeText(
-                        this@WorkerinfoActivity,
-                        "Network error. Please try again.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@WorkerinfoActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -217,12 +212,8 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 runOnUiThread {
                     if (response.isSuccessful && !jsonObject.has("message")) {
-
-                        val Address = jsonObject.optString("Address", "N/A")
-                        val SiteRadius = jsonObject.optString("SiteRadius", "N/A")
-
-                        addPOIFromAddress(Address, SiteRadius.toDouble())
-
+                        val SiteRadius = jsonObject.optDouble("SiteRadius", 0.0)
+                        addPOIFromAddress(ID, SiteRadius)
                     } else {
                         Toast.makeText(this@WorkerinfoActivity, "Site not found.", Toast.LENGTH_SHORT).show()
                     }
@@ -231,12 +222,14 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
         // Abilita i controlli di zoom
         mMap.uiSettings.isZoomControlsEnabled = true
 
+        // Controllo dei permessi per la posizione
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.isMyLocationEnabled = true
 
@@ -244,13 +237,14 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (location != null) {
                     val currentLatLng = LatLng(location.latitude, location.longitude)
 
+                    // Centra la mappa sulla posizione dell'utente senza aggiungere un marker
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-                    mMap.addMarker(MarkerOptions().position(currentLatLng).title("You are here"))
                 }
             }
         }
-
     }
+
+
 
     private val circleColors = listOf(
         0x22FF0000.toInt(), // Rosso trasparente
@@ -258,39 +252,57 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
     private var colorIndex = 0
 
     // Funzione per aggiungere un POI e disegnare un cerchio con un colore assegnato automaticamente
-    private fun addPOIFromAddress(address: String, radius: Double) {
-        val geocoder = Geocoder(this, Locale.getDefault())
-        geocoder.getFromLocationName(address, 1, object : Geocoder.GeocodeListener {
-            override fun onGeocode(addresses: MutableList<android.location.Address>) {
-                if (addresses.isNotEmpty()) {
-                    val location = addresses[0]
-                    val latLng = LatLng(location.latitude, location.longitude)
+    private fun addPOIFromAddress(siteID: Int, radius: Double) {
+        val url = "https://NoemiGiustini01.pythonanywhere.com/site/read?id=$siteID"
+        val request = Request.Builder().url(url).get().build()
 
-                    // Assicurati che il codice che interagisce con la mappa venga eseguito nel main thread
-                    runOnUiThread {
-                        // Aggiungi un marker sulla mappa
-                        mMap.addMarker(MarkerOptions().position(latLng).title("POI: $address"))
-
-                        // Seleziona un colore dalla lista e incrementa l'indice
-                        val color = circleColors[colorIndex % circleColors.size]
-                        colorIndex++
-
-                        // Disegna un cerchio intorno al POI con il colore scelto
-                        val circleOptions = CircleOptions()
-                            .center(latLng)
-                            .radius(radius) // Raggio in metri
-                            .strokeColor(color) // Colore del bordo
-                            .fillColor(color) // Colore di riempimento
-                            .strokeWidth(2f) // Spessore del bordo
-                        mMap.addCircle(circleOptions)
-                    }
-                } else {
-                    Log.e("MapError", "Indirizzo non trovato.")
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@WorkerinfoActivity, "Failed to retrieve site coordinates", Toast.LENGTH_SHORT).show()
                 }
             }
 
-            override fun onError(errorMessage: String?) {
-                Log.e("GeocoderError", "Errore di geocodifica: $errorMessage")
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                val jsonObject = JSONObject(responseData ?: "")
+
+                if (response.isSuccessful && !jsonObject.has("message")) {
+                    val latitude = jsonObject.optDouble("Latitude")
+                    val longitude = jsonObject.optDouble("Longitude")
+                    val address = jsonObject.optString("Address", "N/A")
+
+                    if (!latitude.isNaN() && !longitude.isNaN()) {
+                        val latLng = LatLng(latitude, longitude)
+
+                        // Assicurati che il codice che interagisce con la mappa venga eseguito nel main thread
+                        runOnUiThread {
+                            // Aggiungi un marker sulla mappa
+                            mMap.addMarker(MarkerOptions().position(latLng).title("POI: $address"))
+
+                            // Seleziona un colore dalla lista e incrementa l'indice
+                            val color = circleColors[colorIndex % circleColors.size]
+                            colorIndex++
+
+                            // Disegna un cerchio intorno al POI con il colore scelto
+                            val circleOptions = CircleOptions()
+                                .center(latLng)
+                                .radius(radius) // Raggio in metri
+                                .strokeColor(color) // Colore del bordo
+                                .fillColor(color) // Colore di riempimento
+                                .strokeWidth(2f) // Spessore del bordo
+                            mMap.addCircle(circleOptions)
+                        }
+                    } else {
+                        runOnUiThread {
+                            Toast.makeText(this@WorkerinfoActivity, "Coordinates not available for this site.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    runOnUiThread {
+                        Toast.makeText(this@WorkerinfoActivity, "Failed to retrieve site info.", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         })
     }

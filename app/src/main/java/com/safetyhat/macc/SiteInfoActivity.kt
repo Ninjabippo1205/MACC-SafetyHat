@@ -118,6 +118,10 @@ class SiteInfoActivity : AppCompatActivity() {
                 val responseData = response.body?.string()
                 val jsonObject = JSONObject(responseData ?: "")
 
+                val latitude = jsonObject.optDouble("Latitude")
+                val longitude = jsonObject.optDouble("Longitude")
+                val locationKey = jsonObject.optString("LocationKey")
+
                 runOnUiThread {
                     if (response.isSuccessful && !jsonObject.has("message")) {
                         findViewById<TextView>(R.id.site_id_text).text = jsonObject.optString("id", "N/A")
@@ -129,11 +133,52 @@ class SiteInfoActivity : AppCompatActivity() {
                         findViewById<TextView>(R.id.site_radius_text).text = jsonObject.optString("SiteRadius", "N/A")
                         findViewById<TextView>(R.id.site_manager_info_text).text = jsonObject.optString("ManagerCF", "N/A")
 
-                        val address = jsonObject.optString("Address", "N/A")
-                        fetchCoordinatesAndWeather(address)
+                        fetchWeatherByCityKey(locationKey)
                     } else {
                         Toast.makeText(this@SiteInfoActivity, "Site not found.", Toast.LENGTH_SHORT).show()
                     }
+                }
+            }
+        })
+    }
+
+    private fun fetchWeatherByCityKey(cityKey: String) {
+        val apiKey = getString(R.string.accuweather_api_key)
+        val forecastUrl = "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/$cityKey"
+
+        val forecastParams = forecastUrl.toHttpUrlOrNull()?.newBuilder()
+            ?.addQueryParameter("apikey", apiKey)
+            ?.addQueryParameter("language", "en-us")
+            ?.addQueryParameter("details", "false")
+            ?.addQueryParameter("metric", "true")
+            ?.build()
+
+        val forecastRequest = Request.Builder().url(forecastParams.toString()).get().build()
+
+        client.newCall(forecastRequest).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@SiteInfoActivity, "Failed to retrieve weather information.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val forecastData = response.body?.string()
+                val forecastArray = JSONArray(forecastData ?: "")
+                val weatherForecasts = mutableListOf<WeatherForecast>()
+
+                for (i in 0 until minOf(8, forecastArray.length())) {
+                    val forecast = forecastArray.getJSONObject(i)
+                    val temperature = forecast.getJSONObject("Temperature").getDouble("Value").toString()
+                    val hour = forecast.getString("DateTime").substring(11, 16)
+                    val weatherIcon = forecast.getInt("WeatherIcon")
+                    weatherForecasts.add(WeatherForecast(hour, "$temperature°C", weatherIcon))
+                }
+
+                runOnUiThread {
+                    val recyclerView = findViewById<RecyclerView>(R.id.weather_recycler_view)
+                    recyclerView.layoutManager = LinearLayoutManager(this@SiteInfoActivity)
+                    recyclerView.adapter = WeatherAdapter(weatherForecasts)
                 }
             }
         })
@@ -212,115 +257,5 @@ class SiteInfoActivity : AppCompatActivity() {
                 else -> R.drawable.ic_launcher_background
             }
         }
-    }
-
-    private fun fetchCoordinatesAndWeather(address: String) {
-        val googleApiKey = getString(R.string.google_maps_key)
-        val geocodeUrl = "https://maps.googleapis.com/maps/api/geocode/json"
-
-        val geocodeParams = geocodeUrl.toHttpUrlOrNull()?.newBuilder()
-            ?.addQueryParameter("address", address)
-            ?.addQueryParameter("key", googleApiKey)
-            ?.build()
-
-        val geocodeRequest = Request.Builder().url(geocodeParams.toString()).get().build()
-
-        client.newCall(geocodeRequest).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Toast.makeText(this@SiteInfoActivity, "Failed to retrieve coordinates.", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                val geocodeData = JSONObject(responseData ?: "")
-                val location = geocodeData.getJSONArray("results")
-                    .getJSONObject(0)
-                    .getJSONObject("geometry")
-                    .getJSONObject("location")
-
-                val lat = location.getDouble("lat")
-                val lng = location.getDouble("lng")
-
-                fetchWeatherInfoByCoordinates(lat, lng)
-            }
-        })
-    }
-
-    private fun fetchWeatherInfoByCoordinates(lat: Double, lng: Double) {
-        val apiKey = getString(R.string.accuweather_api_key)
-        val locationUrl = "https://dataservice.accuweather.com/locations/v1/cities/geoposition/search"
-
-        val locationParams = locationUrl.toHttpUrlOrNull()?.newBuilder()
-            ?.addQueryParameter("q", "$lat,$lng")
-            ?.addQueryParameter("apikey", apiKey)
-            ?.addQueryParameter("language", "en-us")
-            ?.build()
-
-        val locationRequest = Request.Builder().url(locationParams.toString()).get().build()
-
-        client.newCall(locationRequest).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Toast.makeText(this@SiteInfoActivity, "Failed to retrieve location key.", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                val locationData = JSONObject(responseData ?: "")
-                if (locationData.has("Key")) {
-                    val cityKey = locationData.getString("Key")
-                    fetchWeatherByCityKey(cityKey)
-                } else {
-                    runOnUiThread {
-                        Toast.makeText(this@SiteInfoActivity, "Location key not found in response.", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        })
-    }
-
-    private fun fetchWeatherByCityKey(cityKey: String) {
-        val apiKey = getString(R.string.accuweather_api_key)
-        val forecastUrl = "https://dataservice.accuweather.com/forecasts/v1/hourly/12hour/$cityKey"
-
-        val forecastParams = forecastUrl.toHttpUrlOrNull()?.newBuilder()
-            ?.addQueryParameter("apikey", apiKey)
-            ?.addQueryParameter("language", "en-us")
-            ?.addQueryParameter("details", "false")
-            ?.addQueryParameter("metric", "true")
-            ?.build()
-
-        val forecastRequest = Request.Builder().url(forecastParams.toString()).get().build()
-
-        client.newCall(forecastRequest).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Toast.makeText(this@SiteInfoActivity, "Failed to retrieve weather information.", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val forecastData = response.body?.string()
-                val forecastArray = JSONArray(forecastData ?: "")
-                val weatherForecasts = mutableListOf<WeatherForecast>()
-
-                for (i in 0 until minOf(8, forecastArray.length())) {
-                    val forecast = forecastArray.getJSONObject(i)
-                    val temperature = forecast.getJSONObject("Temperature").getDouble("Value").toString()
-                    val hour = forecast.getString("DateTime").substring(11, 16)
-                    val weatherIcon = forecast.getInt("WeatherIcon")
-                    weatherForecasts.add(WeatherForecast(hour, "$temperature°C", weatherIcon))
-                }
-
-                runOnUiThread {
-                    val recyclerView = findViewById<RecyclerView>(R.id.weather_recycler_view)
-                    recyclerView.layoutManager = LinearLayoutManager(this@SiteInfoActivity)
-                    recyclerView.adapter = WeatherAdapter(weatherForecasts)
-                }
-            }
-        })
     }
 }

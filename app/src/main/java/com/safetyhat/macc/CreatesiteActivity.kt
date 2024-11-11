@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.*
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONException
@@ -136,7 +137,6 @@ class CreatesiteActivity : AppCompatActivity() {
         val addressInput = findViewById<AutoCompleteTextView>(R.id.address_field)
         val token = AutocompleteSessionToken.newInstance()
 
-        // Inizializza il TextWatcher per il completamento automatico
         val textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -165,22 +165,15 @@ class CreatesiteActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         }
 
-        // Aggiungi il TextWatcher all'indirizzo input
         addressInput.addTextChangedListener(textWatcher)
 
-        // Gestisci il click sul suggerimento
         addressInput.setOnItemClickListener { parent, _, position, _ ->
             val selectedAddress = parent?.getItemAtPosition(position) as? String
             if (selectedAddress != null) {
-                // Rimuovi temporaneamente il TextWatcher per evitare che i suggerimenti riappaiano
                 addressInput.removeTextChangedListener(textWatcher)
-
-                // Imposta il testo selezionato e nascondi il menu dei suggerimenti
                 addressInput.setText(selectedAddress)
                 isAddressSelected = true
                 addressInput.dismissDropDown()
-
-                // Riattiva il TextWatcher quando l'utente modifica il testo
                 addressInput.post {
                     addressInput.addTextChangedListener(textWatcher)
                 }
@@ -195,11 +188,7 @@ class CreatesiteActivity : AppCompatActivity() {
 
     private fun generateSecurityCode() {
         val url = "https://NoemiGiustini01.pythonanywhere.com/site/generateSecurityCode"
-
-        val request = Request.Builder()
-            .url(url)
-            .build()
-
+        val request = Request.Builder().url(url).build()
         val securityCodeField = findViewById<EditText>(R.id.security_code_field)
 
         client.newCall(request).enqueue(object : Callback {
@@ -222,7 +211,7 @@ class CreatesiteActivity : AppCompatActivity() {
         })
     }
 
-    private fun showDatePickerDialog(birthdateField: EditText) {
+    private fun showDatePickerDialog(dateField: EditText) {
         val calendar = Calendar.getInstance()
 
         val datePickerDialog = DatePickerDialog(
@@ -233,7 +222,7 @@ class CreatesiteActivity : AppCompatActivity() {
                 selectedDate.set(year, month, dayOfMonth)
 
                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                birthdateField.setText(dateFormat.format(selectedDate.time))
+                dateField.setText(dateFormat.format(selectedDate.time))
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -257,33 +246,20 @@ class CreatesiteActivity : AppCompatActivity() {
             return false
         }
 
-        // Verifica che l'indirizzo sia lungo al massimo 100 caratteri
         if (address.length > 500) {
             Toast.makeText(this, "Address should be at most 100 characters long", Toast.LENGTH_SHORT).show()
             return false
         }
 
         val numericPattern = "^\\d{1,}$"
-        if (!Pattern.matches(numericPattern, maxWorkers)) {
-            Toast.makeText(this, "Number of workers should contain only numbers with at least 1 digit", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (!Pattern.matches(numericPattern, scaffolding)) {
-            Toast.makeText(this, "Number of scaffolding should contain only numbers with at least 1 digit", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (!Pattern.matches(numericPattern, siteRadius)) {
-            Toast.makeText(this, "Radius of the site should contain only numbers with at least 1 digit", Toast.LENGTH_SHORT).show()
+        if (!Pattern.matches(numericPattern, maxWorkers) || !Pattern.matches(numericPattern, scaffolding) || !Pattern.matches(numericPattern, siteRadius)) {
+            Toast.makeText(this, "Invalid numeric input", Toast.LENGTH_SHORT).show()
             return false
         }
 
         val datePattern = "^\\d{2}/\\d{2}/\\d{4}$"
-        if (!Pattern.matches(datePattern, startDate)) {
-            Toast.makeText(this, "Invalid start date format (use dd/mm/yyyy)", Toast.LENGTH_SHORT).show()
-            return false
-        }
-        if (!Pattern.matches(datePattern, endDate)) {
-            Toast.makeText(this, "Invalid end date format (use dd/mm/yyyy)", Toast.LENGTH_SHORT).show()
+        if (!Pattern.matches(datePattern, startDate) || !Pattern.matches(datePattern, endDate)) {
+            Toast.makeText(this, "Invalid date format (use dd/mm/yyyy)", Toast.LENGTH_SHORT).show()
             return false
         }
 
@@ -308,76 +284,126 @@ class CreatesiteActivity : AppCompatActivity() {
         securityCode: String,
         managerCF: String
     ) {
+        fetchCoordinates(address) { lat, lng ->
+            if (lat != null && lng != null) {
+                fetchLocationKey(lat, lng) { locationKey ->
+                    if (locationKey != null) {
+                        val originalFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                        val targetFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        val formattedStartDate = originalFormat.parse(startdate)?.let { targetFormat.format(it) } ?: startdate
+                        val formattedEndDate = originalFormat.parse(enddate)?.let { targetFormat.format(it) } ?: enddate
 
-        val originalFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val targetFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val formattedStartDate = try {
-            val startDate = originalFormat.parse(startdate)
-            targetFormat.format(startDate)
-        } catch (e: Exception) {
-            startdate
-        }
-        val formattedEndDate = try {
-            val endDate = originalFormat.parse(enddate)
-            targetFormat.format(endDate)
-        } catch (e: Exception) {
-            enddate
-        }
-
-        val url = "https://noemigiustini01.pythonanywhere.com/site/create"
-        val json = JSONObject()
-        json.put("StartDate", formattedStartDate)
-        json.put("EstimatedEndDate", formattedEndDate)
-        json.put("TotalWorkers", maxWorkers)
-        json.put("ScaffoldingCount", scaffolding)
-        json.put("Address", address)
-        json.put("SiteRadius", siteRadius)
-        json.put("SecurityCode", securityCode)
-        json.put("ManagerCF", managerCF)
-
-        val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-
-        val request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    runOnUiThread {
-                        val errorMessage = e.localizedMessage ?: "Unknown error occurred"
-                        Toast.makeText(this@CreatesiteActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
-                    }
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    runOnUiThread {
-                        val responseBody = response.body?.string()
-                        if (response.isSuccessful && responseBody != null) {
-                            try {
-                                // Parse JSON response to get the site_id
-                                val jsonResponse = JSONObject(responseBody)
-                                val siteId = jsonResponse.getInt("site_id")
-
-                                Toast.makeText(this@CreatesiteActivity, "Site created successfully!", Toast.LENGTH_SHORT).show()
-
-                                val intent = Intent(this@CreatesiteActivity, QRGenerationActivity::class.java)
-                                intent.putExtra("managerCF", managerCF)
-                                intent.putExtra("SiteID", siteId.toString())
-                                startActivity(intent)
-                                finish()
-                            } catch (e: JSONException) {
-                                Toast.makeText(this@CreatesiteActivity, "Failed to parse response", Toast.LENGTH_LONG).show()
-                            }
-                        } else {
-                            val errorMessage = responseBody ?: "Unknown error"
-                            Toast.makeText(this@CreatesiteActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
+                        val url = "https://noemigiustini01.pythonanywhere.com/site/create"
+                        val json = JSONObject().apply {
+                            put("StartDate", formattedStartDate)
+                            put("EstimatedEndDate", formattedEndDate)
+                            put("TotalWorkers", maxWorkers)
+                            put("ScaffoldingCount", scaffolding)
+                            put("Address", address)
+                            put("SiteRadius", siteRadius)
+                            put("SecurityCode", securityCode)
+                            put("ManagerCF", managerCF)
+                            put("Latitude", lat)
+                            put("Longitude", lng)
+                            put("LocationKey", locationKey)
                         }
+
+                        val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+                        val request = Request.Builder().url(url).post(requestBody).build()
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            client.newCall(request).enqueue(object : Callback {
+                                override fun onFailure(call: Call, e: IOException) {
+                                    runOnUiThread {
+                                        Toast.makeText(this@CreatesiteActivity, "Failed to register: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+
+                                override fun onResponse(call: Call, response: Response) {
+                                    response.body?.string()?.let { responseBody ->
+                                        runOnUiThread {
+                                            val jsonResponse = JSONObject(responseBody)
+                                            if (response.isSuccessful) {
+                                                val siteId = jsonResponse.getInt("site_id")
+                                                Toast.makeText(this@CreatesiteActivity, "Site created successfully!", Toast.LENGTH_SHORT).show()
+                                                startActivity(Intent(this@CreatesiteActivity, QRGenerationActivity::class.java).apply {
+                                                    putExtra("managerCF", managerCF)
+                                                    putExtra("SiteID", siteId.toString())
+                                                })
+                                                finish()
+                                            } else {
+                                                val errorCode = jsonResponse.optInt("error_code", -1)
+                                                val errorMessage = when (errorCode) {
+                                                    1 -> "A site with this address already exists."
+                                                    else -> jsonResponse.optString("error", "Failed to create site due to an unexpected error.")
+                                                }
+                                                Toast.makeText(this@CreatesiteActivity, errorMessage, Toast.LENGTH_LONG).show()
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                        }
+                    } else {
+                        Toast.makeText(this, "Failed to retrieve location key", Toast.LENGTH_SHORT).show()
                     }
                 }
-            })
+            } else {
+                Toast.makeText(this, "Failed to retrieve coordinates", Toast.LENGTH_SHORT).show()
+            }
         }
+    }
 
+
+    private fun fetchCoordinates(address: String, callback: (Double?, Double?) -> Unit) {
+        val googleApiKey = getString(R.string.google_maps_key)
+        val geocodeUrl = "https://maps.googleapis.com/maps/api/geocode/json"
+        val geocodeParams = geocodeUrl.toHttpUrlOrNull()?.newBuilder()
+            ?.addQueryParameter("address", address)
+            ?.addQueryParameter("key", googleApiKey)
+            ?.build()
+
+        val geocodeRequest = Request.Builder().url(geocodeParams.toString()).get().build()
+        client.newCall(geocodeRequest).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback(null, null)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                val geocodeData = JSONObject(responseData ?: "")
+                val location = geocodeData.getJSONArray("results")
+                    .getJSONObject(0)
+                    .getJSONObject("geometry")
+                    .getJSONObject("location")
+
+                val lat = location.getDouble("lat")
+                val lng = location.getDouble("lng")
+                callback(lat, lng)
+            }
+        })
+    }
+
+    private fun fetchLocationKey(lat: Double, lng: Double, callback: (String?) -> Unit) {
+        val apiKey = getString(R.string.accuweather_api_key)
+        val locationUrl = "https://dataservice.accuweather.com/locations/v1/cities/geoposition/search"
+        val locationParams = locationUrl.toHttpUrlOrNull()?.newBuilder()
+            ?.addQueryParameter("q", "$lat,$lng")
+            ?.addQueryParameter("apikey", apiKey)
+            ?.build()
+
+        val locationRequest = Request.Builder().url(locationParams.toString()).get().build()
+        client.newCall(locationRequest).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                callback(null)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseData = response.body?.string()
+                val locationData = JSONObject(responseData ?: "")
+                val locationKey = locationData.optString("Key", null)
+                callback(locationKey)
+            }
+        })
     }
 }
