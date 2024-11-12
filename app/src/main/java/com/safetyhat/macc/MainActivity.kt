@@ -2,7 +2,9 @@ package com.safetyhat.macc
 
 import android.app.ActivityManager
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -13,9 +15,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge()
+        //enableEdgeToEdge()
 
         setContentView(R.layout.activity_main)
+
+        val orientation = resources.configuration.orientation
+        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            Log.d("LayoutCheck", "Landscape layout loaded")
+        } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            Log.d("LayoutCheck", "Portrait layout loaded")
+        }
 
         // Imposta padding per tenere conto delle barre di sistema
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
