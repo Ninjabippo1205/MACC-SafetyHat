@@ -126,7 +126,6 @@
             android:hint="@string/hint_sc"
             android:inputType="textPassword"
             android:minHeight="48dp"
-            android:text="7myTP8dHPQ"
             android:textSize="20sp" />
 
         <Button
