@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -26,7 +27,6 @@ import java.io.IOException
 
 class QrScanningActivity : AppCompatActivity() {
     private lateinit var codeScanner: CodeScanner
-    private val CAMERA_PERMISSION_CODE = 101
     private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,34 +38,20 @@ class QrScanningActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-/*
-        val workerCF = intent.getStringExtra("workerCF")
 
+        val workerCF = intent.getStringExtra("workerCF")
+/*
         val intent = Intent(this@QrScanningActivity, SiteinfofromqrActivity::class.java)
-        intent.putExtra("qr_scanned_text", "{'ID': 62}")
+        intent.putExtra("qr_scanned_text", "{'ID':63}")
         intent.putExtra("workerCF", workerCF)
         startActivity(intent)
         finish()
 */
-        // Verifica e richiesta del permesso fotocamera
-        if (checkCameraPermission()) {
-            initializeScanner()
-        }
+        // Inizializza lo scanner direttamente, assumendo che il permesso sia già stato concesso
+        initializeScanner()
     }
 
-    // Funzione per controllare e richiedere il permesso della fotocamera
-    private fun checkCameraPermission(): Boolean {
-        return if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
-            false
-        } else {
-            true
-        }
-    }
-
-    // Inizializza il CodeScanner dopo che i permessi sono stati concessi
+    // Inizializza il CodeScanner
     private fun initializeScanner() {
         val scannerView = findViewById<CodeScannerView>(R.id.scanner_view)
         codeScanner = CodeScanner(this, scannerView)
@@ -127,7 +113,7 @@ class QrScanningActivity : AppCompatActivity() {
                             intent.putExtra("siteID", siteID.toString())
                             startActivity(intent)
                             finish()
-                        }else{
+                        } else {
                             val intent = Intent(this@QrScanningActivity, SiteinfofromqrActivity::class.java)
                             intent.putExtra("qr_scanned_text", scannedText)
                             intent.putExtra("workerCF", workerCF)
@@ -149,26 +135,17 @@ class QrScanningActivity : AppCompatActivity() {
         }
     }
 
-    // Callback per il risultato della richiesta permessi
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMERA_PERMISSION_CODE) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                initializeScanner() // Inizializza CodeScanner dopo aver ottenuto il permesso
-            } else {
-                Toast.makeText(this, "Camera permission is required to scan QR codes", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
     override fun onResume() {
         super.onResume()
         if (::codeScanner.isInitialized) {
             codeScanner.startPreview()
+        }
+
+        // Opzionale: Verifica se il permesso della fotocamera è ancora concesso
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "Camera permission has been revoked.", Toast.LENGTH_SHORT).show()
+            // Puoi decidere di terminare l'attività o disabilitare funzionalità specifiche
+            finish()
         }
     }
 
