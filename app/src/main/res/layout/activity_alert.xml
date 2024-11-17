@@ -23,26 +23,37 @@
             android:foregroundGravity="top|left"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/menu_foreground"/>
-
+            app:srcCompat="@drawable/menu_foreground" />
 
         <LinearLayout
             android:id="@+id/alert_container"
             android:layout_width="400dp"
-            android:layout_height="400dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:layout_marginTop="170dp"
             android:layout_marginEnd="6dp"
             android:background="@drawable/rounded_background"
             android:elevation="4dp"
+            android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <!-- TextView per mostrare le informazioni meteo riassuntive -->
+            <TextView
+                android:id="@+id/weather_summary_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:textSize="18sp"
+                android:textColor="#2C2C2C"
+                android:textAlignment="center"
+                android:text="Alerts Overview" /> <!-- Testo segnaposto -->
+
             <ScrollView
                 android:id="@+id/scrollView_alert"
                 android:layout_width="390dp"
-                android:layout_height="400dp"
+                android:layout_height="600dp"
                 android:layout_marginStart="5dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="5dp"
@@ -50,8 +61,8 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/alert_recycler_view"
-                    android:layout_width="390dp"
-                    android:layout_height="400dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:background="@drawable/rounded_background" />
             </ScrollView>
         </LinearLayout>

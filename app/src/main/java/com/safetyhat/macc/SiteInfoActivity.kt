@@ -1,5 +1,6 @@
 package com.safetyhat.macc
 
+import android.app.NotificationManager
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -64,6 +65,13 @@ class SiteInfoActivity : AppCompatActivity() {
                     finish()
                 }
                 R.id.nav_logout_worker -> {
+                    val stopServiceIntent = Intent(this, AlertService::class.java)
+                    stopService(stopServiceIntent)
+
+                    // Elimina tutte le notifiche usando NotificationManager
+                    val notificationManager = getSystemService(NotificationManager::class.java)
+                    notificationManager?.cancelAll()
+
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                     finish()

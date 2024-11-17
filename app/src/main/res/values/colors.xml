@@ -20,4 +20,5 @@
     <color name="app_background">#F5F4F4</color>
     <color name="status_bar_color">#878787</color>
     <color name="transparent">#00000000</color>
+    <color name="orange_safety_hat">#ED752E</color>
 </resources>

@@ -1,16 +1,25 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.safetyhat.macc">
 
+    <!-- Permessi Esistenti -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false"
-    />
+        />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-feature android:name="android.hardware.location.gps" />
 
+    <!-- Nuovi Permessi Aggiunti -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <application
         android:allowBackup="true"
@@ -26,12 +35,13 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key"
-        />
+            />
         <meta-data
             android:name="com.accuweather.API_KEY"
             android:value="@string/accuweather_api_key"
-        />
+            />
 
+        <!-- Dichiarazione delle Activity -->
         <activity
             android:name=".SplashActivity"
             android:theme="@style/Theme.MACC"
@@ -45,48 +55,31 @@
         <activity
             android:name=".MainActivity"
             android:theme="@style/Theme.MACC"
-            android:exported="true">
-        </activity>
+            android:exported="false" />
 
-        <activity android:name=".LoginActivity">
-        </activity>
 
-        <activity android:name=".RegistrationActivity">
-        </activity>
+        <!-- Altre Activity -->
+        <activity android:name=".LoginActivity" android:exported="false"/>
+        <activity android:name=".RegistrationActivity" android:exported="false"/>
+        <activity android:name=".ManagerInfoActivity" android:exported="false"/>
+        <activity android:name=".ManagermenuActivity" android:exported="false"/>
+        <activity android:name=".WorkermenuActivity" android:exported="false"/>
+        <activity android:name=".CreatesiteActivity" android:exported="false"/>
+        <activity android:name=".SiteInfoActivity" android:exported="false"/>
+        <activity android:name=".QrScanningActivity" android:exported="false"/>
+        <activity android:name=".SiteinfofromqrActivity" android:exported="false"/>
+        <activity android:name=".QRGenerationActivity" android:exported="false"/>
+        <activity android:name=".SitesOverviewActivity" android:exported="false"/>
+        <activity android:name=".WorkerinfoActivity" android:exported="false"/>
+        <activity android:name=".AlertActivity" android:exported="false"/>
 
-        <activity android:name=".ManagerInfoActivity">
-        </activity>
-
-        <activity android:name=".ManagermenuActivity">
-        </activity>
-
-        <activity android:name=".WorkermenuActivity">
-        </activity>
-
-        <activity android:name=".CreatesiteActivity">
-        </activity>
-
-        <activity android:name=".SiteInfoActivity">
-        </activity>
-
-        <activity android:name=".QrScanningActivity">
-        </activity>
-
-        <activity android:name=".SiteinfofromqrActivity">
-        </activity>
-          
-        <activity android:name=".QRGenerationActivity">
-        </activity>
-
-        <activity android:name=".SitesOverviewActivity">
-        </activity>
-
-        <activity android:name=".WorkerinfoActivity">
-        </activity>
-
-        <activity android:name=".AlertActivity">
-        </activity>
-
+        <!-- Dichiarazione del Servizio -->
+        <service
+            android:name=".AlertService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="true"
+            android:foregroundServiceType="location|microphone" />
 
     </application>
 </manifest>

@@ -1,7 +1,10 @@
 package com.safetyhat.macc
 
+import android.Manifest
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +35,7 @@ import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import android.os.Handler
+import androidx.core.content.ContextCompat
 
 class WorkermenuActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -43,6 +47,13 @@ class WorkermenuActivity : AppCompatActivity() {
     private val communicationsList = mutableListOf<Communication>()
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
+
+    private val foregroundPermissions = arrayOf(
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.CAMERA,
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+    private val backgroundPermission = Manifest.permission.ACCESS_BACKGROUND_LOCATION
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +82,13 @@ class WorkermenuActivity : AppCompatActivity() {
                     finish()
                 }
                 R.id.nav_logout_worker -> {
+                    val stopServiceIntent = Intent(this, AlertService::class.java)
+                    stopService(stopServiceIntent)
+
+                    // Elimina tutte le notifiche usando NotificationManager
+                    val notificationManager = getSystemService(NotificationManager::class.java)
+                    notificationManager?.cancelAll()
+
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                     finish()
@@ -117,6 +135,32 @@ class WorkermenuActivity : AppCompatActivity() {
         }
 
         handler.post(runnable)
+
+        if (hasNecessaryPermissions()) {
+            if (siteID != null) {
+                if (workerCF != null) {
+                    startAlertService(siteID, workerCF)
+                }
+            }
+        } else {
+            Toast.makeText(this, "Required permissions not granted.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun startAlertService(siteID: String, workerCF: String) {
+        if (hasNecessaryPermissions()) {
+            val serviceIntent = Intent(this, AlertService::class.java)
+            serviceIntent.putExtra("siteID", siteID)  // Pass siteID as an extra
+            serviceIntent.putExtra("workerCF", workerCF)
+            ContextCompat.startForegroundService(this, serviceIntent)
+        }
+    }
+
+    private fun hasNecessaryPermissions(): Boolean {
+        val permissions = foregroundPermissions
+        return permissions.all { permission ->
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+        }
     }
 
     private fun fetchCommunications(siteID: Int, workerCF: String) {
@@ -150,9 +194,12 @@ class WorkermenuActivity : AppCompatActivity() {
                             communicationsRecyclerView.adapter = communicationsAdapter
                         }
                     } catch (e: JSONException) {
+                        // TODO: if no communication are aveable, update the recycler view with the message "No communication aveable"
+                        /*
                         runOnUiThread {
                             Toast.makeText(this@WorkermenuActivity, "Failed to parse communication data", Toast.LENGTH_LONG).show()
                         }
+                         */
                     }
                 }
             }
