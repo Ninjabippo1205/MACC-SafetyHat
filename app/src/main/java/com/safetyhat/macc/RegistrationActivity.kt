@@ -146,7 +146,6 @@ class RegistrationActivity : AppCompatActivity() {
         cf: String,
         hashedPassword: String
     ) {
-
         val originalFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         val targetFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val formattedBirthdate = try {
@@ -194,12 +193,16 @@ class RegistrationActivity : AppCompatActivity() {
                             finish()
                         } else {
                             val errorMessage = responseBody ?: "Unknown error"
-                            Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
+                            Log.e("RegistrationError", "Server response: $errorMessage")
+
+                            if (response.code == 409 && responseBody?.contains("PhoneNumber already exists") == true) {
+                                Toast.makeText(this@RegistrationActivity, "The phone number is already registered. Please try with a different number.", Toast.LENGTH_LONG).show()
+                            } else {
+                                Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 }
-
-
             })
         }
     }

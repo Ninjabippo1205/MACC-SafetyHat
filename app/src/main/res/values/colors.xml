@@ -21,4 +21,6 @@
     <color name="status_bar_color">#878787</color>
     <color name="transparent">#00000000</color>
     <color name="orange_safety_hat">#ED752E</color>
+    <color name="red">#FF0000</color>
+    <color name="green">#1DFF00</color>
 </resources>

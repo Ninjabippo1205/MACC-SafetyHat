@@ -501,9 +501,16 @@ class AlertService : Service(), SensorEventListener {
     // Adding Alerts to the shared queue
     // ==========================
     private fun sendAlert(message: String, iconResId: Int) {
-        val duration = getTimerDuration(message) // Get the duration for the timer based on the message
-        AlertMessageQueue.addMessage(message, iconResId, duration)
-        sendAndroidNotification(message, iconResId)
+        if (message.startsWith("Fall detected")) {
+            val intent = Intent(this, FallAlertActivity::class.java).apply {
+                putExtra("workerCF", workerCF) // Passa il valore di workerCF
+                putExtra("siteID", siteID)    // Passa il valore di siteID
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            }
+            startActivity(intent)
+        } else {
+            sendAndroidNotification(message, iconResId)
+        }
     }
 
     private fun getTimerDuration(message: String): Long {

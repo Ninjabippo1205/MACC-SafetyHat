@@ -10,11 +10,15 @@
         android:required="false"
         />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-feature android:name="android.hardware.location.gps" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
 
     <!-- Nuovi Permessi Aggiunti -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -72,6 +76,11 @@
         <activity android:name=".SitesOverviewActivity" android:exported="false"/>
         <activity android:name=".WorkerinfoActivity" android:exported="false"/>
         <activity android:name=".AlertActivity" android:exported="false"/>
+
+        <activity android:name=".FallAlertActivity"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:launchMode="singleTask"
+            android:exported="false" />
 
         <!-- Dichiarazione del Servizio -->
         <service
