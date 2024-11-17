@@ -385,10 +385,10 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             holder.securityCode.text = "${site.securityCode}"
 
             holder.qrButton.setOnClickListener {
-                val mCF = this@SitesOverviewActivity.intent.getStringExtra("managerCF") ?: ""
-                if (mCF.isNotEmpty()) {
+                val managerCF = this@SitesOverviewActivity.intent.getStringExtra("managerCF") ?: ""
+                if (managerCF.isNotEmpty()) {
                     val intent = Intent(this@SitesOverviewActivity, QRGenerationActivity::class.java)
-                    intent.putExtra("mCF", mCF)
+                    intent.putExtra("managerCF", managerCF)
                     intent.putExtra("SiteID", site.id.toString())
                     startActivity(intent)
                     finish()

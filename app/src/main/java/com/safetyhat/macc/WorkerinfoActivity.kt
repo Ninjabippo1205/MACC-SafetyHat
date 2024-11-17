@@ -1,11 +1,13 @@
 package com.safetyhat.macc
 
 import android.Manifest
+import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -20,14 +22,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import java.util.Locale
-import okhttp3.*
-import android.widget.Toast
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
+import okhttp3.*
+import android.widget.Toast
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
@@ -36,7 +36,6 @@ import java.io.IOException
 import java.util.regex.Pattern
 
 class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
-    private val locationPermissionRequestCode = 1
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val client = OkHttpClient()
@@ -55,6 +54,8 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
+
+        initializeUI()
 
         val workerCF = intent.getStringExtra("workerCF")
         val siteID = intent.getStringExtra("siteID")
@@ -83,6 +84,13 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                     finish()
                 }
                 R.id.nav_logout_worker -> {
+                    val stopServiceIntent = Intent(this, AlertService::class.java)
+                    stopService(stopServiceIntent)
+
+                    // Elimina tutte le notifiche usando NotificationManager
+                    val notificationManager = getSystemService(NotificationManager::class.java)
+                    notificationManager?.cancelAll()
+
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                     finish()
@@ -92,31 +100,51 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
             true
         }
 
+        fetchWorkerInfo(workerCF.toString())
+        checkPermissionsAndConfigureUI(workerCF, siteID)
+    }
+
+    private fun initializeUI() {
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.navigation_view_worker)
+        navigationView.itemIconTintList = null
+
+        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        // Disable buttons until permissions are granted
+        findViewById<Button>(R.id.change_password_button).isEnabled = false
+    }
+
+    private fun checkPermissionsAndConfigureUI(workerCF: String?, siteID: String?) {
+        val hasLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val hasCameraPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        val hasAudioPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+
+        if (hasLocationPermission) {
+            initializeMap()
+        } else {
+            Toast.makeText(this, "Location permission is required for map features.", Toast.LENGTH_SHORT).show()
+            val mapView = (supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment).view
+            mapView?.visibility = View.GONE
+        }
+
+        if (hasCameraPermission && hasAudioPermission) {
+            findViewById<Button>(R.id.change_password_button).isEnabled = true
+        } else {
+            Toast.makeText(this, "Permissions for camera and microphone are required for full functionality.", Toast.LENGTH_LONG).show()
+        }
+
+        fetchWorkerInfo(workerCF.toString())
+    }
+
+    private fun initializeMap() {
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map_fragment) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
-        checkLocationPermission()
-
-        fetchWorkerInfo(workerCF.toString())
-
-        val changePasswordButton = findViewById<Button>(R.id.change_password_button)
-        changePasswordButton.setOnClickListener {
-            val newPassword = findViewById<EditText>(R.id.new_password_worker_field).text.toString()
-            if (newPassword.isNotEmpty()) {
-                val passwordPattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#\$%^&+=!]).{8,}$"
-                if (!Pattern.matches(passwordPattern, newPassword)) {
-                    Toast.makeText(this, "Password must be at least 8 characters, with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
-                } else {
-                    val hashedPassword = hashPassword(newPassword)
-                    updatePassword(workerCF.toString(), hashedPassword)
-                }
-            } else {
-                Toast.makeText(this, "Please enter a new password", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 
     private fun hashPassword(password: String): String {
@@ -138,17 +166,29 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
-                    Toast.makeText(this@WorkerinfoActivity, "Failed to update password. Try again.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@WorkerinfoActivity,
+                        "Failed to update password. Try again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
                 runOnUiThread {
                     if (response.isSuccessful) {
-                        Toast.makeText(this@WorkerinfoActivity, "Password updated successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@WorkerinfoActivity,
+                            "Password updated successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         findViewById<EditText>(R.id.new_password_worker_field).text.clear()
                     } else {
-                        Toast.makeText(this@WorkerinfoActivity, "Failed to update password", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@WorkerinfoActivity,
+                            "Failed to update password",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -162,7 +202,11 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
-                    Toast.makeText(this@WorkerinfoActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@WorkerinfoActivity,
+                        "Network error. Please try again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -176,7 +220,8 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                         val lastName = jsonObject.optString("LastName", "N/A")
                         val cf = jsonObject.optString("CF", "N/A")
                         val birthday = jsonObject.optString("BirthDate", "N/A")
-                        val formattedBirthDate = birthday.split(" ")[1] + " " + birthday.split(" ")[2] + " " + birthday.split(" ")[3]
+                        val formattedBirthDate =
+                            birthday.split(" ")[1] + " " + birthday.split(" ")[2] + " " + birthday.split(" ")[3]
                         val phoneNumber = jsonObject.optString("PhoneNumber", "N/A")
                         val SiteID = jsonObject.optString("SiteCode", "N/A")
 
@@ -202,7 +247,11 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
-                    Toast.makeText(this@WorkerinfoActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@WorkerinfoActivity,
+                        "Network error. Please try again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -222,29 +271,21 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         })
     }
 
-
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
-        // Abilita i controlli di zoom
         mMap.uiSettings.isZoomControlsEnabled = true
 
-        // Controllo dei permessi per la posizione
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        // Enable my-location if permission is granted
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.isMyLocationEnabled = true
-
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null) {
                     val currentLatLng = LatLng(location.latitude, location.longitude)
-
-                    // Centra la mappa sulla posizione dell'utente senza aggiungere un marker
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
                 }
             }
         }
     }
-
-
 
     private val circleColors = listOf(
         0x22FF0000.toInt(), // Rosso trasparente
@@ -259,7 +300,11 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
-                    Toast.makeText(this@WorkerinfoActivity, "Failed to retrieve site coordinates", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@WorkerinfoActivity,
+                        "Failed to retrieve site coordinates",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -295,35 +340,42 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     } else {
                         runOnUiThread {
-                            Toast.makeText(this@WorkerinfoActivity, "Coordinates not available for this site.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@WorkerinfoActivity,
+                                "Coordinates not available for this site.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 } else {
                     runOnUiThread {
-                        Toast.makeText(this@WorkerinfoActivity, "Failed to retrieve site info.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@WorkerinfoActivity,
+                            "Failed to retrieve site info.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
         })
     }
 
-    private fun checkLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                locationPermissionRequestCode)
+    // Rimosso: Metodo checkLocationPermission()
+
+    override fun onResume() {
+        super.onResume()
+        val hasLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasLocationPermission) {
+            // Disables map if location permission is not granted
+            val mapView = (supportFragmentManager.findFragmentById(R.id.map_fragment) as SupportMapFragment).view
+            mapView?.visibility = View.GONE
+            Toast.makeText(this, "Location permission has been revoked. Some features will be disabled.", Toast.LENGTH_SHORT).show()
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (requestCode == locationPermissionRequestCode) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    mMap.isMyLocationEnabled = true
-                }
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    override fun onPause() {
+        super.onPause()
+        // Eventuali operazioni di pausa per la mappa possono essere aggiunte qui
     }
 }
