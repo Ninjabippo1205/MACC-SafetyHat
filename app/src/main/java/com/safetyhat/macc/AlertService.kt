@@ -386,7 +386,6 @@ class AlertService : Service(), SensorEventListener {
                         windSpeed = maxWindSpeed,
                         maxTemp = maxTemp,
                         minTemp = minTemp,
-                        uvIndex = maxUVIndex
                     )
                 }
             }
@@ -400,11 +399,10 @@ class AlertService : Service(), SensorEventListener {
         windSpeed: Double,
         maxTemp: Double,
         minTemp: Double,
-        uvIndex: Int
     ) {
         val alerts = mutableListOf<Pair<String, Int>>()
 
-        if (rain >= 0.0) {
+        if (rain >= 2.0) {
             alerts.add("High rain: $rain mm.\nBring an umbrella or raincoat." to R.mipmap.weather_foreground)
         }
         if (snow >= 2.0) {
@@ -636,15 +634,6 @@ class AlertService : Service(), SensorEventListener {
             Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED
 
-        val backgroundLocationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
-
         val foregroundServicePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             ContextCompat.checkSelfPermission(
                 this,
@@ -656,7 +645,6 @@ class AlertService : Service(), SensorEventListener {
 
         return (locationPermissionFine || locationPermissionCoarse) &&
                 audioPermission &&
-                backgroundLocationPermission &&
                 foregroundServicePermission
     }
 

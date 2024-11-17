@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.POST_NOTIFICATIONS          // Notifications (Android 13+)
     )
 
-    private val backgroundPermission = Manifest.permission.ACCESS_BACKGROUND_LOCATION
+    //private val backgroundPermission = Manifest.permission.ACCESS_BACKGROUND_LOCATION
 
     // Register the ActivityResultLauncher to request foreground permissions
     private val requestForegroundPermissionsLauncher = registerForActivityResult(
@@ -38,10 +38,7 @@ class MainActivity : AppCompatActivity() {
                 Log.d("PermissionCheck", "Permission denied: ${getPermissionFriendlyName(it.key)}")
             }
         }
-        if (allForegroundGranted) {
-            // Request ACCESS_BACKGROUND_LOCATION permission if necessary
-            requestBackgroundLocationPermission()
-        } else {
+        if(!allForegroundGranted){
             Toast.makeText(
                 this,
                 "Some permissions were not granted. Some features may not be available.",
@@ -113,19 +110,6 @@ class MainActivity : AppCompatActivity() {
 
         if (foregroundPermissionsToRequest.isNotEmpty()) {
             requestForegroundPermissionsLauncher.launch(foregroundPermissionsToRequest.toTypedArray())
-        } else {
-            // All foreground permissions are already granted, now request background permission
-            requestBackgroundLocationPermission()
-        }
-    }
-
-    /**
-     * Requests ACCESS_BACKGROUND_LOCATION permission separately, if necessary.
-     */
-    private fun requestBackgroundLocationPermission() {
-        if (ContextCompat.checkSelfPermission(this, backgroundPermission)
-            != PackageManager.PERMISSION_GRANTED) {
-            requestBackgroundLocationLauncher.launch(backgroundPermission)
         }
     }
 
@@ -137,11 +121,8 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.RECORD_AUDIO -> "Microphone"
             Manifest.permission.CAMERA -> "Camera"
             Manifest.permission.ACCESS_FINE_LOCATION -> "Location"
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION -> "Background Location"
             Manifest.permission.POST_NOTIFICATIONS -> "Notifications"
             else -> permission
         }
     }
 }
-
-//TODO: Controllare se funziona anche senza la richiesta della posizione in background

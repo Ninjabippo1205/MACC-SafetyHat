@@ -157,7 +157,7 @@ class WorkermenuActivity : AppCompatActivity() {
     }
 
     private fun hasNecessaryPermissions(): Boolean {
-        val permissions = foregroundPermissions + backgroundPermission
+        val permissions = foregroundPermissions
         return permissions.all { permission ->
             ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
         }

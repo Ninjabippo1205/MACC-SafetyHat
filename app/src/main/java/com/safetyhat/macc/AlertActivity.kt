@@ -47,7 +47,9 @@ class AlertActivity : AppCompatActivity() {
         val workerCF = intent.getStringExtra("workerCF")
         val siteID = intent.getStringExtra("siteID")
         val fromNotification = intent.getBooleanExtra("fromNotification", false)
-        if(fromNotification){
+
+        val isServiceRunning = isServiceRunning(AlertService::class.java)
+        if(!isServiceRunning && fromNotification){
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
@@ -118,6 +120,16 @@ class AlertActivity : AppCompatActivity() {
         handler.removeCallbacksAndMessages(null) // Cancella tutti i timer
     }
 
+    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
+
     private fun setAlertTimer(message: String, iconResId: Int) {
         // Rimuovi il timer esistente, se presente
         alertTimers[message]?.let { handler.removeCallbacks(it) }
@@ -146,7 +158,7 @@ class AlertActivity : AppCompatActivity() {
     private fun getTimerDuration(message: String): Long {
         val durationMap = mapOf(
             "High rain:" to 3580000L,
-            "High snowfall:" to 3580000L,
+            "High snowfall:" to 35800L,
             "High ice:" to 3580000L,
             "High wind speed:" to 3580000L,
             "High temperature:" to 3580000L,
