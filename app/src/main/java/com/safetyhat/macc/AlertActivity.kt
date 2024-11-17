@@ -156,17 +156,21 @@ class AlertActivity : AppCompatActivity() {
     }
 
     private fun getTimerDuration(message: String): Long {
+        val fall_alert_duration = 10000L        // Fall alert duration threshold: 10 seconds (in milliseconds), used to limit frequency of fall alerts
+        val weatherSampleRate = 3600000L        // Weather update interval: 1 hour (in milliseconds), for fetching weather updates
+        val locationCheckInterval = 3600000L    // Location check interval: 10 minute (in milliseconds), for checking user's location relative to site
+        val audioAlertInterval = 100000L         // Intervallo minimo tra notifiche audio (in millisecondi)
+
         val durationMap = mapOf(
-            "High rain:" to 3580000L,
-            "High snowfall:" to 35800L,
-            "High ice:" to 3580000L,
-            "High wind speed:" to 3580000L,
-            "High temperature:" to 3580000L,
-            "Low temperature:" to 3580000L,
-            "High UV index:" to 3580000L,
-            "High noise level detected" to 3580000L,
-            "Fall detected" to 119000L,
-            "You are in site" to 59000L
+            "High rain:" to weatherSampleRate,
+            "High snowfall:" to weatherSampleRate,
+            "High ice:" to weatherSampleRate,
+            "High wind speed:" to weatherSampleRate,
+            "High temperature:" to weatherSampleRate,
+            "Low temperature:" to weatherSampleRate,
+            "High noise level detected" to audioAlertInterval,
+            "Fall detected" to fall_alert_duration,
+            "You are in site" to locationCheckInterval
         )
         return durationMap.entries.firstOrNull { message.startsWith(it.key) }?.value ?: 30000L
     }

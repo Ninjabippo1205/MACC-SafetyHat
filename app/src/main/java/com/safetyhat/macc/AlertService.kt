@@ -41,6 +41,14 @@ class AlertService : Service(), SensorEventListener {
         private var isRunning: Boolean = false
     }
 
+    // Polling rates and durations
+    private val sampleRate = 44100                  // For audio sampling rate (Hz)
+    private val FALL_ALERT_DURATION = 10000L        // Fall alert duration threshold: 10 seconds (in milliseconds), used to limit frequency of fall alerts
+    private val weatherSampleRate = 3600000L        // Weather update interval: 1 hour (in milliseconds), for fetching weather updates
+    private val locationCheckInterval = 3600000L    // Location check interval: 10 minute (in milliseconds), for checking user's location relative to site
+    private val audioSamplingInterval = 500L        // Intervallo di campionamento audio (in millisecondi)
+    private val audioAlertInterval = 100000L         // Intervallo minimo tra notifiche audio (in millisecondi)
+
     // Sensor Management
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
@@ -48,7 +56,6 @@ class AlertService : Service(), SensorEventListener {
 
     // Audio Monitoring
     private var audioRecord: AudioRecord? = null
-    private val sampleRate = 44100
     private val bufferSize = AudioRecord.getMinBufferSize(
         sampleRate,
         AudioFormat.CHANNEL_IN_MONO,
@@ -66,10 +73,10 @@ class AlertService : Service(), SensorEventListener {
     private lateinit var fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient
 
     // Alert Management
-    private var lastAlertTime: Long = 0
-    private val safetyThreshold = 85
-    private val ALERT_DURATION = 60000L
-    private val FALL_ALERT_DURATION = 60000L
+    // Tieni traccia dell'ultima notifica audio inviata
+    private var lastAudioAlertTime: Long = 0
+    private var lastAlertTime: Long = 0    // Keeps track of the last time an alert was sent to prevent spamming
+    private val safetyThreshold = 85       // Noise level threshold in decibels for triggering an alert
 
     // Fall Detection Thresholds
     private val fallAccelerationThreshold = 2.0
@@ -85,7 +92,8 @@ class AlertService : Service(), SensorEventListener {
             if (lastLocationKey.isNotEmpty()) {
                 fetchWeatherByCityKey(lastLocationKey)
             }
-            weatherUpdateHandler.postDelayed(this, 3600000L) // 1 ora = 3600000L in millisecondi
+            // Schedule the next weather update after weatherSampleRate interval
+            weatherUpdateHandler.postDelayed(this, weatherSampleRate) // 1 hour = 3600000L milliseconds
         }
     }
 
@@ -95,7 +103,6 @@ class AlertService : Service(), SensorEventListener {
     private var siteRadius: Double? = null
     private var siteID: Int? = null
     private var workerCF: String? = null
-    private val locationCheckInterval = 60000L
     private val locationCheckHandler = Handler(Looper.getMainLooper())
 
     // Coroutine Scope
@@ -188,7 +195,7 @@ class AlertService : Service(), SensorEventListener {
         val newSiteID = intent?.getStringExtra("siteID")
         val newWorkerCF = intent?.getStringExtra("workerCF")
 
-        // Verifica se il servizio è già in esecuzione con parametri diversi
+        // Check if the service is already running with different parameters
         if (isRunning) {
             if (newSiteID != siteID?.toString() || newWorkerCF != workerCF) {
                 Log.d("AlertService", "Parameters changed. Restarting service with new parameters.")
@@ -207,14 +214,14 @@ class AlertService : Service(), SensorEventListener {
             }
         }
 
-        // Imposta il flag per indicare che il servizio è in esecuzione
+        // Set the flag to indicate that the service is running
         isRunning = true
 
-        // Memorizza i parametri per il confronto futuro
+        // Store the parameters for future comparison
         siteID = newSiteID?.toIntOrNull()
         workerCF = newWorkerCF
 
-        // Avvia il processo normale del servizio
+        // Start the normal service process
         siteID?.let {
             fetchSiteInfo(it)
         } ?: Log.e("AlertService", "Invalid siteID received: $newSiteID")
@@ -226,27 +233,27 @@ class AlertService : Service(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
 
-        // Imposta il flag per indicare che il servizio non è più in esecuzione
+        // Set the flag to indicate that the service is no longer running
         isRunning = false
 
-        // Annulla la registrazione dei listener per i sensori
+        // Unregister sensor listeners
         sensorManager.unregisterListener(this)
 
-        // Ferma la registrazione audio
+        // Stop audio recording
         audioRecord?.stop()
         audioRecord?.release()
 
-        // Rimuovi i callback dei gestori
+        // Remove callbacks from handlers
         weatherUpdateHandler.removeCallbacksAndMessages(null)
         locationCheckHandler.removeCallbacksAndMessages(null)
 
-        // Cancella tutte le coroutine
+        // Cancel all coroutines
         serviceJob.cancel()
 
-        // Ferma il servizio in modalità foreground
+        // Stop the foreground service
         stopForeground(Service.STOP_FOREGROUND_REMOVE)
 
-        // Rimuovi esplicitamente tutte le notifiche
+        // Explicitly remove all notifications
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancelAll()
 
@@ -293,16 +300,18 @@ class AlertService : Service(), SensorEventListener {
                 while (isActive) {
                     val readSize = audioRecord?.read(buffer, 0, buffer.size) ?: 0
                     if (readSize > 0) {
-                        val amplitude = buffer.maxOrNull()?.toInt() ?: 0
-                        val decibelLevel = amplitudeToDecibel(amplitude)
+                        val rms = calculateRMS(buffer, readSize)
+                        val decibelLevel = rmsToDecibel(rms)
                         val currentTime = System.currentTimeMillis()
 
-                        if (decibelLevel > safetyThreshold && decibelLevel.isFinite() && currentTime - lastAlertTime >= ALERT_DURATION) {
-                            lastAlertTime = currentTime
-                            sendAlert("High noise level detected: ${decibelLevel.toInt()} dB", R.mipmap.headphones_foreground)
+                        if (decibelLevel > safetyThreshold && decibelLevel.isFinite() &&
+                            currentTime - lastAudioAlertTime >= audioAlertInterval) {
+                            lastAudioAlertTime = currentTime
+                            sendAlert("High noise level detected", R.mipmap.headphones_foreground)
                         }
                     }
-                    delay(60000L)
+                    // Utilizza audioSamplingInterval per determinare la frequenza di campionamento
+                    delay(audioSamplingInterval)
                 }
             }
 
@@ -313,12 +322,21 @@ class AlertService : Service(), SensorEventListener {
         }
     }
 
-    private fun amplitudeToDecibel(amplitude: Int): Double {
-        return if (amplitude > 0) {
-            20 * log10(amplitude.toDouble() / 32767.0)
-        } else {
-            0.0
+    private fun calculateRMS(buffer: ShortArray, readSize: Int): Double {
+        var sum = 0.0
+        for (i in 0 until readSize) {
+            val sample = buffer[i].toDouble()
+            sum += sample * sample
         }
+        val mean = sum / readSize
+        return sqrt(mean)
+    }
+
+    private fun rmsToDecibel(rms: Double): Double {
+        val referenceRms = 32767.0  // Valore di riferimento per 16-bit PCM
+        val minRms = 0.1            // Evita log(0) con un valore minimo
+        val adjustedRms = max(rms, minRms)
+        return 20 * log10(adjustedRms / referenceRms) + 90  // Offset per rendere i valori positivi
     }
 
     // ==========================
@@ -447,6 +465,7 @@ class AlertService : Service(), SensorEventListener {
         if (isFalling && totalAcceleration > impactThreshold) {
             if (orientationChanged) {
                 val currentTime = System.currentTimeMillis()
+                // Check if enough time has passed since the last fall alert
                 if (currentTime - lastAlertTime >= FALL_ALERT_DURATION) {
                     lastAlertTime = currentTime
                     sendAlert("Fall detected", R.mipmap.falling_foreground)
@@ -467,14 +486,14 @@ class AlertService : Service(), SensorEventListener {
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        //Mandatory method, but left empty if not needed
+        // Mandatory method, but left empty if not needed
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         Log.d("AlertService", "App chiusa dal task manager. Servizio in arresto.")
 
-        // Ferma il servizio e rimuovi la notifica
+        // Stop the service and remove the notification
         stopSelf()
     }
 
@@ -482,39 +501,37 @@ class AlertService : Service(), SensorEventListener {
     // Adding Alerts to the shared queue
     // ==========================
     private fun sendAlert(message: String, iconResId: Int) {
-        val duration = getTimerDuration(message) // Ottieni la durata del timer
+        val duration = getTimerDuration(message) // Get the duration for the timer based on the message
         AlertMessageQueue.addMessage(message, iconResId, duration)
         sendAndroidNotification(message, iconResId)
     }
 
     private fun getTimerDuration(message: String): Long {
         val durationMap = mapOf(
-            "High rain:" to 3580000L,
-            "High snowfall:" to 3580000L,
-            "High ice:" to 3580000L,
-            "High wind speed:" to 3580000L,
-            "High temperature:" to 3580000L,
-            "Low temperature:" to 3580000L,
-            "High UV index:" to 3580000L,
-            "High noise level detected" to 3580000L,
-            "Fall detected" to 119000L,
-            "You are in site" to 59000L
+            "High rain:" to weatherSampleRate,
+            "High snowfall:" to weatherSampleRate,
+            "High ice:" to weatherSampleRate,
+            "High wind speed:" to weatherSampleRate,
+            "High temperature:" to weatherSampleRate,
+            "Low temperature:" to weatherSampleRate,
+            "High noise level detected" to audioAlertInterval,
+            "Fall detected" to FALL_ALERT_DURATION,
+            "You are in site" to locationCheckInterval
         )
         return durationMap.entries.firstOrNull { message.startsWith(it.key) }?.value ?: 30000L
     }
 
-
     private fun sendAndroidNotification(message: String, iconResId: Int) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Creare l'intent per aprire AlertActivity con parametri aggiuntivi
+        // Create the intent to open AlertActivity with additional parameters
         val intent = Intent(this, AlertActivity::class.java).apply {
-            putExtra("workerCF", workerCF) // Passa il valore di workerCF
-            putExtra("siteID", siteID?.toString()) // Passa il valore di siteID come Stringa
+            putExtra("workerCF", workerCF) // Pass the value of workerCF
+            putExtra("siteID", siteID?.toString()) // Pass the value of siteID as String
             putExtra("fromNotification", true)
         }
 
-        // Crea il PendingIntent per la notifica
+        // Create the PendingIntent for the notification
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -522,19 +539,19 @@ class AlertService : Service(), SensorEventListener {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Creare la notifica
+        // Create the notification
         val notification = NotificationCompat.Builder(this, alertChannelId)
             .setContentTitle("Safety Alert")
             .setContentText(message)
-            .setSmallIcon(iconResId) // Icona personalizzata per l'alert
+            .setSmallIcon(iconResId) // Custom icon for the alert
             .setColor(ContextCompat.getColor(this, R.color.orange_safety_hat))
-            .setPriority(NotificationCompat.PRIORITY_HIGH) // Notifica con alta priorità
-            .setAutoCancel(true) // La notifica scompare al tocco
-            .setContentIntent(pendingIntent) // Collega l'intent
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // High-priority notification
+            .setAutoCancel(true) // Notification disappears on touch
+            .setContentIntent(pendingIntent) // Attach the intent
             .build()
 
-        // Mostrare la notifica
-        val notificationId = System.currentTimeMillis().toInt() // ID unico per ogni notifica
+        // Show the notification
+        val notificationId = System.currentTimeMillis().toInt() // Unique ID for each notification
         notificationManager.notify(notificationId, notification)
     }
 
@@ -613,7 +630,7 @@ class AlertService : Service(), SensorEventListener {
                     initializeLocationClient()
                     break
                 }
-                delay(5000L)
+                delay(5000L)  // Wait for 5 seconds before checking permissions again
             }
         }
     }
@@ -654,7 +671,8 @@ class AlertService : Service(), SensorEventListener {
                 if (siteLatitude != null && siteLongitude != null && siteRadius != null) {
                     checkUserLocationInRadius(siteLatitude!!, siteLongitude!!, siteRadius!!)
                 }
-                locationCheckHandler.postDelayed(this, locationCheckInterval)
+                // Schedule the next location check after locationCheckInterval
+                locationCheckHandler.postDelayed(this, locationCheckInterval)  // 1 minute = 60000L milliseconds
             }
         })
     }
@@ -684,7 +702,7 @@ class AlertService : Service(), SensorEventListener {
     }
 
     private fun calculateDistance(loc1: LatLng, loc2: LatLng): Double {
-        val earthRadius = 6371000.0 // Raggio della Terra in metri
+        val earthRadius = 6371000.0 // Earth's radius in meters
         val dLat = Math.toRadians(loc2.latitude - loc1.latitude)
         val dLng = Math.toRadians(loc2.longitude - loc1.longitude)
 

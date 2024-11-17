@@ -41,9 +41,9 @@ class QrScanningActivity : AppCompatActivity() {
 
         val workerCF = intent.getStringExtra("workerCF")
 /*
-        val intent = Intent(this@QrScanningActivity, SiteinfofromqrActivity::class.java)
-        intent.putExtra("qr_scanned_text", "{'ID':63}")
+        val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
         intent.putExtra("workerCF", workerCF)
+        intent.putExtra("siteID", "64")
         startActivity(intent)
         finish()
 */
@@ -106,7 +106,14 @@ class QrScanningActivity : AppCompatActivity() {
 
                 runOnUiThread {
                     if (response.isSuccessful && !jsonObject.has("message")) {
-                        val currentSiteID = jsonObject.optString("SiteCode", "N/A")
+                        val currentSiteID = jsonObject.optString("SiteCode", "")
+                        if(currentSiteID != "" ){
+                            val intent = Intent(this@QrScanningActivity, SiteinfofromqrActivity::class.java)
+                            intent.putExtra("qr_scanned_text", scannedText)
+                            intent.putExtra("workerCF", workerCF)
+                            startActivity(intent)
+                            finish()
+                        }
                         if (currentSiteID.toInt() == siteID) {
                             val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
                             intent.putExtra("workerCF", workerCF)
