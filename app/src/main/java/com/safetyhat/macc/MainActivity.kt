@@ -23,10 +23,9 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.RECORD_AUDIO,               // Microphone
         Manifest.permission.CAMERA,                     // Camera
         Manifest.permission.ACCESS_FINE_LOCATION,       // Precise location
-        Manifest.permission.POST_NOTIFICATIONS          // Notifications (Android 13+)
+        Manifest.permission.POST_NOTIFICATIONS,          // Notifications (Android 13+)
+        Manifest.permission.SEND_SMS
     )
-
-    //private val backgroundPermission = Manifest.permission.ACCESS_BACKGROUND_LOCATION
 
     // Register the ActivityResultLauncher to request foreground permissions
     private val requestForegroundPermissionsLauncher = registerForActivityResult(
@@ -128,6 +127,7 @@ class MainActivity : AppCompatActivity() {
             Manifest.permission.CAMERA -> "Camera"
             Manifest.permission.ACCESS_FINE_LOCATION -> "Location"
             Manifest.permission.POST_NOTIFICATIONS -> "Notifications"
+            Manifest.permission.SEND_SMS -> "Send SMS"
             else -> permission
         }
     }

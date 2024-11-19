@@ -85,6 +85,27 @@
             android:orientation="vertical"
             android:elevation="4dp"
             android:padding="16dp">
+
+            <!-- Email for password recovery -->
+            <TextView
+                android:id="@+id/email_registration_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/email"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/email_registration_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="name"
+                android:fontFamily="sans-serif-condensed"
+                android:hint="@string/hint_email"
+                android:inputType="textEmailAddress"
+                android:minHeight="48dp" />
+
             <!-- First Name -->
             <TextView
                 android:id="@+id/first_name_registration_label"

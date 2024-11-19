@@ -24,12 +24,12 @@
         android:id="@+id/account_info_title"
         android:layout_width="222dp"
         android:layout_height="60dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="40dp"
         android:fontFamily="sans-serif-condensed-light"
         android:gravity="center"
         android:text="@string/login"
         android:textColor="#2C2C2C"
-        android:textSize="34sp"
+        android:textSize="40sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -49,11 +49,11 @@
 
     <ImageView
         android:id="@+id/logoImageView"
-        android:layout_width="217dp"
-        android:layout_height="203dp"
-        android:layout_marginStart="39dp"
-        android:layout_marginTop="76dp"
-        android:layout_marginBottom="65dp"
+        android:layout_width="241dp"
+        android:layout_height="232dp"
+        android:layout_marginStart="63dp"
+        android:layout_marginTop="125dp"
+        android:layout_marginBottom="145dp"
         android:contentDescription="@string/head_foreground_description"
         android:scaleX="1.5"
         android:scaleY="1.5"
@@ -68,8 +68,6 @@
         android:layout_width="567dp"
         android:layout_height="300dp"
         android:layout_gravity="center"
-        android:layout_marginStart="34dp"
-        android:layout_marginTop="17dp"
         android:layout_marginEnd="57dp"
         android:layout_marginBottom="17dp"
         android:background="@drawable/rounded_background"
@@ -113,7 +111,7 @@
             android:autofillHints="password"
             android:hint="@string/password_hint"
             android:inputType="textPassword"
-            android:text="BimbeDiFr@nco71" />
+            android:text="Ci@o2001" />
 
 
         <Button
@@ -129,7 +127,7 @@
             android:textColor="@android:color/white"
             android:textSize="20sp" />
 
-        <TextView
+        <Button
             android:id="@+id/forgotPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -142,7 +140,8 @@
             android:text="@string/forgot_password"
             android:textColor="#2C2C2C"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:background="@null" />
 
 
     </LinearLayout>

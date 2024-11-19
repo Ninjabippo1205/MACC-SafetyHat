@@ -25,12 +25,12 @@
             android:id="@+id/account_info_title"
             android:layout_width="222dp"
             android:layout_height="60dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="30dp"
             android:fontFamily="sans-serif-condensed-light"
             android:gravity="center"
             android:text="@string/site_info"
             android:textColor="#2C2C2C"
-            android:textSize="34sp"
+            android:textSize="40sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -52,27 +52,25 @@
             android:id="@+id/your_position_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="137dp"
-            android:layout_marginTop="81dp"
+            android:layout_marginStart="190dp"
+            android:layout_marginTop="120dp"
             android:fontFamily="sans-serif-condensed"
             android:text="@string/weather"
             android:textColor="@color/black"
-            android:textSize="18sp"
+            android:textSize="24sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <LinearLayout
             android:id="@+id/weather_placeholder"
-            android:layout_width="380dp"
+            android:layout_width="400dp"
             android:layout_height="240dp"
-            android:layout_marginStart="34dp"
-            android:layout_marginTop="17dp"
-            android:layout_marginBottom="49dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="10dp"
             android:background="@drawable/rounded_background"
             android:elevation="4dp"
             android:orientation="vertical"
             android:padding="16dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/your_position_label">
 
@@ -83,22 +81,20 @@
         </LinearLayout>
 
         <ScrollView
-            android:layout_width="380dp"
+            android:layout_width="480dp"
             android:layout_height="280dp"
-            android:layout_marginStart="70dp"
-            android:layout_marginTop="27dp"
-            android:layout_marginEnd="50dp"
-            android:layout_marginBottom="36dp"
+            android:layout_marginTop="150dp"
+            android:layout_marginEnd="130dp"
+            android:layout_marginBottom="120dp"
+            android:background="@drawable/rounded_background"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/weather_placeholder"
-            app:layout_constraintTop_toBottomOf="@+id/account_info_title">
+            app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                 android:id="@+id/site_info_container"
                 android:layout_width="380dp"
                 android:layout_height="wrap_content"
-                android:background="@drawable/rounded_background"
                 android:elevation="6dp"
                 android:orientation="vertical"
                 android:padding="20dp"

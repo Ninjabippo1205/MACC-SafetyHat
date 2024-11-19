@@ -33,15 +33,4 @@
             android:textColor="#2C2C2C"
             android:textSize="20sp" />
     </LinearLayout>
-
-    <!-- Informazioni meteo -->
-    <TextView
-        android:id="@+id/weather_info_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="16sp"
-        android:textColor="#2C2C2C"
-        android:text="Weather Info" /> <!-- Testo segnaposto per informazioni meteo -->
-
 </LinearLayout>
