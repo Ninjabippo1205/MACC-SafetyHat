@@ -1,10 +1,10 @@
 package com.safetyhat.macc
 
 import android.app.NotificationManager
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
 import android.util.Log
 import android.widget.ImageView
@@ -23,19 +23,78 @@ class AlertActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navigationView: NavigationView
     private lateinit var alertAdapter: AlertAdapter
-    private val alertTimers = mutableMapOf<String, Runnable>()
+    private var alertService: AlertService? = null
     private val handler = Handler(Looper.getMainLooper())
+    private val displayedAlertIds = mutableSetOf<String>()
 
-    private val messageCheckRunnable = object : Runnable {
-        override fun run() {
-            // Recupera i nuovi messaggi dall'oggetto condiviso
-            val newMessages = AlertMessageQueue.getMessages()
-            newMessages.forEach { (message, iconResId) ->
-                handleIncomingAlert(message, iconResId) // Gestisce i nuovi messaggi
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as AlertService.LocalBinder
+            alertService = binder.getService()
+            loadAlerts()
+            startAlertMonitoring()
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            alertService = null
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Intent(this, AlertService::class.java).also { intent ->
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unbindService(serviceConnection)
+        stopAlertMonitoring()
+    }
+
+    private fun loadAlerts() {
+        alertService?.getCurrentAlerts()?.forEach { alertData ->
+            if (!displayedAlertIds.contains(alertData.id)) {
+                alertAdapter.addAlert(alertData)
+                displayedAlertIds.add(alertData.id)
             }
-            // Ripete il controllo ogni secondo
+        }
+    }
+
+    private val alertCheckRunnable = object : Runnable {
+        override fun run() {
+            val currentAlerts = alertService?.getCurrentAlerts() ?: emptyList()
+            val currentAlertIds = currentAlerts.map { it.id }.toSet()
+
+            // Aggiungi nuovi alert
+            currentAlerts.forEach { alertData ->
+                if (!displayedAlertIds.contains(alertData.id)) {
+                    alertAdapter.addAlert(alertData)
+                    displayedAlertIds.add(alertData.id)
+                }
+            }
+
+            // Rimuovi alert scaduti
+            val iterator = displayedAlertIds.iterator()
+            while (iterator.hasNext()) {
+                val alertId = iterator.next()
+                if (!currentAlertIds.contains(alertId)) {
+                    alertAdapter.removeAlertById(alertId)
+                    iterator.remove()
+                }
+            }
+
             handler.postDelayed(this, 1000)
         }
+    }
+
+    private fun startAlertMonitoring() {
+        handler.post(alertCheckRunnable)
+    }
+
+    private fun stopAlertMonitoring() {
+        handler.removeCallbacks(alertCheckRunnable)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +108,7 @@ class AlertActivity : AppCompatActivity() {
         val fromNotification = intent.getBooleanExtra("fromNotification", false)
 
         val isServiceRunning = isServiceRunning(AlertService::class.java)
-        if(!isServiceRunning && fromNotification){
+        if (!isServiceRunning && fromNotification) {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
@@ -108,16 +167,6 @@ class AlertActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         alertAdapter = AlertAdapter(mutableListOf())
         recyclerView.adapter = alertAdapter
-
-        // Avvia il controllo periodico dei messaggi
-        handler.post(messageCheckRunnable)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Ferma il controllo periodico dei messaggi
-        handler.removeCallbacks(messageCheckRunnable)
-        handler.removeCallbacksAndMessages(null) // Cancella tutti i timer
     }
 
     private fun isServiceRunning(serviceClass: Class<*>): Boolean {
@@ -130,52 +179,7 @@ class AlertActivity : AppCompatActivity() {
         return false
     }
 
-    private fun setAlertTimer(message: String, iconResId: Int) {
-        // Rimuovi il timer esistente, se presente
-        alertTimers[message]?.let { handler.removeCallbacks(it) }
-
-        val duration = getTimerDuration(message)
-        val runnable = Runnable {
-            alertAdapter.removeAlert(message)
-            AlertMessageQueue.removeMessage(message) // Rimuovi dalla coda
-            alertTimers.remove(message)
-        }
-
-        alertTimers[message] = runnable
-        handler.postDelayed(runnable, duration)
-
-        // Aggiorna o aggiungi nella coda globale
-        AlertMessageQueue.addMessage(message, iconResId, duration)
-    }
-
-    private fun handleIncomingAlert(message: String, iconResId: Int) {
-        if (!alertAdapter.containsAlert(message)) {
-            alertAdapter.addAlert(message, iconResId)
-            setAlertTimer(message, iconResId) // Imposta il timer solo se l'alert è nuovo
-        }
-    }
-
-    private fun getTimerDuration(message: String): Long {
-        val fall_alert_duration = 10000L        // Fall alert duration threshold: 10 seconds (in milliseconds), used to limit frequency of fall alerts
-        val weatherSampleRate = 3600000L        // Weather update interval: 1 hour (in milliseconds), for fetching weather updates
-        val locationCheckInterval = 3600000L    // Location check interval: 10 minute (in milliseconds), for checking user's location relative to site
-        val audioAlertInterval = 100000L         // Intervallo minimo tra notifiche audio (in millisecondi)
-
-        val durationMap = mapOf(
-            "High rain:" to weatherSampleRate,
-            "High snowfall:" to weatherSampleRate,
-            "High ice:" to weatherSampleRate,
-            "High wind speed:" to weatherSampleRate,
-            "High temperature:" to weatherSampleRate,
-            "Low temperature:" to weatherSampleRate,
-            "High noise level detected" to audioAlertInterval,
-            "Fall detected" to fall_alert_duration,
-            "You are in site" to locationCheckInterval
-        )
-        return durationMap.entries.firstOrNull { message.startsWith(it.key) }?.value ?: 30000L
-    }
-
-    inner class AlertAdapter(private val alertList: MutableList<Pair<String, Int>>) :
+    inner class AlertAdapter(private val alertList: MutableList<AlertMessageQueue.AlertData>) :
         RecyclerView.Adapter<AlertAdapter.AlertViewHolder>() {
 
         inner class AlertViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -189,64 +193,24 @@ class AlertActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: AlertViewHolder, position: Int) {
-            val (message, imageResId) = alertList[position]
-            holder.alertTextView.text = message
-            holder.alertIcon.setImageResource(imageResId)
+            val alertData = alertList[position]
+            holder.alertTextView.text = alertData.message
+            holder.alertIcon.setImageResource(alertData.iconResId)
         }
 
         override fun getItemCount(): Int = alertList.size
 
-        fun containsAlert(alertMessage: String): Boolean {
-            return alertList.any { it.first == alertMessage }
+        fun addAlert(alertData: AlertMessageQueue.AlertData) {
+            alertList.add(alertData)
+            notifyItemInserted(alertList.size - 1)
         }
 
-        fun addAlert(alertMessage: String, imageResId: Int) {
-            if (alertList.none { it.first == alertMessage }) {
-                alertList.add(alertMessage to imageResId)
-                notifyItemInserted(alertList.size - 1)
-            }
-        }
-
-        fun removeAlert(alertMessage: String) {
-            val index = alertList.indexOfFirst { it.first == alertMessage }
+        fun removeAlertById(alertId: String) {
+            val index = alertList.indexOfFirst { it.id == alertId }
             if (index != -1) {
                 alertList.removeAt(index)
                 notifyItemRemoved(index)
             }
         }
-    }
-}
-
-object AlertMessageQueue {
-    private val messageQueue = mutableMapOf<String, Pair<Int, Runnable>>()
-    private val handler = Handler(Looper.getMainLooper()) // Handler globale
-
-    @Synchronized
-    fun addMessage(message: String, iconResId: Int, duration: Long) {
-        // Controlla se il messaggio esiste già nella coda
-        if (messageQueue.containsKey(message)) {
-            return // Non aggiungere duplicati
-        }
-
-        val runnable = Runnable {
-            removeMessage(message) // Rimuovi il messaggio al termine del timer
-        }
-
-        // Aggiungi il messaggio e il runnable alla coda
-        messageQueue[message] = iconResId to runnable
-        handler.postDelayed(runnable, duration)
-    }
-
-    @Synchronized
-    fun removeMessage(message: String) {
-        messageQueue[message]?.second?.let { runnable ->
-            handler.removeCallbacks(runnable) // Rimuovi il runnable
-        }
-        messageQueue.remove(message)
-    }
-
-    @Synchronized
-    fun getMessages(): List<Pair<String, Int>> {
-        return messageQueue.map { it.key to it.value.first }
     }
 }

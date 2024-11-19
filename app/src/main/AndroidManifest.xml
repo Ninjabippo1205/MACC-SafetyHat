@@ -76,6 +76,9 @@
         <activity android:name=".SitesOverviewActivity" android:exported="false"/>
         <activity android:name=".WorkerinfoActivity" android:exported="false"/>
         <activity android:name=".AlertActivity" android:exported="false"/>
+        <activity android:name=".ForgotPasswordActivity" android:exported="false"/>
+        <activity android:name=".VerifyCodeActivity" android:exported="false"/>
+        <activity android:name=".ResetPasswordActivity" android:exported="false"/>
 
         <activity android:name=".FallAlertActivity"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"

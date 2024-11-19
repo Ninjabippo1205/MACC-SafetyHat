@@ -36,6 +36,7 @@ class RegistrationActivity : AppCompatActivity() {
             finish()
         }
 
+        val emailField = findViewById<EditText>(R.id.email_registration_field)
         val firstNameField = findViewById<EditText>(R.id.first_name_registration_field)
         val lastNameField = findViewById<EditText>(R.id.last_name_registration_field)
         val phoneField = findViewById<EditText>(R.id.phone_registration_field)
@@ -49,6 +50,7 @@ class RegistrationActivity : AppCompatActivity() {
         }
 
         submitButton.setOnClickListener {
+            val email = emailField.text.toString()
             val firstName = firstNameField.text.toString()
             val lastName = lastNameField.text.toString()
             val birthdate = birthdateField.text.toString()
@@ -56,9 +58,9 @@ class RegistrationActivity : AppCompatActivity() {
             val cf = cfField.text.toString().uppercase()
             val password = passwordField.text.toString()
 
-            if (isInputValid(firstName, lastName, birthdate, phone, cf, password)) {
+            if (isInputValid(email, firstName, lastName, birthdate, phone, cf, password)) {
                 val hashedPassword = hashPassword(password)
-                registerWorker(firstName, lastName, birthdate, phone, cf, hashedPassword)
+                registerWorker(email, firstName, lastName, birthdate, phone, cf, hashedPassword)
             }
         }
     }
@@ -85,6 +87,7 @@ class RegistrationActivity : AppCompatActivity() {
     }
 
     private fun isInputValid(
+        email: String,
         firstName: String,
         lastName: String,
         birthdate: String,
@@ -92,36 +95,42 @@ class RegistrationActivity : AppCompatActivity() {
         cf: String,
         password: String
     ): Boolean {
-        if (!(firstName.isNotEmpty() && lastName.isNotEmpty() && birthdate.isNotEmpty() && phone.isNotEmpty() && cf.isNotEmpty() && password.isNotEmpty())) {
-            Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_SHORT).show()
+        if (!(email.isNotEmpty() && firstName.isNotEmpty() && lastName.isNotEmpty() && birthdate.isNotEmpty() && phone.isNotEmpty() && cf.isNotEmpty() && password.isNotEmpty())) {
+            Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_LONG).show()
+            return false
+        }
+
+        val emailPattern = "(?=.{1,255}$)[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        if (!Pattern.matches(emailPattern, email)) {
+            Toast.makeText(this, "Wrong email format", Toast.LENGTH_LONG).show()
             return false
         }
       
         val namePattern = "^[a-zA-Z]{1,50}$"
         if (!Pattern.matches(namePattern, firstName)) {
-            Toast.makeText(this, "First name should contain only letters (max 50 characters)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "First name should contain only letters (max 50 characters)", Toast.LENGTH_LONG).show()
             return false
         }
         if (!Pattern.matches(namePattern, lastName)) {
-            Toast.makeText(this, "Last name should contain only letters (max 50 characters)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Last name should contain only letters (max 50 characters)", Toast.LENGTH_LONG).show()
             return false
         }
 
-        val phonePattern = "^\\d{1,9}$"
+        val phonePattern = "^\\d{1,15}$"
         if (!Pattern.matches(phonePattern, phone)) {
-            Toast.makeText(this, "Phone number should contain only numbers (max 9 digits)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Phone number should contain only numbers (max 15 digits)", Toast.LENGTH_LONG).show()
             return false
         }
 
         val cfPattern = "^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$"
         if (!Pattern.matches(cfPattern, cf)) {
-            Toast.makeText(this, "Invalid CF format (6 letters, 2 digits, 1 letter, 2 digits, 1 letter, 3 digits, 1 letter)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Invalid CF format (6 letters, 2 digits, 1 letter, 2 digits, 1 letter, 3 digits, 1 letter)", Toast.LENGTH_LONG).show()
             return false
         }
 
         val birthdatePattern = "^\\d{2}/\\d{2}/\\d{4}$"
         if (!Pattern.matches(birthdatePattern, birthdate)) {
-            Toast.makeText(this, "Invalid birthdate format (use dd/mm/yyyy)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Invalid birthdate format (use dd/mm/yyyy)", Toast.LENGTH_LONG).show()
             return false
         }
 
@@ -139,6 +148,7 @@ class RegistrationActivity : AppCompatActivity() {
     }
 
     private fun registerWorker(
+        email: String,
         firstName: String,
         lastName: String,
         birthdate: String,
@@ -155,7 +165,7 @@ class RegistrationActivity : AppCompatActivity() {
             birthdate
         }
 
-        val url = "https://noemigiustini01.pythonanywhere.com/worker/create"
+        val url = "https://NoemiGiustini01.pythonanywhere.com/worker/create"
         val json = JSONObject()
         json.put("FirstName", firstName)
         json.put("LastName", lastName)
@@ -164,6 +174,7 @@ class RegistrationActivity : AppCompatActivity() {
         json.put("CF", cf)
         json.put("Password", hashedPassword)
         json.put("Presence", "no")
+        json.put("Email", email)
 
         val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
@@ -186,7 +197,7 @@ class RegistrationActivity : AppCompatActivity() {
                     runOnUiThread {
                         val responseBody = response.body?.string()
                         if (response.isSuccessful) {
-                            Toast.makeText(this@RegistrationActivity, "Account created successfully!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@RegistrationActivity, "Account created successfully!", Toast.LENGTH_LONG).show()
 
                             val intent = Intent(this@RegistrationActivity, LoginActivity::class.java)
                             startActivity(intent)

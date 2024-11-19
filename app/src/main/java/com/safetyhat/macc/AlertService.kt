@@ -16,6 +16,7 @@ import android.hardware.SensorManager
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.os.Binder
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -33,6 +34,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import kotlin.math.*
+import java.util.*
 
 class AlertService : Service(), SensorEventListener {
 
@@ -40,6 +42,8 @@ class AlertService : Service(), SensorEventListener {
         @Volatile
         private var isRunning: Boolean = false
     }
+
+    private val binder = LocalBinder()
 
     // Polling rates and durations
     private val sampleRate = 44100                  // For audio sampling rate (Hz)
@@ -125,6 +129,10 @@ class AlertService : Service(), SensorEventListener {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    inner class LocalBinder : Binder() {
+        fun getService(): AlertService = this@AlertService
     }
 
 
@@ -260,8 +268,12 @@ class AlertService : Service(), SensorEventListener {
         Log.d("AlertService", "Service destroyed and all notifications removed")
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        return null
+    override fun onBind(intent: Intent): IBinder {
+        return binder
+    }
+
+    fun getCurrentAlerts(): List<AlertMessageQueue.AlertData> {
+        return AlertMessageQueue.getAlerts()
     }
 
     // ==========================
@@ -503,12 +515,14 @@ class AlertService : Service(), SensorEventListener {
     private fun sendAlert(message: String, iconResId: Int) {
         if (message.startsWith("Fall detected")) {
             val intent = Intent(this, FallAlertActivity::class.java).apply {
-                putExtra("workerCF", workerCF) // Passa il valore di workerCF
-                putExtra("siteID", siteID)    // Passa il valore di siteID
+                putExtra("workerCF", workerCF)
+                putExtra("siteID", siteID)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
             startActivity(intent)
         } else {
+            val duration = getTimerDuration(message)
+            AlertMessageQueue.addAlert(message, iconResId, duration)
             sendAndroidNotification(message, iconResId)
         }
     }
@@ -719,5 +733,52 @@ class AlertService : Service(), SensorEventListener {
 
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return earthRadius * c
+    }
+}
+
+object AlertMessageQueue {
+    private val messageQueue = mutableMapOf<String, AlertData>()
+    private val handler = Handler(Looper.getMainLooper())
+
+    data class AlertData(
+        val id: String,
+        val message: String,
+        val iconResId: Int,
+        val timestamp: Long,
+        val timerRunnable: Runnable
+    )
+
+    @Synchronized
+    fun addAlert(message: String, iconResId: Int, duration: Long) {
+        // Controlla se esiste già un alert con lo stesso messaggio
+        if (messageQueue.values.any { it.message == message }) {
+            return // Non aggiungere duplicati basati sul messaggio
+        }
+
+        val id = UUID.randomUUID().toString()
+        val runnable = Runnable {
+            removeAlert(id)
+        }
+
+        val alertData = AlertData(id, message, iconResId, System.currentTimeMillis(), runnable)
+        messageQueue[id] = alertData
+        handler.postDelayed(runnable, duration)
+    }
+
+    @Synchronized
+    fun removeAlert(id: String) {
+        messageQueue[id]?.timerRunnable?.let { handler.removeCallbacks(it) }
+        messageQueue.remove(id)
+    }
+
+    @Synchronized
+    fun getAlerts(): List<AlertData> {
+        return messageQueue.values.toList()
+    }
+
+    @Synchronized
+    fun clearAll() {
+        messageQueue.values.forEach { handler.removeCallbacks(it.timerRunnable) }
+        messageQueue.clear()
     }
 }

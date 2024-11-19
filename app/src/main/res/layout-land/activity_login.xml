@@ -113,7 +113,7 @@
             android:autofillHints="password"
             android:hint="@string/password_hint"
             android:inputType="textPassword"
-            android:text="BimbeDiFr@nco71" />
+            android:text="Ci@o2001" />
 
 
         <Button
@@ -129,7 +129,7 @@
             android:textColor="@android:color/white"
             android:textSize="20sp" />
 
-        <TextView
+        <Button
             android:id="@+id/forgotPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -142,7 +142,8 @@
             android:text="@string/forgot_password"
             android:textColor="#2C2C2C"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:background="@null" />
 
 
     </LinearLayout>

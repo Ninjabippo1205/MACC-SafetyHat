@@ -16,6 +16,8 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var cfLogin: EditText
     private lateinit var passwordLogin: EditText
     private lateinit var loginButton: Button
+    private lateinit var forgotPassword: Button
+
     private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,10 +27,17 @@ class LoginActivity : AppCompatActivity() {
         cfLogin = findViewById(R.id.CFLogin)
         passwordLogin = findViewById(R.id.passwordLogin)
         loginButton = findViewById(R.id.loginButton)
+        forgotPassword = findViewById(R.id.forgotPassword)
 
         val backButton = findViewById<ImageView>(R.id.back_icon_login)
         backButton.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+
+        forgotPassword.setOnClickListener {
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
             startActivity(intent)
             finish()
         }

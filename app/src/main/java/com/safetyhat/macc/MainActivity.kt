@@ -27,8 +27,6 @@ class MainActivity : AppCompatActivity() {
         Manifest.permission.SEND_SMS
     )
 
-    //private val backgroundPermission = Manifest.permission.ACCESS_BACKGROUND_LOCATION
-
     // Register the ActivityResultLauncher to request foreground permissions
     private val requestForegroundPermissionsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()

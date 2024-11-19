@@ -171,7 +171,6 @@ class FallAlertActivity : AppCompatActivity() {
                 sendSmsToNumbers(uniquePhoneNumbers, fallbackMessage)
             }
         }.addOnFailureListener { e ->
-            Log.e("FallAlertActivity", "Error retrieving location: ${e.message}")
             val fallbackMessage = "$message\nLocation: [Unable to retrieve location]"
             sendSmsToNumbers(uniquePhoneNumbers, fallbackMessage)
         }
@@ -182,7 +181,6 @@ class FallAlertActivity : AppCompatActivity() {
         for (phone in phoneNumbers) {
             try {
                 smsManager.sendTextMessage(phone, null, message, null, null)
-                Log.d("FallAlertActivity", "SMS sent to $phone: $message")
             } catch (e: Exception) {
                 Log.e("FallAlertActivity", "Failed to send SMS to $phone: ${e.message}")
             }

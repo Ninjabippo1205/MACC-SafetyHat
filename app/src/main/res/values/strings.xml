@@ -75,5 +75,8 @@
     <string name="communications">Communications</string>
     <string name="select_site_id">Select Site ID</string>
     <string name="thumbs_up">Thumbs Up</string>
+    <string name="recover_password">Recover password</string>
+    <string name="hint_email">type the email for password recovery</string>
+    <string name="email">Email</string>
 
 </resources>
