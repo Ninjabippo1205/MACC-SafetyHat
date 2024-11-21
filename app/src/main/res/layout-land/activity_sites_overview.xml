@@ -28,7 +28,7 @@
             android:id="@+id/create_site_title2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="15dp"
             android:fontFamily="sans-serif-condensed"
             android:gravity="center"
             android:text="@string/sites_overview"
@@ -57,30 +57,24 @@
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="400dp"
             android:layout_height="284dp"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="30dp"
             android:layout_marginBottom="30dp"
             android:background="@drawable/rounded_background"
             android:elevation="6dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/menu_icon"
-            app:layout_constraintVertical_bias="0.437" />
+            app:layout_constraintVertical_bias="0.415" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/sitesRecyclerView"
-            android:layout_width="448dp"
-            android:layout_height="282dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="39dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_width="700dp"
+            android:layout_height="390dp"
+            android:layout_marginTop="75dp"
+            android:layout_marginEnd="20dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.375"
-            app:layout_constraintStart_toEndOf="@+id/mapFragment"
-            app:layout_constraintTop_toBottomOf="@+id/separator_line2"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

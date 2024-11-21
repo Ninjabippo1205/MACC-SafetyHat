@@ -26,7 +26,7 @@
             android:id="@+id/account_info_title"
             android:layout_width="222dp"
             android:layout_height="60dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="32dp"
             android:fontFamily="sans-serif-condensed-light"
             android:gravity="center"
             android:text="@string/account"
@@ -54,45 +54,41 @@
             android:id="@+id/your_position_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="173dp"
-            android:layout_marginTop="95dp"
+            android:layout_marginStart="225dp"
+            android:layout_marginTop="120dp"
             android:fontFamily="sans-serif-condensed"
             android:text="@string/your_position"
             android:textColor="@color/black"
-            android:textSize="16sp"
+            android:textSize="20sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/map_fragment"
             android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="377dp"
-            android:layout_height="238dp"
-            android:layout_marginStart="27dp"
-            android:layout_marginTop="11dp"
-            android:layout_marginBottom="45dp"
+            android:layout_width="404dp"
+            android:layout_height="250dp"
+            android:layout_marginStart="79dp"
+            android:layout_marginBottom="128dp"
             android:background="@drawable/rounded_background"
             android:elevation="6dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/your_position_label" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <LinearLayout
             android:id="@+id/info_worker_container"
             android:layout_width="444dp"
             android:layout_height="315dp"
-            android:layout_marginStart="33dp"
-            android:layout_marginTop="14dp"
-            android:layout_marginEnd="33dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginTop="120dp"
+            android:layout_marginEnd="150dp"
+            android:layout_marginBottom="105dp"
             android:background="@drawable/rounded_background"
             android:elevation="4dp"
             android:orientation="vertical"
             android:padding="16dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/map_fragment"
-            app:layout_constraintTop_toBottomOf="@+id/account_info_title">
+            app:layout_constraintTop_toTopOf="parent">
 
             <!-- First Name Label and Text -->
             <LinearLayout
