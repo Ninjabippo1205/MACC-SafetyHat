@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +32,13 @@ class ResetPasswordActivity : AppCompatActivity() {
         val newPasswordEditText = findViewById<EditText>(R.id.newPasswordEditText)
         val confirmPasswordEditText = findViewById<EditText>(R.id.confirmPasswordEditText)
         val resetPasswordButton = findViewById<Button>(R.id.resetPasswordButton)
+
+        val backButton = findViewById<ImageView>(R.id.back_icon_login)
+        backButton.setOnClickListener {
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         resetPasswordButton.setOnClickListener {
             val newPassword = newPasswordEditText.text.toString()
