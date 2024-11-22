@@ -41,10 +41,9 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Contenitore dei bottoni in fondo alla pagina -->
-
         <View
             android:id="@+id/separator_line2"
-            android:layout_width="200dp"
+            android:layout_width="210dp"
             android:layout_height="1dp"
             android:layout_marginStart="100dp"
             android:layout_marginTop="3dp"
@@ -57,7 +56,7 @@
         <LinearLayout
             android:id="@+id/communications_container"
             android:layout_width="400dp"
-            android:layout_height="250dp"
+            android:layout_height="200dp"
             android:layout_marginTop="25dp"
             android:background="@drawable/rounded_background"
             android:elevation="4dp"

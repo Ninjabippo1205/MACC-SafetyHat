@@ -40,15 +40,15 @@ class QrScanningActivity : AppCompatActivity() {
         }
 
         val workerCF = intent.getStringExtra("workerCF")
-
+/*
         val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
         intent.putExtra("workerCF", workerCF)
         intent.putExtra("siteID", "64")
         startActivity(intent)
         finish()
-
+*/
         // Inizializza lo scanner direttamente, assumendo che il permesso sia già stato concesso
-        //initializeScanner()
+        initializeScanner()
     }
 
     // Inizializza il CodeScanner
