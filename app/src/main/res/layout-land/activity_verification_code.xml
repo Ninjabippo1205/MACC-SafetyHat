@@ -7,24 +7,79 @@
     android:layout_height="match_parent"
     tools:context=".VerifyCodeActivity">
 
+
+    <ImageView
+        android:id="@+id/back_icon_login"
+        android:layout_width="72dp"
+        android:layout_height="67dp"
+        android:contentDescription="@string/back"
+        android:foregroundGravity="top|left"
+        android:scaleX="1.5"
+        android:scaleY="1.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/back_foreground" />
+
+    <TextView
+        android:id="@+id/forgot_password_title"
+        android:layout_width="350dp"
+        android:layout_height="92dp"
+        android:layout_marginTop="52dp"
+        android:fontFamily="sans-serif-condensed-light"
+        android:gravity="center"
+        android:text="@string/verification_code"
+        android:textColor="#2C2C2C"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/separator_line"
+        android:layout_width="350dp"
+        android:layout_height="1dp"
+        android:layout_marginStart="103dp"
+        android:layout_marginTop="-20dp"
+        android:layout_marginEnd="103dp"
+        android:background="#2C2C2C"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/forgot_password_title" />
+    <!-- Input Field -->
     <EditText
         android:id="@+id/enteredCodeEditText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="300dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="200dp"
+        android:background="@drawable/rounded_background"
+        android:elevation="4dp"
         android:hint="Enter reset code"
         android:inputType="number"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:padding="10dp"
+        android:textColorHint="#808080"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="100dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Verify Button -->
     <Button
         android:id="@+id/verifyButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/rounded_background"
+        android:backgroundTint="#2C2C2C"
+        android:elevation="4dp"
         android:text="Verify Code"
+        android:textAllCaps="false"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
         app:layout_constraintTop_toBottomOf="@id/enteredCodeEditText"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

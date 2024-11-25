@@ -24,7 +24,7 @@
         android:id="@+id/account_info_title"
         android:layout_width="222dp"
         android:layout_height="60dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginStart="30dp"
         android:fontFamily="sans-serif-condensed-light"
         android:gravity="center"
         android:text="@string/login"
@@ -37,9 +37,9 @@
 
     <View
         android:id="@+id/separator_line"
-        android:layout_width="200dp"
+        android:layout_width="150dp"
         android:layout_height="1dp"
-        android:layout_marginStart="108dp"
+        android:layout_marginStart="128dp"
         android:layout_marginEnd="103dp"
         android:background="#2C2C2C"
         app:layout_constraintEnd_toEndOf="parent"
@@ -49,33 +49,29 @@
 
     <ImageView
         android:id="@+id/logoImageView"
-        android:layout_width="241dp"
-        android:layout_height="232dp"
-        android:layout_marginStart="63dp"
-        android:layout_marginTop="125dp"
-        android:layout_marginBottom="145dp"
+        android:layout_width="245dp"
+        android:layout_height="231dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="20dp"
         android:contentDescription="@string/head_foreground_description"
         android:scaleX="1.5"
         android:scaleY="1.5"
         android:src="@mipmap/head_foreground"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/back_icon_login"
         tools:ignore="ImageContrastCheck" />
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="567dp"
-        android:layout_height="300dp"
+        android:layout_width="350dp"
+        android:layout_height="250dp"
         android:layout_gravity="center"
-        android:layout_marginEnd="57dp"
-        android:layout_marginBottom="17dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="28dp"
         android:background="@drawable/rounded_background"
         android:elevation="4dp"
         android:orientation="vertical"
         android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/logoImageView"
         app:layout_constraintTop_toBottomOf="@+id/separator_line">
 
@@ -133,6 +129,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="16dp"
+            android:background="@null"
             android:clickable="true"
             android:minWidth="48dp"
             android:minHeight="48dp"
@@ -140,8 +137,7 @@
             android:text="@string/forgot_password"
             android:textColor="#2C2C2C"
             android:textSize="14sp"
-            android:textStyle="bold"
-            android:background="@null" />
+            android:textStyle="bold" />
 
 
     </LinearLayout>

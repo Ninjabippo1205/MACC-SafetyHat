@@ -26,7 +26,7 @@
             android:id="@+id/create_site_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="-7dp"
             android:fontFamily="sans-serif-condensed"
             android:gravity="center"
             android:text="@string/create_site"
@@ -42,7 +42,6 @@
             android:layout_width="200dp"
             android:layout_height="1dp"
             android:layout_marginStart="100dp"
-            android:layout_marginTop="4dp"
             android:layout_marginEnd="100dp"
             android:background="#2C2C2C"
             app:layout_constraintEnd_toEndOf="parent"
@@ -54,7 +53,7 @@
             android:id="@+id/site_icon"
             android:layout_width="217dp"
             android:layout_height="218dp"
-            android:layout_marginStart="70dp"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="37dp"
             android:layout_marginBottom="115dp"
             android:contentDescription="@string/site_icon_description"
@@ -68,12 +67,11 @@
 
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scroll_view"
-            android:layout_width="650dp"
-            android:layout_height="250dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="15dp"
+            android:layout_width="550dp"
+            android:layout_height="160dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="10dp"
             android:fillViewport="true"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/site_icon"
             app:layout_constraintTop_toBottomOf="@+id/separator_line">
 
@@ -225,9 +223,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="450dp"
             android:layout_marginTop="5dp"
-            android:layout_marginEnd="165dp"
             android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/scroll_view">
 
@@ -264,7 +260,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="450dp"
             android:layout_marginTop="10dp"
-            android:layout_marginEnd="165dp"
             android:background="@drawable/rounded_background"
             android:backgroundTint="#2C2C2C"
             android:fontFamily="sans-serif-condensed"
@@ -272,7 +267,6 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="24sp"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
 

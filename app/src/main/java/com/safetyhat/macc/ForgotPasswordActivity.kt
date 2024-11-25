@@ -6,6 +6,7 @@ import android.telephony.SmsManager
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import okhttp3.*
@@ -23,6 +24,13 @@ class ForgotPasswordActivity : AppCompatActivity() {
 
         val cfEditText = findViewById<EditText>(R.id.cfEditText)
         val recoverButton = findViewById<Button>(R.id.recoverButton)
+
+        val backButton = findViewById<ImageView>(R.id.back_icon_login)
+        backButton.setOnClickListener {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         recoverButton.setOnClickListener {
             val cf = cfEditText.text.toString().trim()

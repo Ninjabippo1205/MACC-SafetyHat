@@ -78,5 +78,6 @@
     <string name="recover_password">Recover password</string>
     <string name="hint_email">type the email for password recovery</string>
     <string name="email">Email</string>
+    <string name="verification_code">Insert Verification Code</string>
 
 </resources>
