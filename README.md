@@ -34,7 +34,9 @@ In addition to managing communications, the app incorporates an advanced alert s
 
 Below is an image illustrating the application flow and UI design:
 
-![SafetyHat Mockups](path/to/mockup/image.png)
+![SafetyHat Mockups](mokup.png)
+
+SafetyHat has been designed to provide a seamless user experience in both **portrait (vertical)** and **landscape (horizontal)** orientations. This flexibility ensures that the application is usable in various contexts, whether the user is holding their device vertically for quick access or horizontally.
 
 ## Architecture and Technologies
 
