@@ -12,7 +12,7 @@ The application starts with a welcome screen where users can log in or register 
 
 After logging in, Managers gain access to a dashboard where they can create and manage construction sites. Once created, the system automatically generates a unique QR code to allow worker access to the corresponding the site. This QR code can be printed directly into the gallery from the app.
 
-Managers can also send messages to Workers associated with a specific site. These messages appear in the Workers' app interface, where Workers can interact by reacting (e.g., "liking" the messages). This interaction allows Managers to monitor Worker engagement and ensure important communications are acknowledged.
+Managers can also send communications to Workers associated with a specific site. These messages appear in the Workers' app interface, where Workers can interact by reacting (e.g., "liking" the messages). This interaction allows Managers to monitor Worker engagement and ensure important communications are acknowledged.
 
 Additionally, Managers have the ability to view and manage their personal information directly within the app. They can also change their password to keep their account information up to date.
 
