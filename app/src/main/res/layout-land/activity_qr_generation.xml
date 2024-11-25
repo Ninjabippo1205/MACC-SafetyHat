@@ -60,6 +60,6 @@
         android:layout_gravity="start"
         app:itemIconSize="100dp"
         app:itemTextAppearance="@style/NavMenuTextAppearance"
-        app:menu="@menu/navbar_menu_manager" />
+        app:menu="@menu/navbar_menu_manager_account_info_page" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

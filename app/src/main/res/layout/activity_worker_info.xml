@@ -241,7 +241,7 @@
 
             <!-- New Password Field -->
             <EditText
-                android:id="@+id/new_password_worker_field"
+                android:id="@+id/new_password_field"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"

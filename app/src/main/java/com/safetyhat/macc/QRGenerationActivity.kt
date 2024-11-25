@@ -52,8 +52,15 @@ class QRGenerationActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 }
-                R.id.nav_account_info_manager -> {
-                    val intent = Intent(this, ManagerInfoActivity::class.java)
+                R.id.nav_site_overview_manager -> {
+                    val intent = Intent(this, SitesOverviewActivity::class.java)
+                    intent.putExtra("managerCF", managerCF)
+                    startActivity(intent)
+                    finish()
+                }
+
+                R.id.nav_create_site_manager -> {
+                    val intent = Intent(this, CreatesiteActivity::class.java)
                     intent.putExtra("managerCF", managerCF)
                     startActivity(intent)
                     finish()

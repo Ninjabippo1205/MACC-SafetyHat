@@ -203,12 +203,31 @@
             app:layout_constraintStart_toEndOf="@+id/communication_form"
             app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/communications_recycler_view"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="8dp" />
+                android:orientation="vertical">
+
+                <!-- Messaggio "No communications" -->
+                <TextView
+                    android:id="@+id/no_communications_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No communications"
+                    android:textSize="18sp"
+                    android:textColor="#808080"
+                    android:gravity="center"
+                    android:visibility="gone" />
+
+                <!-- RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/communications_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="8dp" />
+            </LinearLayout>
         </ScrollView>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

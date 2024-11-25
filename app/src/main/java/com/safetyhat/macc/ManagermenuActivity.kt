@@ -29,6 +29,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import android.os.Handler
+import android.util.Log
 
 class ManagermenuActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -148,44 +149,63 @@ class ManagermenuActivity : AppCompatActivity() {
                             val communicationJson = jsonArray.getJSONObject(i)
                             val text = communicationJson.getString("Text")
                             val communicationID = communicationJson.getInt("ID")
-                            val communication = Communication(text, 0, communicationID)
+                            val siteID = communicationJson.getInt("SiteID")
+                            val timestamp = communicationJson.getString("Timestamp")
+
+                            val communication = Communication(text, 0, communicationID, siteID, timestamp)
                             newCommunicationsList.add(communication)
                         }
 
-                        // Aggiorna l'adattatore sul thread principale
                         runOnUiThread {
                             updateCommunicationsList(newCommunicationsList)
                         }
                     } catch (e: JSONException) {
                         runOnUiThread {
-                            Toast.makeText(this@ManagermenuActivity, "Failed to parse communication data", Toast.LENGTH_LONG).show()
+                            updateCommunicationsList(emptyList()) // Passa una lista vuota in caso di errore
                         }
                     }
+                } ?: runOnUiThread {
+                    updateCommunicationsList(emptyList()) // Passa una lista vuota se il corpo è nullo
                 }
             }
         })
     }
 
-    private fun updateCommunicationsList(newCommunications: List<Communication>) {
-        // Mantieni la visualizzazione corrente nel RecyclerView
-        val existingIds = communicationsList.map { it.communicationID }.toSet()
 
-        // Aggiungi o aggiorna le comunicazioni esistenti
-        newCommunications.forEach { newCommunication ->
-            if (existingIds.contains(newCommunication.communicationID)) {
-                // Trova l'indice della comunicazione esistente e aggiornala
-                val index = communicationsList.indexOfFirst { it.communicationID == newCommunication.communicationID }
-                if (index != -1) {
-                    communicationsList[index] = newCommunication // Aggiorna la comunicazione esistente
-                    communicationsAdapter.notifyItemChanged(index) // Notifica che l'elemento è stato aggiornato
+    private fun updateCommunicationsList(newCommunications: List<Communication>) {
+        val noCommunicationsText = findViewById<TextView>(R.id.no_communications_text)
+
+        // Se la lista delle comunicazioni è vuota
+        if (newCommunications.isEmpty()) {
+            // Mostra il messaggio "No communications" e nascondi la RecyclerView
+            noCommunicationsText.visibility = View.VISIBLE
+            communicationsRecyclerView.visibility = View.GONE
+        } else {
+            // Nascondi il messaggio "No communications" e mostra la RecyclerView
+            noCommunicationsText.visibility = View.GONE
+            communicationsRecyclerView.visibility = View.VISIBLE
+
+            // Mantieni la visualizzazione corrente nel RecyclerView
+            val existingIds = communicationsList.map { it.communicationID }.toSet()
+
+            // Aggiungi o aggiorna le comunicazioni esistenti
+            newCommunications.forEach { newCommunication ->
+                if (existingIds.contains(newCommunication.communicationID)) {
+                    // Trova l'indice della comunicazione esistente e aggiornala
+                    val index = communicationsList.indexOfFirst { it.communicationID == newCommunication.communicationID }
+                    if (index != -1) {
+                        communicationsList[index] = newCommunication // Aggiorna la comunicazione esistente
+                        communicationsAdapter.notifyItemChanged(index) // Notifica che l'elemento è stato aggiornato
+                    }
+                } else {
+                    // Se è una nuova comunicazione, aggiungila alla lista
+                    communicationsList.add(newCommunication)
+                    communicationsAdapter.notifyItemInserted(communicationsList.size - 1) // Notifica che è stata aggiunta una nuova comunicazione
                 }
-            } else {
-                // Se è una nuova comunicazione, aggiungila alla lista
-                communicationsList.add(newCommunication)
-                communicationsAdapter.notifyItemInserted(communicationsList.size - 1) // Notifica che è stata aggiunta una nuova comunicazione
             }
         }
     }
+
 
     private fun fetchSites(managerCF: String) {
         val url = "https://noemigiustini01.pythonanywhere.com/site/read_all?CF=$managerCF"
@@ -217,17 +237,12 @@ class ManagermenuActivity : AppCompatActivity() {
                             siteIDField.adapter = adapter
                         }
                     } catch (e: JSONException) {
-                        runOnUiThread {
-                            Toast.makeText(this@ManagermenuActivity, "Failed to parse site data", Toast.LENGTH_LONG).show()
-                        }
+                        Log.d("ManagerMenu", "Error in parsing data: $e")
                     }
                 }
             }
         })
     }
-
-
-
 
     private fun createCommunication(text: String, managerCF: String, siteID: String) {
         val url = "https://noemigiustini01.pythonanywhere.com/communication/create"
@@ -238,49 +253,37 @@ class ManagermenuActivity : AppCompatActivity() {
 
         val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
-        val request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
+        client.newCall(Request.Builder().url(url).post(requestBody).build()).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.d("CommunicationManager", "Failed to create communication: $e")
+                runOnUiThread {
+                    Toast.makeText(this@ManagermenuActivity, "Failed to create communication: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                }
+            }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    runOnUiThread {
-                        Toast.makeText(this@ManagermenuActivity, "Failed to create communication: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+            override fun onResponse(call: Call, response: Response) {
+                runOnUiThread {
+                    if (response.isSuccessful) {
+                        Toast.makeText(this@ManagermenuActivity, "Communication created successfully!", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this@ManagermenuActivity, ManagermenuActivity::class.java)
+                        intent.putExtra("managerCF", managerCF)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        Log.d("CommunicationManager", "Failed to create communication: $response")
+                        Toast.makeText(this@ManagermenuActivity, "Failed to create communication", Toast.LENGTH_LONG).show()
                     }
                 }
-
-                override fun onResponse(call: Call, response: Response) {
-                    runOnUiThread {
-                        val responseBody = response.body?.string()
-                        if (response.isSuccessful && responseBody != null) {
-                            try {
-                                val jsonResponse = JSONObject(responseBody)
-                                val communicationID = jsonResponse.getInt("communication_id")
-
-                                Toast.makeText(this@ManagermenuActivity, "Communication created successfully!", Toast.LENGTH_SHORT).show()
-
-                                val intent = Intent(this@ManagermenuActivity, ManagermenuActivity::class.java)
-                                intent.putExtra("managerCF", managerCF)
-                                startActivity(intent)
-                                finish()
-                            } catch (e: JSONException) {
-                                Toast.makeText(this@ManagermenuActivity, "Failed to parse response", Toast.LENGTH_LONG).show()
-                            }
-                        } else {
-                            Toast.makeText(this@ManagermenuActivity, "Failed to create communication: ${responseBody ?: "Unknown error"}", Toast.LENGTH_LONG).show()
-                        }
-                    }
-                }
-            })
-        }
+            }
+        })
     }
 
     data class Communication(
         val message: String,
         val thumbsUpCount: Int,
         val communicationID: Int,
+        val siteID: Int = -1,
+        val timestamp: String
     )
 
     class CommunicationsAdapter(private val communications: List<Communication>) :
@@ -291,6 +294,7 @@ class ManagermenuActivity : AppCompatActivity() {
             val communicationTextView: TextView = view.findViewById(R.id.communication_text_view)
             val thumbsUpIcon: ImageView = view.findViewById(R.id.thumbs_up_icon)
             val viewCountTextView: TextView = view.findViewById(R.id.view_count_text_view)
+            val siteIDTextView: TextView = view.findViewById(R.id.siteID_text_view)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommunicationViewHolder {
@@ -299,9 +303,16 @@ class ManagermenuActivity : AppCompatActivity() {
             return CommunicationViewHolder(view)
         }
 
-        override fun onBindViewHolder(holder: com.safetyhat.macc.ManagermenuActivity.CommunicationsAdapter.CommunicationViewHolder, position: Int) {
+        override fun onBindViewHolder(holder: CommunicationViewHolder, position: Int) {
             val communication = communications[position]
-            holder.communicationTextView.text = communication.message  // Mostra il testo della comunicazione
+
+            // Imposta il messaggio di comunicazione
+            holder.communicationTextView.text = communication.message
+
+            // Imposta il testo "Site $siteID" nel TextView
+            holder.siteIDTextView.text = "Site ${communication.siteID}"
+
+            holder.itemView.findViewById<TextView>(R.id.timestamp_text_view).text = communication.timestamp
 
             // Esegui una chiamata API per ottenere il numero di visualizzazioni per il CommunicationID
             val countUrl = "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communication.communicationID}"
@@ -318,7 +329,7 @@ class ManagermenuActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         response.body?.string()?.let { responseBody ->
                             val json = JSONObject(responseBody)
-                            val viewCount = json.optInt("count", 0)  // Estrai il valore di 'count' dalla risposta
+                            val viewCount = json.optInt("count", 0)
 
                             // Aggiorna viewCountTextView sul thread principale
                             (holder.itemView.context as? AppCompatActivity)?.runOnUiThread {
@@ -329,6 +340,7 @@ class ManagermenuActivity : AppCompatActivity() {
                 }
             })
         }
+
 
 
         override fun getItemCount(): Int = communications.size

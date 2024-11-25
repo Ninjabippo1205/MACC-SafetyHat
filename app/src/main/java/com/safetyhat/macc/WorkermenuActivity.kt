@@ -184,26 +184,45 @@ class WorkermenuActivity : AppCompatActivity() {
                             val communicationJson = jsonArray.getJSONObject(i)
                             val text = communicationJson.getString("Text")
                             val communicationID = communicationJson.getInt("ID")
-                            val communication = Communication(text, 0, communicationID, workerCF, siteID.toString())
+                            val timestamp = communicationJson.getString("Timestamp") // Aggiungi il timestamp
+                            val communication = Communication(text, 0, communicationID, workerCF, siteID.toString(), timestamp)
                             communicationsList.add(communication)
                         }
 
-                        // Aggiorna l'adattatore sul thread principale
+                        // Aggiorna l'interfaccia utente
                         runOnUiThread {
-                            communicationsAdapter = CommunicationsAdapter(communicationsList)
-                            communicationsRecyclerView.adapter = communicationsAdapter
+                            updateCommunicationsList(communicationsList)
                         }
                     } catch (e: JSONException) {
-                        // TODO: if no communication are aveable, update the recycler view with the message "No communication aveable"
-                        /*
                         runOnUiThread {
-                            Toast.makeText(this@WorkermenuActivity, "Failed to parse communication data", Toast.LENGTH_LONG).show()
+                            updateCommunicationsList(emptyList()) // Nessuna comunicazione trovata
                         }
-                         */
                     }
+                } ?: runOnUiThread {
+                    updateCommunicationsList(emptyList()) // Corpo della risposta nullo
                 }
             }
         })
+    }
+
+
+    private fun updateCommunicationsList(newCommunications: List<Communication>) {
+        val noCommunicationsText = findViewById<TextView>(R.id.no_communications_text)
+
+        if (newCommunications.isEmpty()) {
+            // Mostra il messaggio "No communications" e nascondi la RecyclerView
+            noCommunicationsText.visibility = View.VISIBLE
+            communicationsRecyclerView.visibility = View.GONE
+        } else {
+            // Nascondi il messaggio "No communications" e mostra la RecyclerView
+            noCommunicationsText.visibility = View.GONE
+            communicationsRecyclerView.visibility = View.VISIBLE
+
+            // Aggiorna i dati nell'adattatore
+            communicationsList.clear()
+            communicationsList.addAll(newCommunications)
+            communicationsAdapter.notifyDataSetChanged()
+        }
     }
 
     data class Communication(
@@ -211,7 +230,8 @@ class WorkermenuActivity : AppCompatActivity() {
         val thumbsUpCount: Int,
         val communicationID: Int,
         val workerCF: String,
-        val siteID: String
+        val siteID: String,
+        val timestamp: String
     )
 
     class CommunicationsAdapter(private val communications: List<Communication>) :
@@ -222,6 +242,7 @@ class WorkermenuActivity : AppCompatActivity() {
             val communicationTextView: TextView = view.findViewById(R.id.communication_text_view)
             private val thumbsUp: Button = view.findViewById(R.id.thumbs_up_icon)
             val viewCountTextView: TextView = view.findViewById(R.id.view_count_text_view)
+            val siteIDTextView: TextView = view.findViewById(R.id.siteID_text_view)
 
             init {
                 thumbsUp.setOnClickListener {
@@ -339,7 +360,20 @@ class WorkermenuActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: CommunicationViewHolder, position: Int) {
             val communication = communications[position]
-            holder.communicationTextView.text = communication.message  // Mostra il testo della comunicazione
+
+            // Mostra il testo della comunicazione
+            holder.communicationTextView.text = communication.message
+
+            // Mostra l'ID del sito
+            holder.siteIDTextView.text = "SiteID: ${communication.siteID}"
+
+            // Mostra il timestamp (aggiungi un controllo per evitare errori in caso di dati mancanti)
+            holder.itemView.findViewById<TextView>(R.id.timestamp_text_view).text =
+                if (communication.timestamp.isNotEmpty()) {
+                    "${communication.timestamp}"
+                } else {
+                    "Timestamp not available"
+                }
 
             // Esegui una chiamata API per ottenere il numero di visualizzazioni per il CommunicationID
             val countUrl = "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communication.communicationID}"
@@ -366,6 +400,7 @@ class WorkermenuActivity : AppCompatActivity() {
                 }
             })
         }
+
 
         override fun getItemCount(): Int = communications.size
 

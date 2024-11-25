@@ -102,6 +102,22 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
 
         fetchWorkerInfo(workerCF.toString())
         checkPermissionsAndConfigureUI(workerCF, siteID)
+
+        val changePasswordButton = findViewById<Button>(R.id.change_password_button)
+        changePasswordButton.setOnClickListener {
+            val newPassword = findViewById<EditText>(R.id.new_password_field).text.toString()
+            if (newPassword.isNotEmpty()) {
+                val passwordPattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#\$%^&+=!]).{8,}$"
+                if (!Pattern.matches(passwordPattern, newPassword)) {
+                    Toast.makeText(this, "Password must be at least 8 characters,with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
+                }else {
+                    val hashedPassword = hashPassword(newPassword)
+                    updatePassword(workerCF.toString(), hashedPassword)
+                }
+            } else {
+                Toast.makeText(this, "Please enter a new password", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun initializeUI() {
@@ -182,7 +198,7 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
                             "Password updated successfully",
                             Toast.LENGTH_SHORT
                         ).show()
-                        findViewById<EditText>(R.id.new_password_worker_field).text.clear()
+                        findViewById<EditText>(R.id.new_password_field).text.clear()
                     } else {
                         Toast.makeText(
                             this@WorkerinfoActivity,
@@ -359,8 +375,6 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         })
     }
-
-    // Rimosso: Metodo checkLocationPermission()
 
     override fun onResume() {
         super.onResume()

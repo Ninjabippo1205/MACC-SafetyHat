@@ -44,6 +44,9 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
     private val sitesList = mutableListOf<Site>()
     private var isMapInitialized = false
 
+    // Aggiunta del snapHelper come variabile di classe
+    private lateinit var snapHelper: LinearSnapHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_sites_overview)
@@ -95,18 +98,24 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
         sitesAdapter = SitesAdapter(sitesList, managerCF)
         sitesRecyclerView.adapter = sitesAdapter
 
-
-        // Imposta il LinearSnapHelper per centrare l'elemento
-        val snapHelper = LinearSnapHelper()
+        // Inizializza il LinearSnapHelper per centrare l'elemento
+        snapHelper = TopLinearSnapHelper()
         snapHelper.attachToRecyclerView(sitesRecyclerView)
 
-        // Listener per il centro automatico sulla mappa
+        // Aggiungi OnScrollListener alla RecyclerView
         sitesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    val centerView = snapHelper.findSnapView(sitesRecyclerView.layoutManager)
-                    val position = sitesRecyclerView.getChildAdapterPosition(centerView!!)
-                    centerMapOnSiteIfValid(sitesList[position])
+                    val layoutManager = recyclerView.layoutManager
+                    val snapView = snapHelper.findSnapView(layoutManager)
+                    if (snapView != null) {
+                        val position = recyclerView.getChildAdapterPosition(snapView)
+                        if (position != RecyclerView.NO_POSITION) {
+                            val site = sitesList[position]
+                            centerMapOnSiteIfValid(site)
+                        }
+                    }
                 }
             }
         })
@@ -120,6 +129,23 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
         fetchSites(managerCF)
     }
 
+    class TopLinearSnapHelper : LinearSnapHelper() {
+        override fun calculateDistanceToFinalSnap(
+            layoutManager: RecyclerView.LayoutManager,
+            targetView: View
+        ): IntArray? {
+            if (layoutManager is LinearLayoutManager) {
+                val distances = super.calculateDistanceToFinalSnap(layoutManager, targetView)
+                distances?.let {
+                    // Modifica la distanza in verticale per allineare alla parte superiore
+                    it[1] = targetView.top - layoutManager.paddingTop
+                }
+                return distances
+            }
+            return super.calculateDistanceToFinalSnap(layoutManager, targetView)
+        }
+    }
+
     private fun fetchSites(managerCF: String) {
         val url = "https://noemigiustini01.pythonanywhere.com/site/read_all?CF=$managerCF"
         val request = Request.Builder().url(url).build()
@@ -127,7 +153,11 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
-                    Toast.makeText(this@SitesOverviewActivity, "Failed to load sites", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@SitesOverviewActivity,
+                        "Failed to load sites",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -150,7 +180,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             val jsonArray = JSONArray(json)
             for (i in 0 until jsonArray.length()) {
                 val jsonObject = jsonArray.getJSONObject(i)
-                val id = jsonObject.getInt("ID")  // Assumi che l'ID sia un campo restituito dall'API
+                val id = jsonObject.getInt("ID")
                 val address = jsonObject.getString("Address")
                 val siteRadius = jsonObject.getDouble("SiteRadius")
                 val totalWorkers = jsonObject.optInt("TotalWorkers", 0)
@@ -159,24 +189,50 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                 val estimatedEndDate = jsonObject.optString("EstimatedEndDate", "")
                 val securityCode = jsonObject.optString("SecurityCode", "")
 
-                // Aggiungi il sito usando il vero ID
-                geocodeAddress(id, address, siteRadius, totalWorkers, scaffoldingCount, startDate, estimatedEndDate, securityCode)
+                geocodeAddress(
+                    id,
+                    address,
+                    siteRadius,
+                    totalWorkers,
+                    scaffoldingCount,
+                    startDate,
+                    estimatedEndDate,
+                    securityCode
+                )
             }
         } catch (e: JSONException) {
             runOnUiThread {
-                Toast.makeText(this@SitesOverviewActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    this@SitesOverviewActivity,
+                    "Error: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
 
-    private fun geocodeAddress(id: Int, address: String, siteRadius: Double, totalWorkers: Int, scaffoldingCount: Int, startDate: String, estimatedEndDate: String, securityCode: String) {
-        val geocodeUrl = "https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${getString(R.string.google_maps_key)}"
+    private fun geocodeAddress(
+        id: Int,
+        address: String,
+        siteRadius: Double,
+        totalWorkers: Int,
+        scaffoldingCount: Int,
+        startDate: String,
+        estimatedEndDate: String,
+        securityCode: String
+    ) {
+        val geocodeUrl =
+            "https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${getString(R.string.google_maps_key)}"
         val request = Request.Builder().url(geocodeUrl).build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 runOnUiThread {
-                    Toast.makeText(this@SitesOverviewActivity, "Failed to geocode address", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@SitesOverviewActivity,
+                        "Failed to geocode address",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
@@ -200,7 +256,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
 
                         val site = Site(
-                            id = id,  // Usa l'ID reale
+                            id = id,
                             address = address,
                             siteRadius = siteRadius,
                             lat = lat,
@@ -222,14 +278,17 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                         }
                     } catch (e: JSONException) {
                         runOnUiThread {
-                            Toast.makeText(this@SitesOverviewActivity, "Error parsing geocode response", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@SitesOverviewActivity,
+                                "Error parsing geocode response",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
             }
         })
     }
-
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
@@ -242,11 +301,16 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun addMarkersToMap() {
         mMap.clear()
-        val sitesCopy = ArrayList(sitesList) // Creazione di una copia della lista
+        val sitesCopy = ArrayList(sitesList)
         for (site in sitesCopy) {
             if (site.isValidLocation) {
                 val position = LatLng(site.lat, site.lng)
-                mMap.addMarker(MarkerOptions().position(position).title("Site: ${site.address}"))
+                val marker = mMap.addMarker(
+                    MarkerOptions()
+                        .position(position)
+                        .title("Site: ${site.address}")
+                )
+                marker?.tag = site.id
                 mMap.addCircle(
                     CircleOptions()
                         .center(position)
@@ -256,6 +320,16 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                 )
             }
         }
+
+        mMap.setOnMarkerClickListener { marker ->
+            val siteId = marker.tag as? Int
+            val position = sitesList.indexOfFirst { it.id == siteId }
+            if (position != -1) {
+                sitesRecyclerView.smoothScrollToPosition(position)
+            }
+            true
+        }
+
         val firstValidSite = sitesCopy.firstOrNull { it.isValidLocation }
         if (firstValidSite != null) {
             centerMapOnSite(firstValidSite)
@@ -269,7 +343,8 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun centerMapOnSiteIfValid(site: Site) {
         if (site.isValidLocation) {
-            centerMapOnSite(site)
+            val position = LatLng(site.lat, site.lng)
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 15f))
         }
     }
 
@@ -306,65 +381,28 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                 view.setOnClickListener {
                     val position = adapterPosition
                     if (position != RecyclerView.NO_POSITION) {
-                        sitesRecyclerView.clearOnScrollListeners() // Rimuovi i listener temporaneamente
-                        centerItem(position, view.width)
+                        centerItem(position)
                     }
                 }
             }
         }
 
-        private fun centerItem(position: Int, viewWidth: Int) {
-            val layoutManager = sitesRecyclerView.layoutManager as LinearLayoutManager
-            // Aggiungi un piccolo offset per posizionare l'elemento selezionato leggermente più in basso del centro
-            val centerOffset = layoutManager.width / 2 - viewWidth / 2 // 50 è il valore extra; puoi modificarlo a tuo piacimento
-
-            smoothScrollToPositionWithOffset(position, centerOffset)
-            centerMapOnSiteIfValid(sites[position])
-
-            sitesRecyclerView.postDelayed({
-                attachOnScrollListener() // Riaggiungi il listener dopo l'animazione
-            }, 500) // Regola il tempo in base alla durata dell'animazione
-        }
-
-        private fun smoothScrollToPositionWithOffset(position: Int, offset: Int) {
+        private fun centerItem(position: Int) {
             val layoutManager = sitesRecyclerView.layoutManager as LinearLayoutManager
             val scroller = object : LinearSmoothScroller(this@SitesOverviewActivity) {
                 override fun calculateSpeedPerPixel(displayMetrics: DisplayMetrics): Float {
-                    return 0.1f // Velocità dello scroll (puoi regolarla)
+                    return 0.1f
                 }
 
                 override fun getVerticalSnapPreference(): Int {
-                    return SNAP_TO_START // Allinea l'elemento alla posizione iniziale del layout
+                    return SNAP_TO_START
                 }
             }
             scroller.targetPosition = position
             layoutManager.startSmoothScroll(scroller)
 
-            // Applica l'offset per centrare l'elemento una volta raggiunta la posizione
-            sitesRecyclerView.postDelayed({
-                layoutManager.scrollToPositionWithOffset(position, offset)
-            }, 300) // Ritardo per garantire che il smooth scroll si completi prima dell'offset finale
-        }
-
-
-
-        private fun attachOnScrollListener() {
-            // Controlla se è già presente un OnFlingListener prima di allegare il SnapHelper
-            if (sitesRecyclerView.onFlingListener == null) {
-                val snapHelper = LinearSnapHelper()
-                snapHelper.attachToRecyclerView(sitesRecyclerView)
-            }
-
-            sitesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        val centerView = (recyclerView.layoutManager as LinearLayoutManager)
-                            .findViewByPosition((recyclerView.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition())
-                        val position = recyclerView.getChildAdapterPosition(centerView!!)
-                        centerMapOnSiteIfValid(sitesList[position])
-                    }
-                }
-            })
+            // Centrare la mappa sul sito corrispondente
+            centerMapOnSiteIfValid(sites[position])
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SiteViewHolder {
@@ -385,18 +423,25 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             holder.securityCode.text = "${site.securityCode}"
 
             holder.qrButton.setOnClickListener {
-                val managerCF = this@SitesOverviewActivity.intent.getStringExtra("managerCF") ?: ""
+                val managerCF =
+                    this@SitesOverviewActivity.intent.getStringExtra("managerCF") ?: ""
                 if (managerCF.isNotEmpty()) {
-                    val intent = Intent(this@SitesOverviewActivity, QRGenerationActivity::class.java)
+                    val intent = Intent(
+                        this@SitesOverviewActivity,
+                        QRGenerationActivity::class.java
+                    )
                     intent.putExtra("managerCF", managerCF)
                     intent.putExtra("SiteID", site.id.toString())
                     startActivity(intent)
                     finish()
                 } else {
-                    Toast.makeText(this@SitesOverviewActivity, "ManagerCF is missing.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@SitesOverviewActivity,
+                        "ManagerCF is missing.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
-
 
             holder.binButton.setOnClickListener {
                 val context = holder.itemView.context
@@ -411,29 +456,43 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                 client.newCall(request).enqueue(object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
                         (context as? Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Failed to delete site: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Failed to delete site: ${e.localizedMessage}",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
 
                     override fun onResponse(call: Call, response: Response) {
                         (context as? Activity)?.runOnUiThread {
                             if (response.isSuccessful) {
-                                Toast.makeText(context, "Site deleted successfully", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Site deleted successfully",
+                                    Toast.LENGTH_SHORT
+                                ).show()
 
                                 // Rimuovi il sito dalla lista e aggiorna la RecyclerView
                                 val position = holder.adapterPosition
-                                sitesList.removeAt(position) // Rimuovi il sito dalla lista
-                                notifyItemRemoved(position) // Notifica l'eliminazione dell'elemento
-                                notifyItemRangeChanged(position, sitesList.size) // Aggiorna l'intervallo di elementi
+                                sitesList.removeAt(position)
+                                notifyItemRemoved(position)
+                                notifyItemRangeChanged(position, sitesList.size)
                             } else {
-                                val errorMessage = response.body?.string() ?: "Unknown error"
-                                Toast.makeText(context, "Failed to delete site: $errorMessage", Toast.LENGTH_SHORT).show()
+                                val errorMessage =
+                                    response.body?.string() ?: "Unknown error"
+                                Toast.makeText(
+                                    context,
+                                    "Failed to delete site: $errorMessage",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     }
                 })
             }
         }
+
         override fun getItemCount() = sites.size
     }
 }
