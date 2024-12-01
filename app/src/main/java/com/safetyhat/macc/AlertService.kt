@@ -1,6 +1,7 @@
 package com.safetyhat.macc
 
 import android.Manifest
+import android.app.AlertDialog
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -21,6 +22,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
@@ -77,7 +79,6 @@ class AlertService : Service(), SensorEventListener {
     private lateinit var fusedLocationClient: com.google.android.gms.location.FusedLocationProviderClient
 
     // Alert Management
-    // Tieni traccia dell'ultima notifica audio inviata
     private var lastAudioAlertTime: Long = 0
     private var lastAlertTime: Long = 0    // Keeps track of the last time an alert was sent to prevent spamming
     private val safetyThreshold = 85       // Noise level threshold in decibels for triggering an alert
@@ -93,11 +94,15 @@ class AlertService : Service(), SensorEventListener {
     private var lastLocationKey: String = ""
     private val weatherUpdateRunnable = object : Runnable {
         override fun run() {
-            if (lastLocationKey.isNotEmpty()) {
-                fetchWeatherByCityKey(lastLocationKey)
+            try {
+                if (lastLocationKey.isNotEmpty()) {
+                    fetchWeatherByCityKey(lastLocationKey)
+                }
+                // Schedule the next weather update after weatherSampleRate interval
+                weatherUpdateHandler.postDelayed(this, weatherSampleRate) // 1 hour = 3600000L milliseconds
+            } catch (e: Exception) {
+                Log.e("AlertService", "Error in weather update runnable: ${e.message}")
             }
-            // Schedule the next weather update after weatherSampleRate interval
-            weatherUpdateHandler.postDelayed(this, weatherSampleRate) // 1 hour = 3600000L milliseconds
         }
     }
 
@@ -135,22 +140,27 @@ class AlertService : Service(), SensorEventListener {
         fun getService(): AlertService = this@AlertService
     }
 
-
     override fun onCreate() {
         super.onCreate()
 
         if (!hasNecessaryPermissions()) {
             Toast.makeText(this, "Missing permissions. Waiting for permission to be granted.", Toast.LENGTH_LONG).show()
             startForegroundServiceWithWaitingNotification()
+            requestNecessaryPermissions()
             monitorPermissions()
             return
         }
 
-        createNotificationChannel()
-        startForegroundService()
-        initializeSensors()
-        initializeAudioMonitoring()
-        initializeLocationClient()
+        try {
+            createNotificationChannel()
+            startForegroundService()
+            initializeSensors()
+            initializeAudioMonitoring()
+            initializeLocationClient()
+        } catch (e: Exception) {
+            Log.e("AlertService", "Error during onCreate: ${e.message}")
+            stopSelf()
+        }
     }
 
     private fun fetchSiteInfo(ID: Int) {
@@ -160,8 +170,11 @@ class AlertService : Service(), SensorEventListener {
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 handler.post {
-                    Toast.makeText(this@AlertService, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
+                    showRetryDialog("Network Error", "Failed to fetch site info. Check your internet connection and retry.") {
+                        fetchSiteInfo(ID)
+                    }
                 }
+                Log.e("AlertService", "Failed to fetch site info: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -170,8 +183,8 @@ class AlertService : Service(), SensorEventListener {
                     try {
                         val jsonObject = JSONObject(responseData)
                         val locationKey = jsonObject.optString("LocationKey")
-                        val siteLat = jsonObject.optString("Latitude").toDouble()
-                        val siteLng = jsonObject.optString("Longitude").toDouble()
+                        val siteLat = jsonObject.optString("Latitude").toDoubleOrNull()
+                        val siteLng = jsonObject.optString("Longitude").toDoubleOrNull()
                         val siteRad = jsonObject.optDouble("SiteRadius")
 
                         if (locationKey.isNotEmpty()) {
@@ -181,23 +194,41 @@ class AlertService : Service(), SensorEventListener {
                             Log.d("AlertService", "LocationKey not found for site ID: $ID")
                         }
 
-                        siteLatitude = siteLat
-                        siteLongitude = siteLng
-                        siteRadius = siteRad
-                        siteID = ID
+                        if (siteLat != null && siteLng != null) {
+                            siteLatitude = siteLat
+                            siteLongitude = siteLng
+                            siteRadius = siteRad
+                            siteID = ID
 
-                        startLocationMonitoring()
+                            startLocationMonitoring()
+                        } else {
+                            handler.post {
+                                showRetryDialog("Data Error", "Invalid site location data received. Retry fetching the site info.") {
+                                    fetchSiteInfo(ID)
+                                }
+                            }
+                            Log.e("AlertService", "Invalid latitude or longitude in site info")
+                        }
 
                     } catch (e: JSONException) {
-                        Log.d("AlertService", "JSON Parsing error: ${e.message}")
+                        handler.post {
+                            showRetryDialog("Parsing Error", "Failed to parse site info. Retry fetching the site info.") {
+                                fetchSiteInfo(ID)
+                            }
+                        }
+                        Log.e("AlertService", "JSON Parsing error: ${e.message}")
                     }
                 } else {
-                    Log.d("AlertService", "Failed to retrieve site info: ${response.message}")
+                    handler.post {
+                        showRetryDialog("Server Error", "Failed to retrieve site info from server. Retry fetching the site info.") {
+                            fetchSiteInfo(ID)
+                        }
+                    }
+                    Log.e("AlertService", "Failed to retrieve site info: ${response.message}")
                 }
             }
         })
     }
-
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val newSiteID = intent?.getStringExtra("siteID")
@@ -244,28 +275,32 @@ class AlertService : Service(), SensorEventListener {
         // Set the flag to indicate that the service is no longer running
         isRunning = false
 
-        // Unregister sensor listeners
-        sensorManager.unregisterListener(this)
+        try {
+            // Unregister sensor listeners
+            sensorManager.unregisterListener(this)
 
-        // Stop audio recording
-        audioRecord?.stop()
-        audioRecord?.release()
+            // Stop audio recording
+            audioRecord?.stop()
+            audioRecord?.release()
 
-        // Remove callbacks from handlers
-        weatherUpdateHandler.removeCallbacksAndMessages(null)
-        locationCheckHandler.removeCallbacksAndMessages(null)
+            // Remove callbacks from handlers
+            weatherUpdateHandler.removeCallbacksAndMessages(null)
+            locationCheckHandler.removeCallbacksAndMessages(null)
 
-        // Cancel all coroutines
-        serviceJob.cancel()
+            // Cancel all coroutines
+            serviceJob.cancel()
 
-        // Stop the foreground service
-        stopForeground(Service.STOP_FOREGROUND_REMOVE)
+            // Stop the foreground service
+            stopForeground(Service.STOP_FOREGROUND_REMOVE)
 
-        // Explicitly remove all notifications
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.cancelAll()
+            // Explicitly remove all notifications
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.cancelAll()
 
-        Log.d("AlertService", "Service destroyed and all notifications removed")
+            Log.d("AlertService", "Service destroyed and all notifications removed")
+        } catch (e: Exception) {
+            Log.e("AlertService", "Error during onDestroy: ${e.message}")
+        }
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -284,8 +319,13 @@ class AlertService : Service(), SensorEventListener {
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
-        accelerometer?.also { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
-        gyroscope?.also { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+        accelerometer?.also {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+        } ?: Log.e("AlertService", "Accelerometer not available")
+
+        gyroscope?.also {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+        } ?: Log.e("AlertService", "Gyroscope not available")
     }
 
     // ==========================
@@ -329,8 +369,13 @@ class AlertService : Service(), SensorEventListener {
 
         } catch (e: SecurityException) {
             handler.post {
-                Toast.makeText(this, "Unable to access the microphone. Permission required.", Toast.LENGTH_SHORT).show()
+                showPermissionDialog("Microphone Access Needed", "This app requires access to the microphone to monitor noise levels. Please grant the permission.") {
+                    requestNecessaryPermissions()
+                }
             }
+            Log.e("AlertService", "SecurityException in audio monitoring: ${e.message}")
+        } catch (e: Exception) {
+            Log.e("AlertService", "Error initializing audio monitoring: ${e.message}")
         }
     }
 
@@ -355,7 +400,11 @@ class AlertService : Service(), SensorEventListener {
     // Initializing Location Client
     // ==========================
     private fun initializeLocationClient() {
-        fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(this)
+        try {
+            fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(this)
+        } catch (e: Exception) {
+            Log.e("AlertService", "Error initializing location client: ${e.message}")
+        }
     }
 
     // ==========================
@@ -375,48 +424,75 @@ class AlertService : Service(), SensorEventListener {
             ?.addQueryParameter("metric", "true")
             ?.build()
 
+        if (forecastParams == null) {
+            Log.e("AlertService", "Invalid forecast URL")
+            return
+        }
+
         val forecastRequest = Request.Builder().url(forecastParams.toString()).get().build()
 
         client.newCall(forecastRequest).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 handler.post {
-                    Toast.makeText(this@AlertService, "Network error. Unable to retrieve weather information.", Toast.LENGTH_SHORT).show()
+                    showRetryDialog("Network Error", "Failed to fetch weather data. Check your internet connection and retry.") {
+                        fetchWeatherByCityKey(cityKey)
+                    }
                 }
+                Log.e("AlertService", "Failed to fetch weather: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
                 val forecastData = response.body?.string()
-                val forecastArray = JSONArray(forecastData ?: "")
-
-                var maxRain = 0.0
-                var maxSnow = 0.0
-                var maxIce = 0.0
-                var maxWindSpeed = 0.0
-                var maxTemp = Double.MIN_VALUE
-                var minTemp = Double.MAX_VALUE
-                var maxUVIndex = 0
-
-                for (i in 0 until forecastArray.length()) {
-                    val forecast = forecastArray.getJSONObject(i)
-                    val temp = forecast.getJSONObject("Temperature").getDouble("Value")
-                    maxTemp = maxOf(maxTemp, temp)
-                    minTemp = minOf(minTemp, temp)
-                    maxRain = maxOf(maxRain, forecast.optJSONObject("Rain")?.optDouble("Value") ?: 0.0)
-                    maxSnow = maxOf(maxSnow, forecast.optJSONObject("Snow")?.optDouble("Value") ?: 0.0)
-                    maxIce = maxOf(maxIce, forecast.optJSONObject("Ice")?.optDouble("Value") ?: 0.0)
-                    maxWindSpeed = maxOf(maxWindSpeed, forecast.getJSONObject("Wind").getJSONObject("Speed").getDouble("Value"))
-                    maxUVIndex = maxOf(maxUVIndex, forecast.optInt("UVIndex", 0))
+                if (!response.isSuccessful || forecastData == null) {
+                    handler.post {
+                        showRetryDialog("Server Error", "Failed to retrieve weather data from server. Retry fetching the weather data.") {
+                            fetchWeatherByCityKey(cityKey)
+                        }
+                    }
+                    Log.e("AlertService", "Unsuccessful weather response: ${response.message}")
+                    return
                 }
 
-                handler.post {
-                    sendWeatherAlerts(
-                        rain = maxRain,
-                        snow = maxSnow,
-                        ice = maxIce,
-                        windSpeed = maxWindSpeed,
-                        maxTemp = maxTemp,
-                        minTemp = minTemp,
-                    )
+                try {
+                    val forecastArray = JSONArray(forecastData)
+
+                    var maxRain = 0.0
+                    var maxSnow = 0.0
+                    var maxIce = 0.0
+                    var maxWindSpeed = 0.0
+                    var maxTemp = Double.MIN_VALUE
+                    var minTemp = Double.MAX_VALUE
+                    var maxUVIndex = 0
+
+                    for (i in 0 until forecastArray.length()) {
+                        val forecast = forecastArray.getJSONObject(i)
+                        val temp = forecast.getJSONObject("Temperature").getDouble("Value")
+                        maxTemp = maxOf(maxTemp, temp)
+                        minTemp = minOf(minTemp, temp)
+                        maxRain = maxOf(maxRain, forecast.optJSONObject("Rain")?.optDouble("Value") ?: 0.0)
+                        maxSnow = maxOf(maxSnow, forecast.optJSONObject("Snow")?.optDouble("Value") ?: 0.0)
+                        maxIce = maxOf(maxIce, forecast.optJSONObject("Ice")?.optDouble("Value") ?: 0.0)
+                        maxWindSpeed = maxOf(maxWindSpeed, forecast.getJSONObject("Wind").getJSONObject("Speed").getDouble("Value"))
+                        maxUVIndex = maxOf(maxUVIndex, forecast.optInt("UVIndex", 0))
+                    }
+
+                    handler.post {
+                        sendWeatherAlerts(
+                            rain = maxRain,
+                            snow = maxSnow,
+                            ice = maxIce,
+                            windSpeed = maxWindSpeed,
+                            maxTemp = maxTemp,
+                            minTemp = minTemp,
+                        )
+                    }
+                } catch (e: JSONException) {
+                    handler.post {
+                        showRetryDialog("Parsing Error", "Failed to parse weather data. Retry fetching the weather data.") {
+                            fetchWeatherByCityKey(cityKey)
+                        }
+                    }
+                    Log.e("AlertService", "Error parsing weather data: ${e.message}")
                 }
             }
         })
@@ -513,17 +589,21 @@ class AlertService : Service(), SensorEventListener {
     // Adding Alerts to the shared queue
     // ==========================
     private fun sendAlert(message: String, iconResId: Int) {
-        if (message.startsWith("Fall detected")) {
-            val intent = Intent(this, FallAlertActivity::class.java).apply {
-                putExtra("workerCF", workerCF)
-                putExtra("siteID", siteID)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        try {
+            if (message.startsWith("Fall detected")) {
+                val intent = Intent(this, FallAlertActivity::class.java).apply {
+                    putExtra("workerCF", workerCF)
+                    putExtra("siteID", siteID)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                }
+                startActivity(intent)
+            } else {
+                val duration = getTimerDuration(message)
+                AlertMessageQueue.addAlert(message, iconResId, duration)
+                sendAndroidNotification(message, iconResId)
             }
-            startActivity(intent)
-        } else {
-            val duration = getTimerDuration(message)
-            AlertMessageQueue.addAlert(message, iconResId, duration)
-            sendAndroidNotification(message, iconResId)
+        } catch (e: Exception) {
+            Log.e("AlertService", "Error sending alert: ${e.message}")
         }
     }
 
@@ -543,7 +623,12 @@ class AlertService : Service(), SensorEventListener {
     }
 
     private fun sendAndroidNotification(message: String, iconResId: Int) {
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+
+        if (notificationManager == null) {
+            Log.e("AlertService", "NotificationManager not available")
+            return
+        }
 
         // Create the intent to open AlertActivity with additional parameters
         val intent = Intent(this, AlertActivity::class.java).apply {
@@ -576,7 +661,6 @@ class AlertService : Service(), SensorEventListener {
         notificationManager.notify(notificationId, notification)
     }
 
-
     // ==========================
     // Configuring Foreground Service
     // ==========================
@@ -590,8 +674,8 @@ class AlertService : Service(), SensorEventListener {
                 channelName,
                 NotificationManager.IMPORTANCE_LOW
             )
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.createNotificationChannel(chan)
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            manager?.createNotificationChannel(chan)
         }
 
         val stopIntent = Intent(this, AlertService::class.java).apply {
@@ -624,8 +708,8 @@ class AlertService : Service(), SensorEventListener {
                 channelName,
                 NotificationManager.IMPORTANCE_LOW
             )
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.createNotificationChannel(chan)
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+            manager?.createNotificationChannel(chan)
         }
 
         val notification: Notification = NotificationCompat.Builder(this, channelId)
@@ -686,14 +770,50 @@ class AlertService : Service(), SensorEventListener {
                 foregroundServicePermission
     }
 
+    private fun requestNecessaryPermissions() {
+        val permissions = mutableListOf<String>()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.RECORD_AUDIO)
+        }
+        if (permissions.isNotEmpty()) {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            intent.data = android.net.Uri.parse("package:$packageName")
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        }
+    }
+
+    private fun showPermissionDialog(title: String, message: String, onRetry: () -> Unit) {
+        handler.post {
+            AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Grant Permissions") { dialog, _ ->
+                    onRetry()
+                }
+                .setNegativeButton("Exit") { dialog, _ ->
+                    stopSelf()
+                }
+                .setCancelable(false)
+                .show()
+        }
+    }
+
     private fun startLocationMonitoring() {
         locationCheckHandler.post(object : Runnable {
             override fun run() {
-                if (siteLatitude != null && siteLongitude != null && siteRadius != null) {
-                    checkUserLocationInRadius(siteLatitude!!, siteLongitude!!, siteRadius!!)
+                try {
+                    if (siteLatitude != null && siteLongitude != null && siteRadius != null) {
+                        checkUserLocationInRadius(siteLatitude!!, siteLongitude!!, siteRadius!!)
+                    }
+                    // Schedule the next location check after locationCheckInterval
+                    locationCheckHandler.postDelayed(this, locationCheckInterval)  // 1 minute = 60000L milliseconds
+                } catch (e: Exception) {
+                    Log.e("AlertService", "Error in location monitoring: ${e.message}")
                 }
-                // Schedule the next location check after locationCheckInterval
-                locationCheckHandler.postDelayed(this, locationCheckInterval)  // 1 minute = 60000L milliseconds
             }
         })
     }
@@ -713,11 +833,20 @@ class AlertService : Service(), SensorEventListener {
                             sendAlert("You are in site $siteID.\n Wear all the safety equipment", R.mipmap.safety_vest_foreground)
                         }
                     } ?: Log.d("AlertService", "Failed to retrieve current location")
+                }.addOnFailureListener { e ->
+                    Log.e("AlertService", "Error getting location: ${e.message}")
                 }
             } catch (e: SecurityException) {
-                Log.d("AlertService", "SecurityException: ${e.message}")
+                Log.e("AlertService", "SecurityException: ${e.message}")
+            } catch (e: Exception) {
+                Log.e("AlertService", "Error in location check: ${e.message}")
             }
         } else {
+            handler.post {
+                showPermissionDialog("Location Access Needed", "This app requires access to your location to function properly. Please grant the permission.") {
+                    requestNecessaryPermissions()
+                }
+            }
             Log.d("AlertService", "Location permissions are not granted.")
         }
     }
@@ -733,6 +862,22 @@ class AlertService : Service(), SensorEventListener {
 
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return earthRadius * c
+    }
+
+    private fun showRetryDialog(title: String, message: String, onRetry: () -> Unit) {
+        handler.post {
+            AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Retry") { dialog, _ ->
+                    onRetry()
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    // Do nothing
+                }
+                .setCancelable(false)
+                .show()
+        }
     }
 }
 

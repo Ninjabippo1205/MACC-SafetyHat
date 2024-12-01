@@ -6,36 +6,24 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.os.Handler
+import android.util.Log
+import android.view.*
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.startActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
-import com.safetyhat.macc.ManagermenuActivity.Communication
-import com.safetyhat.macc.ManagermenuActivity.CommunicationsAdapter
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import android.os.Handler
-import androidx.core.content.ContextCompat
 
 class WorkermenuActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -47,6 +35,8 @@ class WorkermenuActivity : AppCompatActivity() {
     private val communicationsList = mutableListOf<Communication>()
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
+    private var workerCF: String = ""
+    private var siteID: String = ""
 
     private val foregroundPermissions = arrayOf(
         Manifest.permission.RECORD_AUDIO,
@@ -57,100 +47,112 @@ class WorkermenuActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_worker_menu)
+        try {
+            setContentView(R.layout.activity_worker_menu)
 
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById(R.id.navigation_view_worker)
-        navigationView.itemIconTintList = null
+            drawerLayout = findViewById(R.id.drawer_layout)
+            navigationView = findViewById(R.id.navigation_view_worker)
+            navigationView.itemIconTintList = null
 
-        // Apre il drawer menu al clic sull'icona di menu
-        findViewById<ImageView>(R.id.worker_menu_icon).setOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
-
-        val workerCF = intent.getStringExtra("workerCF")
-        val siteID = intent.getStringExtra("siteID")
-
-        // Impostazioni della navigazione tramite il menu
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_account_info_worker -> {
-                    val intent = Intent(this, WorkerinfoActivity::class.java)
-                    intent.putExtra("workerCF", workerCF)
-                    intent.putExtra("siteID", siteID.toString())
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_logout_worker -> {
-                    val stopServiceIntent = Intent(this, AlertService::class.java)
-                    stopService(stopServiceIntent)
-
-                    // Elimina tutte le notifiche usando NotificationManager
-                    val notificationManager = getSystemService(NotificationManager::class.java)
-                    notificationManager?.cancelAll()
-
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+            findViewById<ImageView>(R.id.worker_menu_icon).setOnClickListener {
+                drawerLayout.openDrawer(GravityCompat.START)
             }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
-        }
 
-        // Inizializza gli elementi dell'interfaccia e imposta i listener
-        val sitesInfoText = findViewById<LinearLayout>(R.id.sites_worker_info_field)
-        val alertsText = findViewById<LinearLayout>(R.id.alerts_field)
+            workerCF = intent.getStringExtra("workerCF") ?: ""
+            siteID = intent.getStringExtra("siteID") ?: ""
 
-        sitesInfoText.setOnClickListener {
-            val intent = Intent(this, SiteInfoActivity::class.java)
-            intent.putExtra("workerCF", workerCF)
-            intent.putExtra("siteID", siteID.toString())
-            startActivity(intent)
+            if (workerCF.isEmpty() || siteID.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    "Missing worker CF or site ID. Please log in again.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+                return
+            }
+
+            navigationView.setNavigationItemSelectedListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.nav_account_info_worker -> {
+                        val intent = Intent(this, WorkerinfoActivity::class.java)
+                        intent.putExtra("workerCF", workerCF)
+                        intent.putExtra("siteID", siteID)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_logout_worker -> {
+                        val stopServiceIntent = Intent(this, AlertService::class.java)
+                        stopService(stopServiceIntent)
+
+                        // Cancel all notifications using NotificationManager
+                        val notificationManager = getSystemService(NotificationManager::class.java)
+                        notificationManager?.cancelAll()
+
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+                drawerLayout.closeDrawer(GravityCompat.START)
+                true
+            }
+
+            // Initialize UI elements and set listeners
+            val sitesInfoText = findViewById<LinearLayout>(R.id.sites_worker_info_field)
+            val alertsText = findViewById<LinearLayout>(R.id.alerts_field)
+
+            sitesInfoText.setOnClickListener {
+                val intent = Intent(this, SiteInfoActivity::class.java)
+                intent.putExtra("workerCF", workerCF)
+                intent.putExtra("siteID", siteID)
+                startActivity(intent)
+                finish()
+            }
+
+            alertsText.setOnClickListener {
+                val intent = Intent(this, AlertActivity::class.java)
+                intent.putExtra("workerCF", workerCF)
+                intent.putExtra("siteID", siteID)
+                startActivity(intent)
+                finish()
+            }
+
+            communicationsRecyclerView = findViewById(R.id.communications_recycler_view)
+            communicationsRecyclerView.layoutManager = LinearLayoutManager(this)
+            communicationsAdapter = CommunicationsAdapter(communicationsList)
+            communicationsRecyclerView.isNestedScrollingEnabled = true
+            communicationsRecyclerView.adapter = communicationsAdapter
+
+            handler = Handler(mainLooper)
+
+            // Define the runnable
+            runnable = Runnable {
+                fetchCommunications()
+                handler.postDelayed(runnable, 10000)
+            }
+
+            handler.post(runnable)
+
+            if (hasNecessaryPermissions()) {
+                startAlertService()
+            } else {
+                Toast.makeText(this, "Required permissions not granted.", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Log.e("WorkermenuActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(
+                this,
+                "An unexpected error occurred during initialization.",
+                Toast.LENGTH_SHORT
+            ).show()
             finish()
-        }
-
-        alertsText.setOnClickListener {
-            val intent = Intent(this, AlertActivity::class.java)
-            intent.putExtra("workerCF", workerCF)
-            intent.putExtra("siteID", siteID.toString())
-            startActivity(intent)
-            finish()
-        }
-
-        communicationsRecyclerView = findViewById(R.id.communications_recycler_view)
-        communicationsRecyclerView.layoutManager = LinearLayoutManager(this)
-        communicationsAdapter = CommunicationsAdapter(communicationsList)
-        communicationsRecyclerView.isNestedScrollingEnabled = true
-        communicationsRecyclerView.adapter = communicationsAdapter
-
-        handler = Handler(mainLooper)
-
-        // Definisci il runnable
-        runnable = Runnable {
-            if (siteID != null && workerCF != null) {
-                fetchCommunications(siteID.toInt(), workerCF)
-            }
-            handler.postDelayed(runnable, 10000)
-        }
-
-        handler.post(runnable)
-
-        if (hasNecessaryPermissions()) {
-            if (siteID != null) {
-                if (workerCF != null) {
-                    startAlertService(siteID, workerCF)
-                }
-            }
-        } else {
-            Toast.makeText(this, "Required permissions not granted.", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun startAlertService(siteID: String, workerCF: String) {
+    private fun startAlertService() {
         if (hasNecessaryPermissions()) {
             val serviceIntent = Intent(this, AlertService::class.java)
-            serviceIntent.putExtra("siteID", siteID)  // Pass siteID as an extra
+            serviceIntent.putExtra("siteID", siteID)
             serviceIntent.putExtra("workerCF", workerCF)
             ContextCompat.startForegroundService(this, serviceIntent)
         }
@@ -163,62 +165,78 @@ class WorkermenuActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchCommunications(siteID: Int, workerCF: String) {
-        val url = "https://noemigiustini01.pythonanywhere.com/communication/read_site_all?SiteID=$siteID"
+    private fun fetchCommunications() {
+        val url =
+            "https://noemigiustini01.pythonanywhere.com/communication/read_site_all?SiteID=$siteID"
         val request = Request.Builder().url(url).build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                Log.e("WorkermenuActivity", "Failed to load communications: ${e.message}")
                 runOnUiThread {
-                    Toast.makeText(this@WorkermenuActivity, "Failed to load communications", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@WorkermenuActivity,
+                        "Failed to load communications",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.body?.string()?.let { responseBody ->
-                    try {
+                try {
+                    response.body?.string()?.let { responseBody ->
                         val jsonArray = JSONArray(responseBody)
-                        val communicationsList = mutableListOf<Communication>()
+                        val newCommunicationsList = mutableListOf<Communication>()
 
                         for (i in 0 until jsonArray.length()) {
                             val communicationJson = jsonArray.getJSONObject(i)
                             val text = communicationJson.getString("Text")
                             val communicationID = communicationJson.getInt("ID")
-                            val timestamp = communicationJson.getString("Timestamp") // Aggiungi il timestamp
-                            val communication = Communication(text, 0, communicationID, workerCF, siteID.toString(), timestamp)
-                            communicationsList.add(communication)
+                            val timestamp = communicationJson.getString("Timestamp")
+                            val communication = Communication(
+                                message = text,
+                                communicationID = communicationID,
+                                workerCF = workerCF,
+                                siteID = siteID,
+                                timestamp = timestamp
+                            )
+                            newCommunicationsList.add(communication)
                         }
 
-                        // Aggiorna l'interfaccia utente
                         runOnUiThread {
-                            updateCommunicationsList(communicationsList)
+                            updateCommunicationsList(newCommunicationsList)
                         }
-                    } catch (e: JSONException) {
-                        runOnUiThread {
-                            updateCommunicationsList(emptyList()) // Nessuna comunicazione trovata
-                        }
+                    } ?: runOnUiThread {
+                        updateCommunicationsList(emptyList())
                     }
-                } ?: runOnUiThread {
-                    updateCommunicationsList(emptyList()) // Corpo della risposta nullo
+                } catch (e: JSONException) {
+                    Log.e("WorkermenuActivity", "JSON parsing error: ${e.message}")
+                    runOnUiThread {
+                        updateCommunicationsList(emptyList())
+                    }
+                } catch (e: Exception) {
+                    Log.e("WorkermenuActivity", "Unexpected error: ${e.message}")
+                    runOnUiThread {
+                        updateCommunicationsList(emptyList())
+                    }
                 }
             }
         })
     }
 
-
     private fun updateCommunicationsList(newCommunications: List<Communication>) {
         val noCommunicationsText = findViewById<TextView>(R.id.no_communications_text)
 
         if (newCommunications.isEmpty()) {
-            // Mostra il messaggio "No communications" e nascondi la RecyclerView
+            // Show "No communications" message and hide RecyclerView
             noCommunicationsText.visibility = View.VISIBLE
             communicationsRecyclerView.visibility = View.GONE
         } else {
-            // Nascondi il messaggio "No communications" e mostra la RecyclerView
+            // Hide "No communications" message and show RecyclerView
             noCommunicationsText.visibility = View.GONE
             communicationsRecyclerView.visibility = View.VISIBLE
 
-            // Aggiorna i dati nell'adattatore
+            // Update data in the adapter
             communicationsList.clear()
             communicationsList.addAll(newCommunications)
             communicationsAdapter.notifyDataSetChanged()
@@ -227,7 +245,6 @@ class WorkermenuActivity : AppCompatActivity() {
 
     data class Communication(
         val message: String,
-        val thumbsUpCount: Int,
         val communicationID: Int,
         val workerCF: String,
         val siteID: String,
@@ -239,7 +256,8 @@ class WorkermenuActivity : AppCompatActivity() {
         private val client = OkHttpClient()
 
         inner class CommunicationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val communicationTextView: TextView = view.findViewById(R.id.communication_text_view)
+            val communicationTextView: TextView =
+                view.findViewById(R.id.communication_text_view)
             private val thumbsUp: Button = view.findViewById(R.id.thumbs_up_icon)
             val viewCountTextView: TextView = view.findViewById(R.id.view_count_text_view)
             val siteIDTextView: TextView = view.findViewById(R.id.siteID_text_view)
@@ -251,59 +269,109 @@ class WorkermenuActivity : AppCompatActivity() {
                     val workerCF = communications[adapterPosition].workerCF
                     val siteID = communications[adapterPosition].siteID
 
-                    checkAndCreateVisualization(context, communicationID.toString(), workerCF, siteID)
+                    checkAndCreateVisualization(
+                        context,
+                        communicationID.toString(),
+                        workerCF,
+                        siteID
+                    )
                 }
             }
 
-            private fun checkAndCreateVisualization(context: Context, communicationID: String, workerCF: String, siteID: String) {
-                // URL per controllare se esiste già una visualizzazione
-                val checkUrl = "https://noemigiustini01.pythonanywhere.com/visualization/check?CommunicationID=$communicationID&WorkerCF=$workerCF"
+            private fun checkAndCreateVisualization(
+                context: Context,
+                communicationID: String,
+                workerCF: String,
+                siteID: String
+            ) {
+                val checkUrl =
+                    "https://noemigiustini01.pythonanywhere.com/visualization/check?CommunicationID=$communicationID&WorkerCF=$workerCF"
                 val checkRequest = Request.Builder().url(checkUrl).build()
 
                 client.newCall(checkRequest).enqueue(object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
+                        Log.e("CommunicationsAdapter", "Failed to check visualization: ${e.message}")
                         (context as? AppCompatActivity)?.runOnUiThread {
-                            Toast.makeText(context, "Failed to check visualization", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Failed to check visualization",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
 
                     override fun onResponse(call: Call, response: Response) {
                         (context as? AppCompatActivity)?.runOnUiThread {
-                            if (response.isSuccessful) {
-                                val responseBody = response.body?.string()
+                            try {
+                                if (response.isSuccessful) {
+                                    val responseBody = response.body?.string()
+                                    if (responseBody == null) {
+                                        Toast.makeText(
+                                            context,
+                                            "Empty response body",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        return@runOnUiThread
+                                    }
 
-                                // Verifica se il corpo della risposta è nullo e logga l'output
-                                if (responseBody == null) {
-                                    Toast.makeText(context, "Empty response body", Toast.LENGTH_SHORT).show()
-                                    return@runOnUiThread
-                                }
-
-                                // Converte la risposta in booleano
-                                val exists = responseBody.trim()
-                                if (exists == "true") {
-                                    Toast.makeText(context, "Communication already visualized", Toast.LENGTH_SHORT).show()
-                                } else if (exists == "false") {
-                                    createVisualization(context, communicationID, workerCF, siteID)
+                                    val exists = responseBody.trim()
+                                    if (exists == "true") {
+                                        Toast.makeText(
+                                            context,
+                                            "Communication already visualized",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else if (exists == "false") {
+                                        createVisualization(
+                                            context,
+                                            communicationID,
+                                            workerCF,
+                                            siteID
+                                        )
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "Unexpected response format",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 } else {
-                                    Toast.makeText(context, "Unexpected response format", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(
+                                        context,
+                                        "Unsuccessful response",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 }
-                            } else {
-                                // Gestione del caso in cui la risposta non sia un successo (es. codice 404 o 500)
-                                Toast.makeText(context, "Unsuccessful response", Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                Log.e(
+                                    "CommunicationsAdapter",
+                                    "Error processing visualization check: ${e.message}"
+                                )
+                                Toast.makeText(
+                                    context,
+                                    "An error occurred.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     }
                 })
             }
 
-            private fun createVisualization(context: Context, communicationID: String, workerCF: String, siteID: String) {
+            private fun createVisualization(
+                context: Context,
+                communicationID: String,
+                workerCF: String,
+                siteID: String
+            ) {
                 val createUrl = "https://noemigiustini01.pythonanywhere.com/visualization/create"
 
                 val json = JSONObject().apply {
                     put("CommunicationID", communicationID)
                     put("WorkerCF", workerCF)
                 }
-                val requestBody = json.toString().toRequestBody("application/json".toMediaTypeOrNull())
+                val requestBody =
+                    json.toString().toRequestBody("application/json".toMediaTypeOrNull())
                 val createRequest = Request.Builder()
                     .url(createUrl)
                     .post(requestBody)
@@ -311,41 +379,70 @@ class WorkermenuActivity : AppCompatActivity() {
 
                 client.newCall(createRequest).enqueue(object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
+                        Log.e("CommunicationsAdapter", "Failed to create visualization: ${e.message}")
                         (context as? AppCompatActivity)?.runOnUiThread {
-                            Toast.makeText(context, "Failed to create visualization", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                "Failed to create visualization",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
 
                     override fun onResponse(call: Call, response: Response) {
                         if (response.isSuccessful) {
-                            update_visualizations(context, communicationID, workerCF, siteID)
+                            updateVisualizations(context, communicationID)
+                        } else {
+                            val errorBody = response.body?.string()
+                            Log.e("CommunicationsAdapter", "Error creating visualization: $errorBody")
+                            (context as? AppCompatActivity)?.runOnUiThread {
+                                Toast.makeText(
+                                    context,
+                                    "Failed to create visualization",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
                 })
             }
 
-            private fun update_visualizations(context: Context, communicationID: String, workerCF: String, siteID: String) {
-                // Esegui una chiamata API per ottenere il numero di visualizzazioni per il CommunicationID
-                val countUrl = "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communicationID}"
+            private fun updateVisualizations(context: Context, communicationID: String) {
+                val countUrl =
+                    "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communicationID}"
                 val countRequest = Request.Builder().url(countUrl).build()
 
                 client.newCall(countRequest).enqueue(object : Callback {
                     override fun onFailure(call: Call, e: IOException) {
-                        (itemView.context as? AppCompatActivity)?.runOnUiThread {
-                            Toast.makeText(itemView.context, "Failed to load view count", Toast.LENGTH_SHORT).show()
+                        Log.e("CommunicationsAdapter", "Failed to load view count: ${e.message}")
+                        (context as? AppCompatActivity)?.runOnUiThread {
+                            Toast.makeText(
+                                context,
+                                "Failed to load view count",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
 
                     override fun onResponse(call: Call, response: Response) {
-                        if (response.isSuccessful) {
-                            response.body?.string()?.let { responseBody ->
-                                val json = JSONObject(responseBody)
-                                val viewCount = json.optInt("count", 0)  // Estrai il valore di 'count' dalla risposta
+                        try {
+                            if (response.isSuccessful) {
+                                response.body?.string()?.let { responseBody ->
+                                    val json = JSONObject(responseBody)
+                                    val viewCount = json.optInt("count", 0)
 
-                                (itemView.context as? AppCompatActivity)?.runOnUiThread {
-                                    viewCountTextView.text = viewCount.toString()
+                                    (context as? AppCompatActivity)?.runOnUiThread {
+                                        viewCountTextView.text = viewCount.toString()
+                                    }
                                 }
+                            } else {
+                                val errorBody = response.body?.string()
+                                Log.e("CommunicationsAdapter", "Error loading view count: $errorBody")
                             }
+                        } catch (e: JSONException) {
+                            Log.e("CommunicationsAdapter", "JSON parsing error: ${e.message}")
+                        } catch (e: Exception) {
+                            Log.e("CommunicationsAdapter", "Unexpected error: ${e.message}")
                         }
                     }
                 })
@@ -361,13 +458,8 @@ class WorkermenuActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: CommunicationViewHolder, position: Int) {
             val communication = communications[position]
 
-            // Mostra il testo della comunicazione
             holder.communicationTextView.text = communication.message
-
-            // Mostra l'ID del sito
             holder.siteIDTextView.text = "SiteID: ${communication.siteID}"
-
-            // Mostra il timestamp (aggiungi un controllo per evitare errori in caso di dati mancanti)
             holder.itemView.findViewById<TextView>(R.id.timestamp_text_view).text =
                 if (communication.timestamp.isNotEmpty()) {
                     "${communication.timestamp}"
@@ -375,32 +467,45 @@ class WorkermenuActivity : AppCompatActivity() {
                     "Timestamp not available"
                 }
 
-            // Esegui una chiamata API per ottenere il numero di visualizzazioni per il CommunicationID
-            val countUrl = "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communication.communicationID}"
+            val countUrl =
+                "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communication.communicationID}"
             val countRequest = Request.Builder().url(countUrl).build()
 
             client.newCall(countRequest).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
+                    Log.e("CommunicationsAdapter", "Failed to load view count: ${e.message}")
                     (holder.itemView.context as? AppCompatActivity)?.runOnUiThread {
-                        Toast.makeText(holder.itemView.context, "Failed to load view count", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            holder.itemView.context,
+                            "Failed to load view count",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    if (response.isSuccessful) {
-                        response.body?.string()?.let { responseBody ->
-                            val json = JSONObject(responseBody)
-                            val viewCount = json.optInt("count", 0)  // Estrai il valore di 'count' dalla risposta
+                    try {
+                        if (response.isSuccessful) {
+                            response.body?.string()?.let { responseBody ->
+                                val json = JSONObject(responseBody)
+                                val viewCount = json.optInt("count", 0)
 
-                            (holder.itemView.context as? AppCompatActivity)?.runOnUiThread {
-                                holder.viewCountTextView.text = viewCount.toString()
+                                (holder.itemView.context as? AppCompatActivity)?.runOnUiThread {
+                                    holder.viewCountTextView.text = viewCount.toString()
+                                }
                             }
+                        } else {
+                            val errorBody = response.body?.string()
+                            Log.e("CommunicationsAdapter", "Error loading view count: $errorBody")
                         }
+                    } catch (e: JSONException) {
+                        Log.e("CommunicationsAdapter", "JSON parsing error: ${e.message}")
+                    } catch (e: Exception) {
+                        Log.e("CommunicationsAdapter", "Unexpected error: ${e.message}")
                     }
                 }
             })
         }
-
 
         override fun getItemCount(): Int = communications.size
 

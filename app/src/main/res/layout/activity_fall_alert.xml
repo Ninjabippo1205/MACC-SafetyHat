@@ -9,10 +9,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
         android:text="Are you okay?"
+        android:layout_marginTop="50dp"
         android:textColor="@color/black"
-        android:textSize="24sp"
+        android:textSize="34sp"
         android:textStyle="bold" />
 
     <TextView
@@ -21,10 +21,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/fall_alert_message"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="50dp"
         android:text="10"
         android:textColor="@color/red"
-        android:textSize="32sp"
+        android:textSize="60sp"
         android:textStyle="bold" />
 
     <Button
@@ -33,10 +33,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/fall_alert_timer"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="50dp"
+        android:background="#2C2C2C"
         android:text="I'm OK"
-        android:background="@color/green"
         android:textColor="@color/white"
-        android:textSize="18sp" />
+        android:textSize="20sp" />
 
 </RelativeLayout>

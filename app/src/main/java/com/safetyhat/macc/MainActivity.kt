@@ -10,7 +10,6 @@ import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -47,62 +46,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Launcher to request background location permission
-    private val requestBackgroundLocationLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(
-                this,
-                "Background location permission not granted. Some features may not be available.",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            setContentView(R.layout.activity_main)
 
-        setContentView(R.layout.activity_main)
+            val orientation = resources.configuration.orientation
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                Log.d("LayoutCheck", "Landscape layout loaded")
+            } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                Log.d("LayoutCheck", "Portrait layout loaded")
+            }
 
-        val orientation = resources.configuration.orientation
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Log.d("LayoutCheck", "Landscape layout loaded")
-        } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Log.d("LayoutCheck", "Portrait layout loaded")
-        }
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+                insets
+            }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+            // Custom TaskDescription with name, icon, and background color
+            val taskDescription = ActivityManager.TaskDescription.Builder()
+                .setLabel("SafetyHat")  // App name for the thumbnail
+                .setIcon(R.mipmap.safety_hat_foreground)  // Thumbnail icon (resource ID)
+                .setPrimaryColor(getColor(R.color.miniature_background))  // Thumbnail background color
+                .build()
 
-        // Custom TaskDescription with name, icon, and background color
-        val taskDescription = ActivityManager.TaskDescription.Builder()
-            .setLabel("SafetyHat")  // App name for the thumbnail
-            .setIcon(R.mipmap.safety_hat_foreground)  // Thumbnail icon (resource ID)
-            .setPrimaryColor(getColor(R.color.miniature_background))  // Thumbnail background color
-            .build()
+            window.statusBarColor = getColor(R.color.status_bar_color)
+            setTaskDescription(taskDescription)
 
-        window.statusBarColor = getColor(R.color.status_bar_color)
-        setTaskDescription(taskDescription)
+            // Set listener for the "Login" button
+            findViewById<Button>(R.id.signInButton).setOnClickListener {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
 
-        // Set listener for the "Login" button
-        findViewById<Button>(R.id.signInButton).setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+            findViewById<Button>(R.id.registerButton).setOnClickListener {
+                val intent = Intent(this, RegistrationActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+
+            // Check and request necessary permissions
+            checkAndRequestPermissions()
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred during initialization.", Toast.LENGTH_SHORT).show()
             finish()
         }
-
-        findViewById<Button>(R.id.registerButton).setOnClickListener {
-            val intent = Intent(this, RegistrationActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        // Check and request necessary permissions
-        checkAndRequestPermissions()
     }
 
     /**

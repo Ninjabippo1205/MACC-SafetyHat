@@ -30,7 +30,7 @@
             android:layout_width="377dp"
             android:layout_height="282dp"
             android:layout_marginStart="17dp"
-            android:layout_marginTop="21dp"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="17dp"
             android:background="@drawable/rounded_background"
             android:elevation="4dp"
@@ -171,7 +171,7 @@
             android:id="@+id/create_site_title2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="60dp"
+            android:layout_marginTop="30dp"
             android:fontFamily="sans-serif-condensed"
             android:gravity="center"
             android:text="@string/communications"
@@ -198,9 +198,9 @@
         <ScrollView
             android:id="@+id/scrollView2"
             android:layout_width="377dp"
-            android:layout_height="300dp"
+            android:layout_height="250dp"
             android:layout_marginStart="17dp"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="15dp"
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -226,7 +226,7 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/communications_recycler_view"
                     android:layout_width="377dp"
-                    android:layout_height="300dp"
+                    android:layout_height="250dp"
                     android:background="@drawable/rounded_background"
                     android:padding="8dp" />
             </LinearLayout>

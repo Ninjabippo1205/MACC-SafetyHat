@@ -1,67 +1,67 @@
 package com.safetyhat.macc
 
+import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import org.mindrot.jbcrypt.BCrypt
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.Locale
-import android.app.DatePickerDialog
-import java.util.Calendar
-import android.widget.ImageView
+import java.util.*
 import java.util.regex.Pattern
-import org.mindrot.jbcrypt.BCrypt
 
 class RegistrationActivity : AppCompatActivity() {
     private val client = OkHttpClient()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_registration)
+        try {
+            setContentView(R.layout.activity_registration)
 
-        findViewById<ImageView>(R.id.back_icon).setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        val emailField = findViewById<EditText>(R.id.email_registration_field)
-        val firstNameField = findViewById<EditText>(R.id.first_name_registration_field)
-        val lastNameField = findViewById<EditText>(R.id.last_name_registration_field)
-        val phoneField = findViewById<EditText>(R.id.phone_registration_field)
-        val cfField = findViewById<EditText>(R.id.cf_registration_field)
-        val passwordField = findViewById<EditText>(R.id.password_registration_field)
-        val submitButton = findViewById<Button>(R.id.submit_registration_button)
-
-        val birthdateField = findViewById<EditText>(R.id.birthdate_registration_field)
-        birthdateField.setOnClickListener {
-            showDatePickerDialog(birthdateField)
-        }
-
-        submitButton.setOnClickListener {
-            val email = emailField.text.toString()
-            val firstName = firstNameField.text.toString()
-            val lastName = lastNameField.text.toString()
-            val birthdate = birthdateField.text.toString()
-            val phone = phoneField.text.toString()
-            val cf = cfField.text.toString().uppercase()
-            val password = passwordField.text.toString()
-
-            if (isInputValid(email, firstName, lastName, birthdate, phone, cf, password)) {
-                val hashedPassword = hashPassword(password)
-                registerWorker(email, firstName, lastName, birthdate, phone, cf, hashedPassword)
+            findViewById<ImageView>(R.id.back_icon).setOnClickListener {
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                finish()
             }
+
+            val emailField = findViewById<EditText>(R.id.email_registration_field)
+            val firstNameField = findViewById<EditText>(R.id.first_name_registration_field)
+            val lastNameField = findViewById<EditText>(R.id.last_name_registration_field)
+            val phoneField = findViewById<EditText>(R.id.phone_registration_field)
+            val cfField = findViewById<EditText>(R.id.cf_registration_field)
+            val passwordField = findViewById<EditText>(R.id.password_registration_field)
+            val submitButton = findViewById<Button>(R.id.submit_registration_button)
+
+            val birthdateField = findViewById<EditText>(R.id.birthdate_registration_field)
+            birthdateField.setOnClickListener {
+                showDatePickerDialog(birthdateField)
+            }
+
+            submitButton.setOnClickListener {
+                val email = emailField.text.toString()
+                val firstName = firstNameField.text.toString()
+                val lastName = lastNameField.text.toString()
+                val birthdate = birthdateField.text.toString()
+                val phone = phoneField.text.toString()
+                val cf = cfField.text.toString().uppercase(Locale.getDefault())
+                val password = passwordField.text.toString()
+
+                if (isInputValid(email, firstName, lastName, birthdate, phone, cf, password)) {
+                    val hashedPassword = hashPassword(password)
+                    registerWorker(email, firstName, lastName, birthdate, phone, cf, hashedPassword)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("RegistrationActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred during initialization.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -95,7 +95,9 @@ class RegistrationActivity : AppCompatActivity() {
         cf: String,
         password: String
     ): Boolean {
-        if (!(email.isNotEmpty() && firstName.isNotEmpty() && lastName.isNotEmpty() && birthdate.isNotEmpty() && phone.isNotEmpty() && cf.isNotEmpty() && password.isNotEmpty())) {
+        if (email.isEmpty() || firstName.isEmpty() || lastName.isEmpty() || birthdate.isEmpty() ||
+            phone.isEmpty() || cf.isEmpty() || password.isEmpty()
+        ) {
             Toast.makeText(this, "Please fill out all fields", Toast.LENGTH_LONG).show()
             return false
         }
@@ -105,7 +107,7 @@ class RegistrationActivity : AppCompatActivity() {
             Toast.makeText(this, "Wrong email format", Toast.LENGTH_LONG).show()
             return false
         }
-      
+
         val namePattern = "^[a-zA-Z]{1,50}$"
         if (!Pattern.matches(namePattern, firstName)) {
             Toast.makeText(this, "First name should contain only letters (max 50 characters)", Toast.LENGTH_LONG).show()
@@ -124,7 +126,7 @@ class RegistrationActivity : AppCompatActivity() {
 
         val cfPattern = "^[A-Z]{6}\\d{2}[A-Z]\\d{2}[A-Z]\\d{3}[A-Z]$"
         if (!Pattern.matches(cfPattern, cf)) {
-            Toast.makeText(this, "Invalid CF format (6 letters, 2 digits, 1 letter, 2 digits, 1 letter, 3 digits, 1 letter)", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Invalid CF format", Toast.LENGTH_LONG).show()
             return false
         }
 
@@ -136,7 +138,7 @@ class RegistrationActivity : AppCompatActivity() {
 
         val passwordPattern = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#\$%^&+=!]).{8,}$"
         if (!Pattern.matches(passwordPattern, password)) {
-            Toast.makeText(this, "Password must be at least 8 characters,with uppercase, lowercase, number, and one of [@#$%^&+=!\\]", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Password must be at least 8 characters, with uppercase, lowercase, number, and one of [@#\$%^&+=!]", Toast.LENGTH_LONG).show()
             return false
         }
 
@@ -162,6 +164,7 @@ class RegistrationActivity : AppCompatActivity() {
             val date = originalFormat.parse(birthdate)
             targetFormat.format(date)
         } catch (e: Exception) {
+            Log.e("RegistrationActivity", "Date parsing error: ${e.message}")
             birthdate
         }
 
@@ -176,7 +179,8 @@ class RegistrationActivity : AppCompatActivity() {
         json.put("Presence", "no")
         json.put("Email", email)
 
-        val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+        val requestBody =
+            json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
         val request = Request.Builder()
             .url(url)
@@ -184,37 +188,51 @@ class RegistrationActivity : AppCompatActivity() {
             .build()
 
         CoroutineScope(Dispatchers.IO).launch {
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    runOnUiThread {
-                        val errorMessage = e.localizedMessage ?: "Unknown error occurred"
-                        Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
-                        Log.e("RegistrationError", "Failed to register worker: $errorMessage", e)
+            try {
+                client.newCall(request).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        Log.e("RegistrationActivity", "Network error: ${e.message}")
+                        runOnUiThread {
+                            val errorMessage = e.localizedMessage ?: "Unknown error occurred"
+                            Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
+                        }
                     }
-                }
 
-                override fun onResponse(call: Call, response: Response) {
-                    runOnUiThread {
+                    override fun onResponse(call: Call, response: Response) {
                         val responseBody = response.body?.string()
-                        if (response.isSuccessful) {
-                            Toast.makeText(this@RegistrationActivity, "Account created successfully!", Toast.LENGTH_LONG).show()
-
-                            val intent = Intent(this@RegistrationActivity, LoginActivity::class.java)
-                            startActivity(intent)
-                            finish()
-                        } else {
-                            val errorMessage = responseBody ?: "Unknown error"
-                            Log.e("RegistrationError", "Server response: $errorMessage")
-
-                            if (response.code == 409 && responseBody?.contains("PhoneNumber already exists") == true) {
-                                Toast.makeText(this@RegistrationActivity, "The phone number is already registered. Please try with a different number.", Toast.LENGTH_LONG).show()
+                        runOnUiThread {
+                            if (response.isSuccessful) {
+                                Toast.makeText(this@RegistrationActivity, "Account created successfully!", Toast.LENGTH_LONG).show()
+                                val intent = Intent(this@RegistrationActivity, LoginActivity::class.java)
+                                startActivity(intent)
+                                finish()
                             } else {
-                                Toast.makeText(this@RegistrationActivity, "Failed to register: $errorMessage", Toast.LENGTH_LONG).show()
+                                val errorMessage = responseBody ?: "Unknown error"
+                                Log.e("RegistrationActivity", "Server response: $errorMessage")
+
+                                val jsonResponse = try {
+                                    JSONObject(responseBody ?: "")
+                                } catch (e: Exception) {
+                                    null
+                                }
+
+                                val error = jsonResponse?.optString("error", "Unknown error")
+
+                                if (response.code == 409 && error?.contains("already exists") == true) {
+                                    Toast.makeText(this@RegistrationActivity, error, Toast.LENGTH_LONG).show()
+                                } else {
+                                    Toast.makeText(this@RegistrationActivity, "Failed to register: $error", Toast.LENGTH_LONG).show()
+                                }
                             }
                         }
                     }
+                })
+            } catch (e: Exception) {
+                Log.e("RegistrationActivity", "Error during registration: ${e.message}")
+                runOnUiThread {
+                    Toast.makeText(this@RegistrationActivity, "An unexpected error occurred.", Toast.LENGTH_LONG).show()
                 }
-            })
+            }
         }
     }
 }

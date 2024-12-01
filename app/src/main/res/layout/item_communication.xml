@@ -29,9 +29,12 @@
             android:id="@+id/scrollView2"
             android:layout_width="256dp"
             android:layout_height="40dp"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="4dp"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:clickable="true">
 
-            <TextView
+        <TextView
                 android:id="@+id/communication_text_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

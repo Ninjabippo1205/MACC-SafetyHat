@@ -4,16 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSmoothScroller
@@ -44,89 +42,104 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
     private val sitesList = mutableListOf<Site>()
     private var isMapInitialized = false
 
-    // Aggiunta del snapHelper come variabile di classe
+    // Adding the snapHelper as a class variable
     private lateinit var snapHelper: LinearSnapHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_sites_overview)
+        try {
+            setContentView(R.layout.activity_sites_overview)
 
-        // Configura la RecyclerView
-        sitesRecyclerView = findViewById(R.id.sitesRecyclerView)
-        sitesRecyclerView.layoutManager = LinearLayoutManager(this)
+            // Configure the RecyclerView
+            sitesRecyclerView = findViewById(R.id.sitesRecyclerView)
+            sitesRecyclerView.layoutManager = LinearLayoutManager(this)
 
-        val managerCF = intent.getStringExtra("managerCF").toString()
-
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById(R.id.navigation_view_manager)
-        navigationView.itemIconTintList = null
-
-        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
-
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_home_manager -> {
-                    val intent = Intent(this, ManagermenuActivity::class.java)
-                    intent.putExtra("managerCF", managerCF)
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_account_info_manager -> {
-                    val intent = Intent(this, ManagerInfoActivity::class.java)
-                    intent.putExtra("managerCF", managerCF)
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_create_site_manager -> {
-                    val intent = Intent(this, CreatesiteActivity::class.java)
-                    intent.putExtra("managerCF", managerCF)
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_logout_manager -> {
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+            val managerCF = intent.getStringExtra("managerCF") ?: ""
+            if (managerCF.isEmpty()) {
+                Toast.makeText(this, "Manager CF is missing.", Toast.LENGTH_SHORT).show()
+                finish()
+                return
             }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
-        }
 
-        sitesAdapter = SitesAdapter(sitesList, managerCF)
-        sitesRecyclerView.adapter = sitesAdapter
+            drawerLayout = findViewById(R.id.drawer_layout)
+            navigationView = findViewById(R.id.navigation_view_manager)
+            navigationView.itemIconTintList = null
 
-        // Inizializza il LinearSnapHelper per centrare l'elemento
-        snapHelper = TopLinearSnapHelper()
-        snapHelper.attachToRecyclerView(sitesRecyclerView)
+            findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
 
-        // Aggiungi OnScrollListener alla RecyclerView
-        sitesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    val layoutManager = recyclerView.layoutManager
-                    val snapView = snapHelper.findSnapView(layoutManager)
-                    if (snapView != null) {
-                        val position = recyclerView.getChildAdapterPosition(snapView)
-                        if (position != RecyclerView.NO_POSITION) {
-                            val site = sitesList[position]
-                            centerMapOnSiteIfValid(site)
+            navigationView.setNavigationItemSelectedListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.nav_home_manager -> {
+                        val intent = Intent(this, ManagermenuActivity::class.java)
+                        intent.putExtra("managerCF", managerCF)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_account_info_manager -> {
+                        val intent = Intent(this, ManagerInfoActivity::class.java)
+                        intent.putExtra("managerCF", managerCF)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_create_site_manager -> {
+                        val intent = Intent(this, CreatesiteActivity::class.java)
+                        intent.putExtra("managerCF", managerCF)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_logout_manager -> {
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+                drawerLayout.closeDrawer(GravityCompat.START)
+                true
+            }
+
+            sitesAdapter = SitesAdapter(sitesList, managerCF)
+            sitesRecyclerView.adapter = sitesAdapter
+
+            // Initialize the LinearSnapHelper to center the item
+            snapHelper = TopLinearSnapHelper()
+            snapHelper.attachToRecyclerView(sitesRecyclerView)
+
+            // Add OnScrollListener to the RecyclerView
+            sitesRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        val layoutManager = recyclerView.layoutManager
+                        val snapView = snapHelper.findSnapView(layoutManager)
+                        if (snapView != null) {
+                            val position = recyclerView.getChildAdapterPosition(snapView)
+                            if (position != RecyclerView.NO_POSITION) {
+                                val site = sitesList[position]
+                                centerMapOnSiteIfValid(site)
+                            }
                         }
                     }
                 }
+            })
+
+            // Load the map
+            val mapFragment = supportFragmentManager
+                .findFragmentById(R.id.mapFragment) as? SupportMapFragment
+            if (mapFragment != null) {
+                mapFragment.getMapAsync(this)
+            } else {
+                Toast.makeText(this, "Error loading map fragment", Toast.LENGTH_SHORT).show()
             }
-        })
 
-        // Carica la mappa
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.mapFragment) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
-        // Carica i dati dei siti
-        fetchSites(managerCF)
+            // Load the site data
+            fetchSites(managerCF)
+        } catch (e: Exception) {
+            Log.e("SitesOverviewActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred during initialization.", Toast.LENGTH_SHORT).show()
+            finish()
+        }
     }
 
     class TopLinearSnapHelper : LinearSnapHelper() {
@@ -137,7 +150,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             if (layoutManager is LinearLayoutManager) {
                 val distances = super.calculateDistanceToFinalSnap(layoutManager, targetView)
                 distances?.let {
-                    // Modifica la distanza in verticale per allineare alla parte superiore
+                    // Modify the vertical distance to align to the top
                     it[1] = targetView.top - layoutManager.paddingTop
                 }
                 return distances
@@ -152,6 +165,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                Log.e("SitesOverviewActivity", "Failed to load sites: ${e.message}")
                 runOnUiThread {
                     Toast.makeText(
                         this@SitesOverviewActivity,
@@ -162,13 +176,30 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.body?.string()?.let { responseBody ->
-                    parseSites(responseBody)
-                    runOnUiThread {
-                        sitesAdapter.notifyDataSetChanged()
-                        if (isMapInitialized) {
-                            addMarkersToMap()
+                try {
+                    response.body?.string()?.let { responseBody ->
+                        parseSites(responseBody)
+                        runOnUiThread {
+                            sitesAdapter.notifyDataSetChanged()
+                            if (isMapInitialized) {
+                                addMarkersToMap()
+                            }
                         }
+                    } ?: runOnUiThread {
+                        Toast.makeText(
+                            this@SitesOverviewActivity,
+                            "Empty response from server",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("SitesOverviewActivity", "Error parsing sites: ${e.message}")
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@SitesOverviewActivity,
+                            "Error loading sites",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -201,10 +232,11 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                 )
             }
         } catch (e: JSONException) {
+            Log.e("SitesOverviewActivity", "JSON parsing error: ${e.message}")
             runOnUiThread {
                 Toast.makeText(
                     this@SitesOverviewActivity,
-                    "Error: ${e.message}",
+                    "Error parsing site data",
                     Toast.LENGTH_LONG
                 ).show()
             }
@@ -221,12 +253,14 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
         estimatedEndDate: String,
         securityCode: String
     ) {
+        val encodedAddress = java.net.URLEncoder.encode(address, "UTF-8")
         val geocodeUrl =
-            "https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${getString(R.string.google_maps_key)}"
+            "https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${getString(R.string.google_maps_key)}"
         val request = Request.Builder().url(geocodeUrl).build()
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                Log.e("SitesOverviewActivity", "Failed to geocode address: ${e.message}")
                 runOnUiThread {
                     Toast.makeText(
                         this@SitesOverviewActivity,
@@ -237,8 +271,8 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.body?.string()?.let { responseBody ->
-                    try {
+                try {
+                    response.body?.string()?.let { responseBody ->
                         val jsonObject = JSONObject(responseBody)
                         val results = jsonObject.getJSONArray("results")
                         val lat: Double
@@ -271,19 +305,37 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                         sitesList.add(site)
 
                         runOnUiThread {
+                            // Sort the sitesList by siteID
+                            sitesList.sortBy { it.id }
                             sitesAdapter.notifyDataSetChanged()
                             if (isMapInitialized) {
                                 addMarkersToMap()
                             }
                         }
-                    } catch (e: JSONException) {
-                        runOnUiThread {
-                            Toast.makeText(
-                                this@SitesOverviewActivity,
-                                "Error parsing geocode response",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+                    } ?: runOnUiThread {
+                        Toast.makeText(
+                            this@SitesOverviewActivity,
+                            "Empty response from geocoding API",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: JSONException) {
+                    Log.e("SitesOverviewActivity", "Error parsing geocode response: ${e.message}")
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@SitesOverviewActivity,
+                            "Error parsing geocode response",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("SitesOverviewActivity", "Unexpected error: ${e.message}")
+                    runOnUiThread {
+                        Toast.makeText(
+                            this@SitesOverviewActivity,
+                            "An unexpected error occurred during geocoding",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -401,7 +453,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             scroller.targetPosition = position
             layoutManager.startSmoothScroll(scroller)
 
-            // Centrare la mappa sul sito corrispondente
+            // Center the map on the corresponding site
             centerMapOnSiteIfValid(sites[position])
         }
 
@@ -421,6 +473,15 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
             holder.startDate.text = "${site.startDate}"
             holder.estimatedEndDate.text = "${site.estimatedEndDate}"
             holder.securityCode.text = "${site.securityCode}"
+
+            val layoutParams = holder.itemView.layoutParams as ViewGroup.MarginLayoutParams
+            if (position == sites.size - 1) {
+                // Add extra margin to the last item
+                layoutParams.bottomMargin = 300 // Adjust this value as needed
+            } else {
+                layoutParams.bottomMargin = 0
+            }
+            holder.itemView.layoutParams = layoutParams
 
             holder.qrButton.setOnClickListener {
                 val managerCF =
@@ -445,9 +506,10 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
 
             holder.binButton.setOnClickListener {
                 val context = holder.itemView.context
-                Toast.makeText(context, "Deleting site: ${site.id}", Toast.LENGTH_SHORT).show()
+                val siteId = site.id
+                Toast.makeText(context, "Deleting site: $siteId", Toast.LENGTH_SHORT).show()
 
-                val url = "https://noemigiustini01.pythonanywhere.com/site/delete/${site.id}"
+                val url = "https://noemigiustini01.pythonanywhere.com/site/delete/$siteId"
                 val request = Request.Builder()
                     .url(url)
                     .delete()
@@ -473,11 +535,12 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                                     Toast.LENGTH_SHORT
                                 ).show()
 
-                                // Rimuovi il sito dalla lista e aggiorna la RecyclerView
+                                // Remove the site from the list and update the RecyclerView
                                 val position = holder.adapterPosition
                                 sitesList.removeAt(position)
                                 notifyItemRemoved(position)
                                 notifyItemRangeChanged(position, sitesList.size)
+                                addMarkersToMap()
                             } else {
                                 val errorMessage =
                                     response.body?.string() ?: "Unknown error"

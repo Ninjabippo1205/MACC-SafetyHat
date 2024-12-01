@@ -8,12 +8,11 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONException
 import org.json.JSONObject
 import org.mindrot.jbcrypt.BCrypt
 import java.io.IOException
@@ -25,46 +24,57 @@ class ResetPasswordActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_reset_password)
+        try {
+            setContentView(R.layout.activity_reset_password)
 
-        CF = intent.getStringExtra("CF").toString()
+            CF = intent.getStringExtra("CF") ?: ""
+            if (CF.isEmpty()) {
+                Toast.makeText(this, "CF not provided.", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
 
-        val newPasswordEditText = findViewById<EditText>(R.id.newPasswordEditText)
-        val confirmPasswordEditText = findViewById<EditText>(R.id.confirmPasswordEditText)
-        val resetPasswordButton = findViewById<Button>(R.id.resetPasswordButton)
+            val newPasswordEditText = findViewById<EditText>(R.id.newPasswordEditText)
+            val confirmPasswordEditText = findViewById<EditText>(R.id.confirmPasswordEditText)
+            val resetPasswordButton = findViewById<Button>(R.id.resetPasswordButton)
 
-        val backButton = findViewById<ImageView>(R.id.back_icon_login)
-        backButton.setOnClickListener {
-            val intent = Intent(this, ForgotPasswordActivity::class.java)
-            startActivity(intent)
+            val backButton = findViewById<ImageView>(R.id.back_icon_login)
+            backButton.setOnClickListener {
+                val intent = Intent(this, ForgotPasswordActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+
+            resetPasswordButton.setOnClickListener {
+                val newPassword = newPasswordEditText.text.toString()
+                val confirmPassword = confirmPasswordEditText.text.toString()
+
+                if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
+                    showToast("All fields are required.")
+                    return@setOnClickListener
+                }
+
+                if (newPassword != confirmPassword) {
+                    showToast("Passwords do not match.")
+                    return@setOnClickListener
+                }
+
+                if (!isPasswordValid(newPassword)) {
+                    showToast("Password must be at least 8 characters long, and include uppercase, lowercase, number, and special character.")
+                    return@setOnClickListener
+                }
+
+                // Hash the password using BCrypt
+                val hashedPassword = hashPassword(newPassword)
+                Log.i("ResetPassword", "Hashed password: $hashedPassword")
+
+                // Send the hashed password to the server
+                sendPasswordToServer(CF, hashedPassword)
+            }
+        } catch (e: Exception) {
+            Log.e("ResetPasswordActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred during initialization.", Toast.LENGTH_SHORT).show()
             finish()
-        }
-
-        resetPasswordButton.setOnClickListener {
-            val newPassword = newPasswordEditText.text.toString()
-            val confirmPassword = confirmPasswordEditText.text.toString()
-
-            if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
-                showToast("All fields are required.")
-                return@setOnClickListener
-            }
-
-            if (newPassword != confirmPassword) {
-                showToast("Passwords do not match.")
-                return@setOnClickListener
-            }
-
-            if (!isPasswordValid(newPassword)) {
-                showToast("Password must be at least 8 characters long, and include uppercase, lowercase, number, and special character.")
-                return@setOnClickListener
-            }
-
-            // Hash the password using BCrypt
-            val hashedPassword = hashPassword(newPassword)
-            Log.i("ResetPassword", "Hashed password: $hashedPassword")
-
-            // Send the hashed password to the server
-            sendPasswordToServer(CF, hashedPassword)
         }
     }
 
@@ -99,35 +109,39 @@ class ResetPasswordActivity : AppCompatActivity() {
             .build()
 
         CoroutineScope(Dispatchers.IO).launch {
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    runOnUiThread {
-                        showToast("Error: ${e.localizedMessage ?: "Unknown error occurred"}")
-                        Log.e("ResetPassword", "Error sending request: ${e.localizedMessage}", e)
+            try {
+                client.newCall(request).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        Log.e("ResetPassword", "Network error: ${e.message}")
+                        runOnUiThread {
+                            showToast("Network error. Please try again.")
+                        }
                     }
-                }
 
-                override fun onResponse(call: Call, response: Response) {
-                    val responseBody = response.body?.string()
-                    if (response.isSuccessful) {
+                    override fun onResponse(call: Call, response: Response) {
+                        val responseBody = response.body?.string()
                         runOnUiThread {
-                            showToast("Password reset successfully!")
-                            navigateToLogin()
-                        }
-                        Log.i("ResetPassword", "Password reset successful.")
-                    } else {
-                        runOnUiThread {
-                            val errorMessage = try {
-                                JSONObject(responseBody ?: "{}").optString("error", "Unknown error")
-                            } catch (e: Exception) {
-                                "Unknown error"
+                            if (response.isSuccessful) {
+                                showToast("Password reset successfully!")
+                                navigateToLogin()
+                            } else {
+                                val errorMessage = try {
+                                    JSONObject(responseBody ?: "{}").optString("error", "Unknown error")
+                                } catch (e: JSONException) {
+                                    "Unknown error"
+                                }
+                                Log.e("ResetPassword", "Error resetting password: $errorMessage")
+                                showToast("Failed to reset password: $errorMessage")
                             }
-                            showToast("Failed to reset password: $errorMessage")
-                            Log.e("ResetPassword", "Error resetting password: $errorMessage")
                         }
                     }
+                })
+            } catch (e: Exception) {
+                Log.e("ResetPassword", "Error sending password to server: ${e.message}")
+                runOnUiThread {
+                    showToast("An unexpected error occurred.")
                 }
-            })
+            }
         }
     }
 

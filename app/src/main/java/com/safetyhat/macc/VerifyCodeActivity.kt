@@ -3,14 +3,12 @@ package com.safetyhat.macc
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 
@@ -21,30 +19,41 @@ class VerifyCodeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_verification_code)
+        try {
+            setContentView(R.layout.activity_verification_code)
 
-        val enteredCodeEditText = findViewById<EditText>(R.id.enteredCodeEditText)
-        val verifyButton = findViewById<Button>(R.id.verifyButton)
+            val enteredCodeEditText = findViewById<EditText>(R.id.enteredCodeEditText)
+            val verifyButton = findViewById<Button>(R.id.verifyButton)
 
-        val backButton = findViewById<ImageView>(R.id.back_icon_login)
-        backButton.setOnClickListener {
-            val intent = Intent(this, ForgotPasswordActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        CF = intent.getStringExtra("CF").toString()
-
-        verifyButton.setOnClickListener {
-            val enteredCode = enteredCodeEditText.text.toString()
-
-            if (enteredCode.isEmpty()) {
-                Toast.makeText(this, "Please enter a valid code.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            val backButton = findViewById<ImageView>(R.id.back_icon_login)
+            backButton.setOnClickListener {
+                val intent = Intent(this, ForgotPasswordActivity::class.java)
+                startActivity(intent)
+                finish()
             }
 
-            // Send API request to verify the code
-            verifyResetCode(enteredCode)
+            CF = intent.getStringExtra("CF") ?: ""
+            if (CF.isEmpty()) {
+                Toast.makeText(this, "CF is missing.", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
+
+            verifyButton.setOnClickListener {
+                val enteredCode = enteredCodeEditText.text.toString()
+
+                if (enteredCode.isEmpty()) {
+                    Toast.makeText(this, "Please enter a valid code.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                // Send API request to verify the code
+                verifyResetCode(enteredCode)
+            }
+        } catch (e: Exception) {
+            Log.e("VerifyCodeActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -66,10 +75,14 @@ class VerifyCodeActivity : AppCompatActivity() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                Log.e("VerifyCodeActivity", "API request error: ${e.message}")
                 runOnUiThread {
-                    Toast.makeText(this@VerifyCodeActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@VerifyCodeActivity,
+                        "Network error. Please try again.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                Log.e("VerifyCode", "API request error: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -82,25 +95,34 @@ class VerifyCodeActivity : AppCompatActivity() {
                         val message = jsonResponse.optString("message")
 
                         runOnUiThread {
-                            Toast.makeText(this@VerifyCodeActivity, message, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@VerifyCodeActivity, message, Toast.LENGTH_SHORT)
+                                .show()
                         }
 
                         if (status == "success") {
                             // Navigate to the ResetPasswordActivity if the code is valid
                             navigateToResetPassword()
                         }
-                    } catch (e: Exception) {
+                    } catch (e: JSONException) {
+                        Log.e("VerifyCodeActivity", "Error parsing API response: ${e.message}")
                         runOnUiThread {
-                            Toast.makeText(this@VerifyCodeActivity, "Error parsing response.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@VerifyCodeActivity,
+                                "Error processing response.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
-                        Log.e("VerifyCode", "Error parsing API response: ${e.message}")
                     }
                 } else {
                     // Handle API response errors
+                    Log.e("VerifyCodeActivity", "Invalid response: ${response.message}")
                     runOnUiThread {
-                        Toast.makeText(this@VerifyCodeActivity, "Invalid code. Please try again.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@VerifyCodeActivity,
+                            "Invalid code. Please try again.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-                    Log.e("VerifyCode", "Invalid response: ${response.message}")
                 }
             }
         })
