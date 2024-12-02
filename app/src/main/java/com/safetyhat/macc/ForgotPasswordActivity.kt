@@ -11,8 +11,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import okhttp3.*
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.util.Locale
 
 class ForgotPasswordActivity : AppCompatActivity() {
 
@@ -20,41 +22,46 @@ class ForgotPasswordActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_forgot_password)
+        try {
+            setContentView(R.layout.activity_forgot_password)
 
-        val cfEditText = findViewById<EditText>(R.id.cfEditText)
-        val recoverButton = findViewById<Button>(R.id.recoverButton)
+            val cfEditText = findViewById<EditText>(R.id.cfEditText)
+            val recoverButton = findViewById<Button>(R.id.recoverButton)
 
-        val backButton = findViewById<ImageView>(R.id.back_icon_login)
-        backButton.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+            val backButton = findViewById<ImageView>(R.id.back_icon_login)
+            backButton.setOnClickListener {
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+
+            recoverButton.setOnClickListener {
+                val cf = cfEditText.text.toString().trim().uppercase(Locale.getDefault())
+
+                // Validate that the CF field is not empty and is syntactically correct
+                if (cf.isEmpty()) {
+                    Toast.makeText(this, "CF is required.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                if (!isValidCF(cf)) {
+                    Toast.makeText(this, "Invalid CF format.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                // Send the API request
+                sendResetCodeRequest(cf)
+            }
+        } catch (e: Exception) {
+            Log.e("ForgotPassword", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred during initialization.", Toast.LENGTH_SHORT).show()
             finish()
-        }
-
-        recoverButton.setOnClickListener {
-            val cf = cfEditText.text.toString().trim()
-
-            // Validate that the CF field is not empty and is syntactically correct
-            if (cf.isEmpty()) {
-                Toast.makeText(this, "CF is required.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (!isValidCF(cf)) {
-                Toast.makeText(this, "Invalid CF format.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            // Send the API request
-            sendResetCodeRequest(cf)
         }
     }
 
     /**
      * Validates the CF (Codice Fiscale)
      */
-    //TODO: update the regex with the already existing one
     private fun isValidCF(cf: String): Boolean {
         // Regular expression for a valid Italian CF (16 alphanumeric characters)
         val cfRegex = "^[A-Z0-9]{16}$".toRegex()
@@ -74,34 +81,36 @@ class ForgotPasswordActivity : AppCompatActivity() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                // Handle errors in case the request fails
+                // Gestione errore di rete
                 runOnUiThread {
-                    Toast.makeText(this@ForgotPasswordActivity, "Error sending API request: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@ForgotPasswordActivity, "Network error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
-                Log.e("ForgotPassword", "API request error: ${e.message}")
+                Log.e("ForgotPassword", "Network error: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    try {
-                        val responseData = response.body?.string()
-
-                        val intent = Intent(this@ForgotPasswordActivity, VerifyCodeActivity::class.java)
-                        intent.putExtra("CF", cf) // Pass the CF to the next activity
-                        startActivity(intent)
-                        finish()
-                    } catch (e: Exception) {
-                        runOnUiThread {
-                            Toast.makeText(this@ForgotPasswordActivity, "Error parsing API response.", Toast.LENGTH_SHORT).show()
-                        }
-                        Log.e("ForgotPassword", "Error parsing API response: ${e.message}")
-                    }
-                } else {
-                    // Handle errors for unsuccessful responses
+                    // L'API ha restituito 200
                     runOnUiThread {
-                        Toast.makeText(this@ForgotPasswordActivity, "Error: ${response.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@ForgotPasswordActivity, "Reset code generated successfully.", Toast.LENGTH_SHORT).show()
                     }
-                    Log.e("ForgotPassword", "Error in response: ${response.message}")
+
+                    // Procedi alla prossima attività
+                    val intent = Intent(this@ForgotPasswordActivity, VerifyCodeActivity::class.java)
+                    intent.putExtra("CF", cf) // Passa il CF alla prossima attività
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // L'API ha restituito un codice di errore
+                    runOnUiThread {
+                        val errorMessage = when (response.code) {
+                            404 -> "User not found."
+                            500 -> "Server error. Please try again."
+                            else -> "Error: ${response.code} ${response.message}"
+                        }
+                        Toast.makeText(this@ForgotPasswordActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                    Log.e("ForgotPassword", "API error: ${response.code} ${response.message}")
                 }
             }
         })

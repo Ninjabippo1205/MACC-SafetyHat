@@ -3,12 +3,11 @@ package com.safetyhat.macc
 import android.app.NotificationManager
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -18,8 +17,10 @@ import com.google.android.material.navigation.NavigationView
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import kotlin.math.min
 
 class SiteInfoActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -28,60 +29,66 @@ class SiteInfoActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_site_info)
+        try {
+            setContentView(R.layout.activity_site_info)
 
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById(R.id.navigation_view_worker)
-        navigationView.itemIconTintList = null
+            drawerLayout = findViewById(R.id.drawer_layout)
+            navigationView = findViewById(R.id.navigation_view_worker)
+            navigationView.itemIconTintList = null
 
-        findViewById<ImageView>(R.id.menu_icon_worker).setOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
-
-        val workerCF = intent.getStringExtra("workerCF")
-        val siteID = intent.getStringExtra("siteID")
-
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_home_worker -> {
-                    val intent = Intent(this, WorkermenuActivity::class.java)
-                    intent.putExtra("workerCF", workerCF)
-                    intent.putExtra("siteID", siteID.toString())
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_account_info_worker -> {
-                    val intent = Intent(this, WorkerinfoActivity::class.java)
-                    intent.putExtra("workerCF", workerCF)
-                    intent.putExtra("siteID", siteID.toString())
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_alert_worker -> {
-                    val intent = Intent(this, AlertActivity::class.java)
-                    intent.putExtra("workerCF", workerCF)
-                    intent.putExtra("siteID", siteID.toString())
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_logout_worker -> {
-                    val stopServiceIntent = Intent(this, AlertService::class.java)
-                    stopService(stopServiceIntent)
-
-                    // Elimina tutte le notifiche usando NotificationManager
-                    val notificationManager = getSystemService(NotificationManager::class.java)
-                    notificationManager?.cancelAll()
-
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+            findViewById<ImageView>(R.id.menu_icon_worker).setOnClickListener {
+                drawerLayout.openDrawer(GravityCompat.START)
             }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
-        }
 
-        fetchWorkerInfo(workerCF.toString())
+            val workerCF = intent.getStringExtra("workerCF") ?: ""
+            val siteID = intent.getStringExtra("siteID") ?: ""
+
+            navigationView.setNavigationItemSelectedListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.nav_home_worker -> {
+                        val intent = Intent(this, WorkermenuActivity::class.java)
+                        intent.putExtra("workerCF", workerCF)
+                        intent.putExtra("siteID", siteID)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_account_info_worker -> {
+                        val intent = Intent(this, WorkerinfoActivity::class.java)
+                        intent.putExtra("workerCF", workerCF)
+                        intent.putExtra("siteID", siteID)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_alert_worker -> {
+                        val intent = Intent(this, AlertActivity::class.java)
+                        intent.putExtra("workerCF", workerCF)
+                        intent.putExtra("siteID", siteID)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_logout_worker -> {
+                        val stopServiceIntent = Intent(this, AlertService::class.java)
+                        stopService(stopServiceIntent)
+
+                        // Cancel all notifications using NotificationManager
+                        val notificationManager = getSystemService(NotificationManager::class.java)
+                        notificationManager?.cancelAll()
+
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+                drawerLayout.closeDrawer(GravityCompat.START)
+                true
+            }
+
+            fetchWorkerInfo(workerCF)
+        } catch (e: Exception) {
+            Log.e("SiteInfoActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred during initialization.", Toast.LENGTH_SHORT).show()
+            finish()
+        }
     }
 
     private fun fetchWorkerInfo(cf: String) {
@@ -90,21 +97,33 @@ class SiteInfoActivity : AppCompatActivity() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                Log.e("SiteInfoActivity", "Network error: ${e.message}")
                 runOnUiThread {
                     Toast.makeText(this@SiteInfoActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                val jsonObject = JSONObject(responseData ?: "")
+                try {
+                    val responseData = response.body?.string()
+                    val jsonObject = JSONObject(responseData ?: "")
 
-                runOnUiThread {
-                    if (response.isSuccessful && !jsonObject.has("message")) {
-                        val SiteCode = jsonObject.optString("SiteCode", "N/A")
-                        fetchSiteInfo(SiteCode.toInt())
-                    } else {
-                        Toast.makeText(this@SiteInfoActivity, "Worker not found.", Toast.LENGTH_SHORT).show()
+                    runOnUiThread {
+                        if (response.isSuccessful && !jsonObject.has("message")) {
+                            val siteCode = jsonObject.optString("SiteCode", "N/A")
+                            if (siteCode != "N/A") {
+                                fetchSiteInfo(siteCode.toInt())
+                            } else {
+                                Toast.makeText(this@SiteInfoActivity, "No site code assigned to worker.", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(this@SiteInfoActivity, "Worker not found.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: JSONException) {
+                    Log.e("SiteInfoActivity", "JSON parsing error: ${e.message}")
+                    runOnUiThread {
+                        Toast.makeText(this@SiteInfoActivity, "Error processing data.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -117,33 +136,43 @@ class SiteInfoActivity : AppCompatActivity() {
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                Log.e("SiteInfoActivity", "Network error: ${e.message}")
                 runOnUiThread {
                     Toast.makeText(this@SiteInfoActivity, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                val jsonObject = JSONObject(responseData ?: "")
+                try {
+                    val responseData = response.body?.string()
+                    val jsonObject = JSONObject(responseData ?: "")
 
-                val latitude = jsonObject.optDouble("Latitude")
-                val longitude = jsonObject.optDouble("Longitude")
-                val locationKey = jsonObject.optString("LocationKey")
+                    val locationKey = jsonObject.optString("LocationKey", "")
 
-                runOnUiThread {
-                    if (response.isSuccessful && !jsonObject.has("message")) {
-                        findViewById<TextView>(R.id.site_id_text).text = jsonObject.optString("id", "N/A")
-                        findViewById<TextView>(R.id.start_date_text).text = jsonObject.optString("StartDate", "N/A")
-                        findViewById<TextView>(R.id.end_date_text).text = jsonObject.optString("EstimatedEndDate", "N/A")
-                        findViewById<TextView>(R.id.total_worker_text).text = jsonObject.optString("TotalWorkers", "N/A")
-                        findViewById<TextView>(R.id.scaffolding_number_text).text = jsonObject.optString("ScaffoldingCount", "N/A")
-                        findViewById<TextView>(R.id.site_address_text).text = jsonObject.optString("Address", "N/A")
-                        findViewById<TextView>(R.id.site_radius_text).text = jsonObject.optString("SiteRadius", "N/A")
-                        findViewById<TextView>(R.id.site_manager_info_text).text = jsonObject.optString("ManagerCF", "N/A")
+                    runOnUiThread {
+                        if (response.isSuccessful && !jsonObject.has("message")) {
+                            findViewById<TextView>(R.id.site_id_text).text = jsonObject.optString("id", "N/A")
+                            findViewById<TextView>(R.id.start_date_text).text = jsonObject.optString("StartDate", "N/A")
+                            findViewById<TextView>(R.id.end_date_text).text = jsonObject.optString("EstimatedEndDate", "N/A")
+                            findViewById<TextView>(R.id.total_worker_text).text = jsonObject.optString("TotalWorkers", "N/A")
+                            findViewById<TextView>(R.id.scaffolding_number_text).text = jsonObject.optString("ScaffoldingCount", "N/A")
+                            findViewById<TextView>(R.id.site_address_text).text = jsonObject.optString("Address", "N/A")
+                            findViewById<TextView>(R.id.site_radius_text).text = jsonObject.optString("SiteRadius", "N/A")
+                            findViewById<TextView>(R.id.site_manager_info_text).text = jsonObject.optString("ManagerCF", "N/A")
 
-                        fetchWeatherByCityKey(locationKey)
-                    } else {
-                        Toast.makeText(this@SiteInfoActivity, "Site not found.", Toast.LENGTH_SHORT).show()
+                            if (locationKey.isNotEmpty()) {
+                                fetchWeatherByCityKey(locationKey)
+                            } else {
+                                Toast.makeText(this@SiteInfoActivity, "No location key available for weather data.", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(this@SiteInfoActivity, "Site not found.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: JSONException) {
+                    Log.e("SiteInfoActivity", "JSON parsing error: ${e.message}")
+                    runOnUiThread {
+                        Toast.makeText(this@SiteInfoActivity, "Error processing data.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -161,32 +190,49 @@ class SiteInfoActivity : AppCompatActivity() {
             ?.addQueryParameter("metric", "true")
             ?.build()
 
+        if (forecastParams == null) {
+            Log.e("SiteInfoActivity", "Invalid forecast URL")
+            runOnUiThread {
+                Toast.makeText(this, "Failed to retrieve weather information.", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+
         val forecastRequest = Request.Builder().url(forecastParams.toString()).get().build()
 
         client.newCall(forecastRequest).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
+                Log.e("SiteInfoActivity", "Weather API error: ${e.message}")
                 runOnUiThread {
                     Toast.makeText(this@SiteInfoActivity, "Failed to retrieve weather information.", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val forecastData = response.body?.string()
-                val forecastArray = JSONArray(forecastData ?: "")
-                val weatherForecasts = mutableListOf<WeatherForecast>()
+                try {
+                    val forecastData = response.body?.string()
+                    val forecastArray = JSONArray(forecastData ?: "")
+                    val weatherForecasts = mutableListOf<WeatherForecast>()
 
-                for (i in 0 until minOf(8, forecastArray.length())) {
-                    val forecast = forecastArray.getJSONObject(i)
-                    val temperature = forecast.getJSONObject("Temperature").getDouble("Value").toString()
-                    val hour = forecast.getString("DateTime").substring(11, 16)
-                    val weatherIcon = forecast.getInt("WeatherIcon")
-                    weatherForecasts.add(WeatherForecast(hour, "$temperature°C", weatherIcon))
-                }
+                    for (i in 0 until min(8, forecastArray.length())) {
+                        val forecast = forecastArray.getJSONObject(i)
+                        val temperature = forecast.getJSONObject("Temperature").getDouble("Value").toString()
+                        val dateTime = forecast.getString("DateTime")
+                        val hour = if (dateTime.length >= 16) dateTime.substring(11, 16) else "N/A"
+                        val weatherIcon = forecast.getInt("WeatherIcon")
+                        weatherForecasts.add(WeatherForecast(hour, "$temperature°C", weatherIcon))
+                    }
 
-                runOnUiThread {
-                    val recyclerView = findViewById<RecyclerView>(R.id.weather_recycler_view)
-                    recyclerView.layoutManager = LinearLayoutManager(this@SiteInfoActivity)
-                    recyclerView.adapter = WeatherAdapter(weatherForecasts)
+                    runOnUiThread {
+                        val recyclerView = findViewById<RecyclerView>(R.id.weather_recycler_view)
+                        recyclerView.layoutManager = LinearLayoutManager(this@SiteInfoActivity)
+                        recyclerView.adapter = WeatherAdapter(weatherForecasts)
+                    }
+                } catch (e: JSONException) {
+                    Log.e("SiteInfoActivity", "JSON parsing error: ${e.message}")
+                    runOnUiThread {
+                        Toast.makeText(this@SiteInfoActivity, "Error processing weather data.", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         })
@@ -194,7 +240,8 @@ class SiteInfoActivity : AppCompatActivity() {
 
     data class WeatherForecast(val hour: String, val temperature: String, val weatherIcon: Int)
 
-    class WeatherAdapter(private val forecasts: List<WeatherForecast>) : RecyclerView.Adapter<WeatherAdapter.WeatherViewHolder>() {
+    class WeatherAdapter(private val forecasts: List<WeatherForecast>) :
+        RecyclerView.Adapter<WeatherAdapter.WeatherViewHolder>() {
 
         inner class WeatherViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val hourText: TextView = view.findViewById(R.id.hour_text)
@@ -212,7 +259,7 @@ class SiteInfoActivity : AppCompatActivity() {
             holder.hourText.text = forecast.hour
             holder.temperatureText.text = forecast.temperature
 
-            // Imposta l'icona del meteo basata sull'ID WeatherIcon
+            // Set the weather icon based on WeatherIcon ID
             val iconResourceId = getWeatherIconResource(forecast.weatherIcon)
             holder.weatherIcon.setImageResource(iconResourceId)
         }
@@ -261,7 +308,6 @@ class SiteInfoActivity : AppCompatActivity() {
                 42 -> R.mipmap.mostly_cloudy_with_t_storms_night_foreground
                 43 -> R.mipmap.mostly_cloudy_with_flurries_night_foreground
                 44 -> R.mipmap.mostly_cloudy_with_snow_night_foreground
-
                 else -> R.drawable.ic_launcher_background
             }
         }

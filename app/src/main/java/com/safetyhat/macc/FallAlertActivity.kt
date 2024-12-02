@@ -16,8 +16,10 @@ import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.json.JSONArray
+import org.json.JSONException
 import java.io.IOException
 import android.telephony.SmsManager
+import androidx.activity.OnBackPressedCallback
 
 class FallAlertActivity : AppCompatActivity() {
 
@@ -28,49 +30,67 @@ class FallAlertActivity : AppCompatActivity() {
     private val activityScope = CoroutineScope(Dispatchers.IO + Job())
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    private var siteID: Int = -1 // Assumendo che siteID venga passato con Intent
-    private var workerCF: Int = -1
+    private var siteID: Int = -1 // Assuming siteID is passed via Intent
+    private var workerCF: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_fall_alert)
+        try {
+            setContentView(R.layout.activity_fall_alert)
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        timerTextView = findViewById(R.id.fall_alert_timer)
-        val btnImOk = findViewById<Button>(R.id.btn_im_ok)
+            timerTextView = findViewById(R.id.fall_alert_timer)
+            val btnImOk = findViewById<Button>(R.id.btn_im_ok)
 
-        // Retrieve siteID from Intent
-        siteID = intent.getIntExtra("siteID", -1)
-        workerCF = intent.getIntExtra("workerCF", -1)
+            // Retrieve siteID and workerCF from Intent
+            siteID = intent.getIntExtra("siteID", -1)
+            workerCF = intent.getStringExtra("workerCF")
 
-        // Initialize the countdown timer
-        timer = object : CountDownTimer((countdownTime * 1000).toLong(), 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-                val secondsLeft = (millisUntilFinished / 1000).toInt()
-                timerTextView.text = secondsLeft.toString()
+            if (siteID == -1 || workerCF == null) {
+                Toast.makeText(this, "Missing siteID or workerCF.", Toast.LENGTH_SHORT).show()
+                finish()
+                return
             }
 
-            override fun onFinish() {
-                Log.d("FallAlertActivity", "Fall alert countdown finished.")
-
-                // Simula la logica di emergenza o invio avvisi qui
-                if (siteID != -1) {
-                    fetchWorkersBySiteID(siteID)
+            // Initialize the countdown timer
+            timer = object : CountDownTimer((countdownTime * 1000).toLong(), 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    val secondsLeft = (millisUntilFinished / 1000).toInt()
+                    timerTextView.text = secondsLeft.toString()
                 }
 
-                // Torna alla pagina precedente
-                finish()
+                override fun onFinish() {
+                    Log.d("FallAlertActivity", "Fall alert countdown finished.")
+
+                    // Simulate emergency logic or send alerts here
+                    fetchWorkersBySiteID(siteID)
+
+                    // Return to the previous page
+                    finish()
+                }
+
             }
 
-        }
+            timer.start()
 
-        timer.start()
+            btnImOk.setOnClickListener {
+                timer.cancel()
+                Toast.makeText(this, "Glad to hear you're okay!", Toast.LENGTH_SHORT).show()
+                finish() // Close the Activity
+            }
 
-        btnImOk.setOnClickListener {
-            timer.cancel()
-            Toast.makeText(this, "Glad to hear you're okay!", Toast.LENGTH_SHORT).show()
-            finish() // Close the Activity
+            // Disable the back button using OnBackPressedCallback
+            onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    // Do nothing, consume the back press
+                }
+            })
+
+        } catch (e: Exception) {
+            Log.e("FallAlertActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -123,22 +143,26 @@ class FallAlertActivity : AppCompatActivity() {
 
     private fun parseWorkerResponse(response: String): List<String> {
         val phoneNumbers = mutableListOf<String>()
-        val jsonArray = JSONArray(response)
-        for (i in 0 until jsonArray.length()) {
-            val worker = jsonArray.getJSONObject(i)
-            val phoneNumber = worker.optString("PhoneNumber")
-            if (phoneNumber.isNotEmpty()) {
-                phoneNumbers.add(phoneNumber)
+        try {
+            val jsonArray = JSONArray(response)
+            for (i in 0 until jsonArray.length()) {
+                val worker = jsonArray.getJSONObject(i)
+                val phoneNumber = worker.optString("PhoneNumber")
+                if (phoneNumber.isNotEmpty()) {
+                    phoneNumbers.add(phoneNumber)
+                }
             }
+        } catch (e: JSONException) {
+            Log.e("FallAlertActivity", "JSON Parsing error: ${e.message}")
         }
         return phoneNumbers
     }
 
     private fun sendEmergencyMessage(phoneNumbers: List<String>, message: String) {
-        // Ottieni la lista unica di numeri di telefono
+        // Get unique list of phone numbers
         val uniquePhoneNumbers = phoneNumbers.distinct()
 
-        // Controlla i permessi di posizione
+        // Check location permissions
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -153,24 +177,31 @@ class FallAlertActivity : AppCompatActivity() {
             return
         }
 
-        // Ottieni la posizione attuale
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            if (location != null) {
-                val latitude = location.latitude
-                val longitude = location.longitude
+        try {
+            // Get current location
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val latitude = location.latitude
+                    val longitude = location.longitude
 
-                // Formatta le coordinate in un link per Google Maps
-                val locationLink = "https://maps.google.com/?q=$latitude,$longitude"
-                val messageWithLocation = "$message\nLocation: $locationLink"
+                    // Format coordinates into a Google Maps link
+                    val locationLink = "https://maps.google.com/?q=$latitude,$longitude"
+                    val messageWithLocation = "$message\nLocation: $locationLink"
 
-                // Invia SMS con posizione
-                sendSmsToNumbers(uniquePhoneNumbers, messageWithLocation)
-            } else {
-                Log.e("FallAlertActivity", "Failed to retrieve location")
+                    // Send SMS with location
+                    sendSmsToNumbers(uniquePhoneNumbers, messageWithLocation)
+                } else {
+                    Log.e("FallAlertActivity", "Failed to retrieve location")
+                    val fallbackMessage = "$message\nLocation: [Unable to retrieve location]"
+                    sendSmsToNumbers(uniquePhoneNumbers, fallbackMessage)
+                }
+            }.addOnFailureListener { e ->
+                Log.e("FallAlertActivity", "Error getting location: ${e.message}")
                 val fallbackMessage = "$message\nLocation: [Unable to retrieve location]"
                 sendSmsToNumbers(uniquePhoneNumbers, fallbackMessage)
             }
-        }.addOnFailureListener { e ->
+        } catch (e: SecurityException) {
+            Log.e("FallAlertActivity", "SecurityException: ${e.message}")
             val fallbackMessage = "$message\nLocation: [Unable to retrieve location]"
             sendSmsToNumbers(uniquePhoneNumbers, fallbackMessage)
         }
@@ -181,15 +212,11 @@ class FallAlertActivity : AppCompatActivity() {
         for (phone in phoneNumbers) {
             try {
                 smsManager.sendTextMessage(phone, null, message, null, null)
+                Log.d("FallAlertActivity", "SMS sent to $phone")
             } catch (e: Exception) {
                 Log.e("FallAlertActivity", "Failed to send SMS to $phone: ${e.message}")
             }
         }
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressedDispatcher
-        // Disable back button to ensure user responds to alert
     }
 
     override fun onDestroy() {

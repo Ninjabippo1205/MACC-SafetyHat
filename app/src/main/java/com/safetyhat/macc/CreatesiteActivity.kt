@@ -1,5 +1,6 @@
 package com.safetyhat.macc
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
@@ -15,9 +16,7 @@ import com.google.android.libraries.places.api.model.AutocompleteSessionToken
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.navigation.NavigationView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -25,6 +24,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.regex.Pattern
@@ -39,97 +39,103 @@ class CreatesiteActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_create_site)
+        try {
+            setContentView(R.layout.activity_create_site)
 
-        val managerCF = intent.getStringExtra("managerCF").toString()
+            val managerCF = intent.getStringExtra("managerCF") ?: ""
 
-        drawerLayout = findViewById(R.id.drawer_layout)
-        navigationView = findViewById(R.id.navigation_view_manager)
-        navigationView.itemIconTintList = null
+            drawerLayout = findViewById(R.id.drawer_layout)
+            navigationView = findViewById(R.id.navigation_view_manager)
+            navigationView.itemIconTintList = null
 
-        findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
-        }
-
-        navigationView.setNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.nav_home_manager -> {
-                    val intent = Intent(this, ManagermenuActivity::class.java)
-                    intent.putExtra("managerCF", managerCF)
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_account_info_manager -> {
-                    val intent = Intent(this, ManagerInfoActivity::class.java)
-                    intent.putExtra("managerCF", managerCF)
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_site_overview_manager -> {
-                    val intent = Intent(this, SitesOverviewActivity::class.java)
-                    intent.putExtra("managerCF", managerCF)
-                    startActivity(intent)
-                    finish()
-                }
-                R.id.nav_logout_manager -> {
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+            findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
+                drawerLayout.openDrawer(GravityCompat.START)
             }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
-        }
 
-        if (!Places.isInitialized()) {
-            Places.initialize(applicationContext, getString(R.string.google_maps_key))
-        }
-        placesClient = Places.createClient(this)
+            navigationView.setNavigationItemSelectedListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.nav_home_manager -> {
+                        val intent = Intent(this, ManagermenuActivity::class.java)
+                        intent.putExtra("managerCF", managerCF)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_account_info_manager -> {
+                        val intent = Intent(this, ManagerInfoActivity::class.java)
+                        intent.putExtra("managerCF", managerCF)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_site_overview_manager -> {
+                        val intent = Intent(this, SitesOverviewActivity::class.java)
+                        intent.putExtra("managerCF", managerCF)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_logout_manager -> {
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+                drawerLayout.closeDrawer(GravityCompat.START)
+                true
+            }
 
-        setupAutocomplete()
+            if (!Places.isInitialized()) {
+                Places.initialize(applicationContext, getString(R.string.google_maps_key))
+            }
+            placesClient = Places.createClient(this)
 
-        val startDateField = findViewById<EditText>(R.id.start_date_field)
-        startDateField.setOnClickListener {
-            showDatePickerDialog(startDateField)
-        }
+            setupAutocomplete()
 
-        val endDateField = findViewById<EditText>(R.id.end_date_field)
-        endDateField.setOnClickListener {
-            showDatePickerDialog(endDateField)
-        }
+            val startDateField = findViewById<EditText>(R.id.start_date_field)
+            startDateField.setOnClickListener {
+                showDatePickerDialog(startDateField)
+            }
 
-        val maxWorkersField = findViewById<EditText>(R.id.max_workers_field)
-        val scaffoldingField = findViewById<EditText>(R.id.scaffolding_field)
-        val addressField = findViewById<AutoCompleteTextView>(R.id.address_field)
-        val siteRadiusField = findViewById<EditText>(R.id.site_radius_field)
-        val securityCodeField = findViewById<EditText>(R.id.security_code_field)
+            val endDateField = findViewById<EditText>(R.id.end_date_field)
+            endDateField.setOnClickListener {
+                showDatePickerDialog(endDateField)
+            }
 
-        val generateCodeButton = findViewById<Button>(R.id.generate_code_button)
-        generateCodeButton.setOnClickListener {
-            generateSecurityCode()
-        }
+            val maxWorkersField = findViewById<EditText>(R.id.max_workers_field)
+            val scaffoldingField = findViewById<EditText>(R.id.scaffolding_field)
+            val addressField = findViewById<AutoCompleteTextView>(R.id.address_field)
+            val siteRadiusField = findViewById<EditText>(R.id.site_radius_field)
+            val securityCodeField = findViewById<EditText>(R.id.security_code_field)
 
-        val submitButton = findViewById<Button>(R.id.create_site_button)
-        submitButton.setOnClickListener {
-            val startDate = startDateField.text.toString()
-            val endDate = endDateField.text.toString()
-            val maxWorkers = maxWorkersField.text.toString()
-            val scaffolding = scaffoldingField.text.toString()
-            val address = addressField.text.toString()
-            val siteRadius = siteRadiusField.text.toString()
-            val securityCode = securityCodeField.text.toString()
+            val generateCodeButton = findViewById<Button>(R.id.generate_code_button)
+            generateCodeButton.setOnClickListener {
+                generateSecurityCode()
+            }
 
-            if (isAddressSelected && address != placeholderText) {
-                if (containsStreetNumber(address)) {
-                    if (isInputValid(startDate, endDate, maxWorkers, scaffolding, address, siteRadius, securityCode)) {
-                        registerSite(startDate, endDate, maxWorkers, scaffolding, address, siteRadius, securityCode, managerCF)
+            val submitButton = findViewById<Button>(R.id.create_site_button)
+            submitButton.setOnClickListener {
+                val startDate = startDateField.text.toString()
+                val endDate = endDateField.text.toString()
+                val maxWorkers = maxWorkersField.text.toString()
+                val scaffolding = scaffoldingField.text.toString()
+                val address = addressField.text.toString()
+                val siteRadius = siteRadiusField.text.toString()
+                val securityCode = securityCodeField.text.toString()
+
+                if (isAddressSelected && address != placeholderText) {
+                    if (containsStreetNumber(address)) {
+                        if (isInputValid(startDate, endDate, maxWorkers, scaffolding, address, siteRadius, securityCode)) {
+                            registerSite(startDate, endDate, maxWorkers, scaffolding, address, siteRadius, securityCode, managerCF)
+                        }
+                    } else {
+                        Toast.makeText(this, "Please include a street number in the address.", Toast.LENGTH_LONG).show()
                     }
                 } else {
-                    Toast.makeText(this, "Please include a street number in the address.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Please select a valid address from the suggestions.", Toast.LENGTH_LONG).show()
                 }
-            } else {
-                Toast.makeText(this, "Please select a valid address from the suggestions.", Toast.LENGTH_LONG).show()
             }
+        } catch (e: Exception) {
+            Log.e("CreatesiteActivity", "Error in onCreate: ${e.message}")
+            Toast.makeText(this, "An error occurred during initialization.", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 
@@ -157,7 +163,7 @@ class CreatesiteActivity : AppCompatActivity() {
                             addressInput.showDropDown()
                         }
                         .addOnFailureListener { exception ->
-                            Log.e("CreatesiteActivity", "Error getting autocomplete predictions: $exception")
+                            Log.e("CreatesiteActivity", "Error getting autocomplete predictions: ${exception.message}")
                         }
                 }
             }
@@ -196,16 +202,23 @@ class CreatesiteActivity : AppCompatActivity() {
                 runOnUiThread {
                     Toast.makeText(applicationContext, "Unable to generate security code", Toast.LENGTH_SHORT).show()
                 }
+                Log.e("CreatesiteActivity", "Failed to generate security code: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.body?.string()?.let {
-                    val json = JSONObject(it)
+                try {
+                    val responseBody = response.body?.string()
+                    val json = JSONObject(responseBody ?: "")
                     val securityCode = json.getString("security_code")
 
                     runOnUiThread {
                         securityCodeField.setText(securityCode)
                     }
+                } catch (e: JSONException) {
+                    runOnUiThread {
+                        Toast.makeText(applicationContext, "Error parsing security code", Toast.LENGTH_SHORT).show()
+                    }
+                    Log.e("CreatesiteActivity", "JSON Parsing error: ${e.message}")
                 }
             }
         })
@@ -264,10 +277,16 @@ class CreatesiteActivity : AppCompatActivity() {
         }
 
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val start = dateFormat.parse(startDate)
-        val end = dateFormat.parse(endDate)
-        if (start != null && end != null && start.after(end)) {
-            Toast.makeText(this, "Start date must be before end date", Toast.LENGTH_SHORT).show()
+        try {
+            val start = dateFormat.parse(startDate)
+            val end = dateFormat.parse(endDate)
+            if (start != null && end != null && start.after(end)) {
+                Toast.makeText(this, "Start date must be before end date", Toast.LENGTH_SHORT).show()
+                return false
+            }
+        } catch (e: ParseException) {
+            Toast.makeText(this, "Invalid date format", Toast.LENGTH_SHORT).show()
+            Log.e("CreatesiteActivity", "Date parsing error: ${e.message}")
             return false
         }
 
@@ -288,41 +307,43 @@ class CreatesiteActivity : AppCompatActivity() {
             if (lat != null && lng != null) {
                 fetchLocationKey(lat, lng) { locationKey ->
                     if (locationKey != null) {
-                        val originalFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                        val targetFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                        val formattedStartDate = originalFormat.parse(startdate)?.let { targetFormat.format(it) } ?: startdate
-                        val formattedEndDate = originalFormat.parse(enddate)?.let { targetFormat.format(it) } ?: enddate
+                        try {
+                            val originalFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            val targetFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                            val formattedStartDate = originalFormat.parse(startdate)?.let { targetFormat.format(it) } ?: startdate
+                            val formattedEndDate = originalFormat.parse(enddate)?.let { targetFormat.format(it) } ?: enddate
 
-                        val url = "https://noemigiustini01.pythonanywhere.com/site/create"
-                        val json = JSONObject().apply {
-                            put("StartDate", formattedStartDate)
-                            put("EstimatedEndDate", formattedEndDate)
-                            put("TotalWorkers", maxWorkers)
-                            put("ScaffoldingCount", scaffolding)
-                            put("Address", address)
-                            put("SiteRadius", siteRadius)
-                            put("SecurityCode", securityCode)
-                            put("ManagerCF", managerCF)
-                            put("Latitude", lat)
-                            put("Longitude", lng)
-                            put("LocationKey", locationKey)
-                        }
+                            val url = "https://noemigiustini01.pythonanywhere.com/site/create"
+                            val json = JSONObject().apply {
+                                put("StartDate", formattedStartDate)
+                                put("EstimatedEndDate", formattedEndDate)
+                                put("TotalWorkers", maxWorkers)
+                                put("ScaffoldingCount", scaffolding)
+                                put("Address", address)
+                                put("SiteRadius", siteRadius)
+                                put("SecurityCode", securityCode)
+                                put("ManagerCF", managerCF)
+                                put("Latitude", lat)
+                                put("Longitude", lng)
+                                put("LocationKey", locationKey)
+                            }
 
-                        val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-                        val request = Request.Builder().url(url).post(requestBody).build()
+                            val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
+                            val request = Request.Builder().url(url).post(requestBody).build()
 
-                        CoroutineScope(Dispatchers.IO).launch {
                             client.newCall(request).enqueue(object : Callback {
                                 override fun onFailure(call: Call, e: IOException) {
                                     runOnUiThread {
                                         Toast.makeText(this@CreatesiteActivity, "Failed to register: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                                     }
+                                    Log.e("CreatesiteActivity", "Failed to register site: ${e.message}")
                                 }
 
                                 override fun onResponse(call: Call, response: Response) {
-                                    response.body?.string()?.let { responseBody ->
+                                    try {
+                                        val responseBody = response.body?.string()
+                                        val jsonResponse = JSONObject(responseBody ?: "")
                                         runOnUiThread {
-                                            val jsonResponse = JSONObject(responseBody)
                                             if (response.isSuccessful) {
                                                 val siteId = jsonResponse.getInt("site_id")
                                                 Toast.makeText(this@CreatesiteActivity, "Site created successfully!", Toast.LENGTH_SHORT).show()
@@ -340,16 +361,32 @@ class CreatesiteActivity : AppCompatActivity() {
                                                 Toast.makeText(this@CreatesiteActivity, errorMessage, Toast.LENGTH_LONG).show()
                                             }
                                         }
+                                    } catch (e: JSONException) {
+                                        runOnUiThread {
+                                            Toast.makeText(this@CreatesiteActivity, "Error parsing server response.", Toast.LENGTH_SHORT).show()
+                                        }
+                                        Log.e("CreatesiteActivity", "JSON Parsing error: ${e.message}")
                                     }
                                 }
                             })
+                        } catch (e: Exception) {
+                            runOnUiThread {
+                                Toast.makeText(this@CreatesiteActivity, "An error occurred while creating the site.", Toast.LENGTH_SHORT).show()
+                            }
+                            Log.e("CreatesiteActivity", "Error in registerSite: ${e.message}")
                         }
                     } else {
-                        Toast.makeText(this, "Failed to retrieve location key", Toast.LENGTH_SHORT).show()
+                        runOnUiThread {
+                            Toast.makeText(this, "Failed to retrieve location key", Toast.LENGTH_SHORT).show()
+                        }
+                        Log.e("CreatesiteActivity", "Location key is null")
                     }
                 }
             } else {
-                Toast.makeText(this, "Failed to retrieve coordinates", Toast.LENGTH_SHORT).show()
+                runOnUiThread {
+                    Toast.makeText(this, "Failed to retrieve coordinates", Toast.LENGTH_SHORT).show()
+                }
+                Log.e("CreatesiteActivity", "Coordinates are null")
             }
         }
     }
@@ -363,23 +400,40 @@ class CreatesiteActivity : AppCompatActivity() {
             ?.addQueryParameter("key", googleApiKey)
             ?.build()
 
+        if (geocodeParams == null) {
+            Log.e("CreatesiteActivity", "Invalid geocode URL")
+            callback(null, null)
+            return
+        }
+
         val geocodeRequest = Request.Builder().url(geocodeParams.toString()).get().build()
         client.newCall(geocodeRequest).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 callback(null, null)
+                Log.e("CreatesiteActivity", "Failed to fetch coordinates: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                val geocodeData = JSONObject(responseData ?: "")
-                val location = geocodeData.getJSONArray("results")
-                    .getJSONObject(0)
-                    .getJSONObject("geometry")
-                    .getJSONObject("location")
+                try {
+                    val responseData = response.body?.string()
+                    val geocodeData = JSONObject(responseData ?: "")
+                    val resultsArray = geocodeData.getJSONArray("results")
+                    if (resultsArray.length() > 0) {
+                        val location = resultsArray.getJSONObject(0)
+                            .getJSONObject("geometry")
+                            .getJSONObject("location")
 
-                val lat = location.getDouble("lat")
-                val lng = location.getDouble("lng")
-                callback(lat, lng)
+                        val lat = location.getDouble("lat")
+                        val lng = location.getDouble("lng")
+                        callback(lat, lng)
+                    } else {
+                        Log.e("CreatesiteActivity", "No results found for address")
+                        callback(null, null)
+                    }
+                } catch (e: JSONException) {
+                    Log.e("CreatesiteActivity", "JSON Parsing error: ${e.message}")
+                    callback(null, null)
+                }
             }
         })
     }
@@ -392,17 +446,29 @@ class CreatesiteActivity : AppCompatActivity() {
             ?.addQueryParameter("apikey", apiKey)
             ?.build()
 
+        if (locationParams == null) {
+            Log.e("CreatesiteActivity", "Invalid location URL")
+            callback(null)
+            return
+        }
+
         val locationRequest = Request.Builder().url(locationParams.toString()).get().build()
         client.newCall(locationRequest).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 callback(null)
+                Log.e("CreatesiteActivity", "Failed to fetch location key: ${e.message}")
             }
 
             override fun onResponse(call: Call, response: Response) {
-                val responseData = response.body?.string()
-                val locationData = JSONObject(responseData ?: "")
-                val locationKey = locationData.optString("Key", null)
-                callback(locationKey)
+                try {
+                    val responseData = response.body?.string()
+                    val locationData = JSONObject(responseData ?: "")
+                    val locationKey = locationData.optString("Key", null)
+                    callback(locationKey)
+                } catch (e: JSONException) {
+                    Log.e("CreatesiteActivity", "JSON Parsing error: ${e.message}")
+                    callback(null)
+                }
             }
         })
     }

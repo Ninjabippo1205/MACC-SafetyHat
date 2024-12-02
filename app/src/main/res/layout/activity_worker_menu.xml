@@ -62,10 +62,21 @@
             android:layout_marginTop="32dp"
             android:layout_marginEnd="11dp"
             android:elevation="4dp"
-            android:background="@drawable/rounded_background"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/separator_line2">
+            app:layout_constraintTop_toBottomOf="@+id/separator_line2"
+            android:orientation="vertical">
+
+            <!-- Messaggio "No communications" -->
+            <TextView
+                android:id="@+id/no_communications_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No communications available"
+                android:textSize="18sp"
+                android:textColor="#808080"
+                android:gravity="center"
+                android:visibility="gone" />
 
             <ScrollView
                 android:id="@+id/scrollView2"
@@ -88,22 +99,22 @@
             android:id="@+id/button_container"
             android:layout_width="350dp"
             android:layout_height="65dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginTop="200dp"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/communications_container">
 
             <!-- Coppia Immagine e Testo 1 -->
             <LinearLayout
                 android:id="@+id/sites_worker_info_field"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
                 android:layout_marginEnd="10dp"
-                android:background="@drawable/rounded_background">
+                android:layout_weight="1"
+                android:background="@drawable/rounded_background"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/image_bulldozer"
@@ -133,11 +144,11 @@
                 android:id="@+id/alerts_field"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="horizontal"
                 android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_background"
                 android:gravity="center_vertical"
-                android:background="@drawable/rounded_background">
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/image_cone"

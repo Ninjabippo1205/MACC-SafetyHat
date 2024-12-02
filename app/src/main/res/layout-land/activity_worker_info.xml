@@ -245,7 +245,7 @@
 
                 <!-- New Password Field -->
                 <EditText
-                    android:id="@+id/new_password_worker_field"
+                    android:id="@+id/new_password_field"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="10dp"
@@ -263,6 +263,18 @@
                     android:background="@drawable/rounded_background"
                     android:backgroundTint="#2C2C2C"
                     android:text="@string/change_password"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="20sp" />
+
+                <Button
+                    android:id="@+id/delete_account_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="@color/orange_safety_hat"
+                    android:text="@string/delete_account"
+                    android:layout_marginTop="10dp"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textSize="20sp" />
