@@ -92,6 +92,11 @@ class WorkermenuActivity : AppCompatActivity() {
                         startActivity(intent)
                         finish()
                     }
+                    R.id.nav_face_worker -> {
+                        val intent = Intent(this, FaceActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
                 }
                 drawerLayout.closeDrawer(GravityCompat.START)
                 true

@@ -56,6 +56,8 @@ dependencies {
     implementation(libs.zxing.core)
     implementation(libs.zxing.android.embedded)
     implementation(libs.places)
+    implementation(libs.vision.common)
+    implementation(libs.play.services.mlkit.face.detection)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

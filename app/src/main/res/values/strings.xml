@@ -80,5 +80,5 @@
     <string name="email">Email</string>
     <string name="verification_code">Insert Verification Code</string>
     <string name="delete_account">Delete Account</string>
-
+    <string name="photo">Add Photo</string>
 </resources>

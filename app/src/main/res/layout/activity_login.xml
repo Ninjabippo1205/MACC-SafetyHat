@@ -94,8 +94,7 @@
             android:autofillHints="username"
             android:hint="@string/cf_hint"
             android:inputType="text"
-            android:text="SMTHJN90D50A001K"
-            />
+            android:text="FRNLFS71E08H501K " />
 
         <TextView
             android:layout_width="match_parent"
