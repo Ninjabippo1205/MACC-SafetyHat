@@ -81,4 +81,6 @@
     <string name="verification_code">Insert Verification Code</string>
     <string name="delete_account">Delete Account</string>
     <string name="photo">Add Photo</string>
+    <string name="picture">Take a Picture</string>
+
 </resources>

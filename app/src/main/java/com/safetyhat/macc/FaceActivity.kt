@@ -1,14 +1,15 @@
 package com.safetyhat.macc
 
-import android.annotation.SuppressLint
-import android.content.pm.PackageManager
-import android.graphics.Matrix
-import android.graphics.RectF
 import android.Manifest
-import android.content.ContentValues
-import android.net.Uri
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.*
+import android.view.Surface
+import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -16,10 +17,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.common.InputImage
+import androidx.exifinterface.media.ExifInterface
+import java.io.FileOutputStream
 import com.google.mlkit.vision.face.*
-import android.os.Environment
-import android.provider.MediaStore
-import android.widget.Button
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -31,6 +31,17 @@ class FaceActivity : AppCompatActivity() {
     private lateinit var cameraPreview: PreviewView
     private lateinit var faceOverlayView: FaceOverlayView
     private lateinit var cameraExecutor: ExecutorService
+    private lateinit var imageCapture: ImageCapture
+
+    // Variabile per salvare i bounding box dei volti rilevati nell'immagine analizzata
+    // Questi saranno i box utilizzati per il disegno sul file finale
+    private var latestFaceRects: List<RectF> = emptyList()
+    // Dimensioni dell'immagine analizzata (per eventuale scaling)
+    private var analyzedImageWidth = 0
+    private var analyzedImageHeight = 0
+
+    private var workerCF: String = ""
+    private var siteID: String = ""
 
     private val faceDetector by lazy {
         val options = FaceDetectorOptions.Builder()
@@ -49,10 +60,19 @@ class FaceActivity : AppCompatActivity() {
 
         cameraExecutor = Executors.newSingleThreadExecutor()
 
+        workerCF = intent.getStringExtra("workerCF") ?: ""
+        siteID = intent.getStringExtra("siteID") ?: ""
+
+        findViewById<Button>(R.id.button_back).setOnClickListener{
+            val intent = Intent(this, WorkermenuActivity::class.java)
+            intent.putExtra("workerCF", workerCF)
+            intent.putExtra("siteID", siteID)
+            startActivity(intent)
+            finish()
+        }
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            cameraPreview.post {
-                startCamera()
-            }
+            cameraPreview.post { startCamera() }
         } else {
             Toast.makeText(this, "Permessi non garantiti per la fotocamera", Toast.LENGTH_SHORT).show()
         }
@@ -60,10 +80,7 @@ class FaceActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button_picture).setOnClickListener {
             takePhoto()
         }
-
     }
-
-    private lateinit var imageCapture: ImageCapture
 
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -71,14 +88,14 @@ class FaceActivity : AppCompatActivity() {
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            // Configuriamo l'anteprima
             val preview = Preview.Builder().build()
             preview.setSurfaceProvider(cameraPreview.surfaceProvider)
 
-            // Configuriamo ImageCapture
-            imageCapture = ImageCapture.Builder().build()
 
-            // Configuriamo ImageAnalysis (già presente nel tuo codice)
+            imageCapture = ImageCapture.Builder()
+                .setTargetRotation(Surface.ROTATION_0)
+                .build()
+
             val imageAnalyzer = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
@@ -86,7 +103,6 @@ class FaceActivity : AppCompatActivity() {
                 processImageProxy(imageProxy)
             }
 
-            // Bindiamo tutto
             val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
             cameraProvider.unbindAll()
 
@@ -106,96 +122,180 @@ class FaceActivity : AppCompatActivity() {
     private fun processImageProxy(imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image ?: return
         val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-
         val image = InputImage.fromMediaImage(mediaImage, rotationDegrees)
+
+        // Salviamo le dimensioni dell'immagine analizzata
+        analyzedImageWidth = image.width
+        analyzedImageHeight = image.height
 
         faceDetector.process(image)
             .addOnSuccessListener { faces ->
-                // Convertiamo i bounding box dei volti in coordinate del viewfinder
-                val faceRects = faces.map { face ->
-                    // Bounding box del volto nell'immagine
+                // Creiamo i bounding box regolati senza trasformazione per la preview,
+                // Li salviamo per disegnare dopo sul file.
+                val faceRectsForOverlay = faces.map { face ->
                     val boundingBox = face.boundingBox
+                    val extraHeightTop = boundingBox.height() * 0.3f
+                    val extraHeightBottom = boundingBox.height() * 0.4f
+                    val extraWidth = boundingBox.width() * 0.2f
 
-                    // Calcoliamo le proporzioni per estendere il rettangolo
-                    val extraHeightTop = boundingBox.height() * 0.3f  // Aggiungiamo il 30% sopra
-                    val extraHeightBottom = boundingBox.height() * 0.4f // Aggiungiamo solo il 30% sotto
-                    val extraWidth = boundingBox.width() * 0.2f // Aggiungiamo il 20% in larghezza
-
-                    val adjustedBox = RectF(
-                        boundingBox.left.toFloat() - extraWidth, // Estendi a sinistra
-                        boundingBox.top.toFloat() - extraHeightTop, // Estendi sopra
-                        boundingBox.right.toFloat() + extraWidth, // Estendi a destra
-                        boundingBox.bottom.toFloat() - extraHeightBottom // Estendi sotto
+                    RectF(
+                        boundingBox.left.toFloat() - extraWidth,
+                        boundingBox.top.toFloat() - extraHeightTop,
+                        boundingBox.right.toFloat() + extraWidth,
+                        boundingBox.bottom.toFloat() - extraHeightBottom
                     )
+                }
 
-                    // Convertiamo le coordinate dell'immagine in coordinate della view
+                latestFaceRects = faceRectsForOverlay
+
+                // Per la visualizzazione a schermo (preview), applichiamo le trasformazioni.
+                val previewWidth = cameraPreview.width.toFloat()
+                val previewHeight = cameraPreview.height.toFloat()
+                val transformedRects = faceRectsForOverlay.map { originalRect ->
                     val matrix = Matrix()
-                    val previewWidth = cameraPreview.width.toFloat()
-                    val previewHeight = cameraPreview.height.toFloat()
-
-                    // Configuriamo la trasformazione
-                    val imageRect = RectF(0f, 0f, image.width.toFloat(), image.height.toFloat())
+                    val imageRect = RectF(0f, 0f, analyzedImageWidth.toFloat(), analyzedImageHeight.toFloat())
                     val viewRect = RectF(0f, 0f, previewWidth, previewHeight)
                     matrix.setRectToRect(imageRect, viewRect, Matrix.ScaleToFit.FILL)
-
-                    val faceRect = RectF(adjustedBox)
+                    val faceRect = RectF(originalRect)
                     matrix.mapRect(faceRect)
 
-                    faceRect.offset(200f, 0f) // Sposta il bounding box di 50 pixel verso destra
-
+                    // Offset se necessario
+                    faceRect.offset(200f, 0f)
                     faceRect
                 }
 
-                faceRects.forEach { Log.d("FaceActivity", "Bounding box adattato: $it") }
-
-                faceOverlayView.setFaces(faceRects)
+                faceOverlayView.setFaces(transformedRects)
             }
             .addOnFailureListener {
                 it.printStackTrace()
                 faceOverlayView.setFaces(emptyList())
+                latestFaceRects = emptyList()
             }
             .addOnCompleteListener {
                 imageProxy.close()
             }
     }
 
+    private fun getOutputDirectory(): File {
+        val mediaDir = externalMediaDirs.firstOrNull()?.let {
+            val dir = File(it, "QRCodeImages")
+            dir.mkdirs()
+            dir
+        }
+        return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
+    }
+
     private fun takePhoto() {
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, "IMG_${System.currentTimeMillis()}.jpg")
-            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-            put(
-                MediaStore.MediaColumns.RELATIVE_PATH,
-                "${Environment.DIRECTORY_PICTURES}/QRCodeImages"
-            )
-        }
+        val photoFile = File(
+            getOutputDirectory(),
+            "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(System.currentTimeMillis())}.jpg"
+        )
 
-        val resolver = contentResolver
-        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-
-        if (uri == null) {
-            Toast.makeText(this, "Errore nel salvataggio della foto", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(
-            resolver, uri, contentValues
-        ).build()
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    Toast.makeText(this@FaceActivity, "Foto salvata nella galleria", Toast.LENGTH_SHORT).show()
+                    // Ora modifichiamo l'immagine salvata per aggiungere i cappelli
+                    addHatsToImage(photoFile)
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    exception.printStackTrace()
-                    Toast.makeText(this@FaceActivity, "Errore nello scattare la foto", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@FaceActivity, "Errore nello scattare la foto: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("FaceActivity", "Errore nella cattura della foto", exception)
                 }
             }
         )
     }
+
+    private fun addHatsToImage(photoFile: File) {
+        // Carichiamo il bitmap originale
+        val originalBitmap = BitmapFactory.decodeFile(photoFile.absolutePath) ?: run {
+            Toast.makeText(this, "Impossibile caricare l'immagine salvata", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Leggiamo l'orientamento EXIF
+        val exif = ExifInterface(photoFile.absolutePath)
+        val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+
+        // Ruotiamo il bitmap se necessario
+        val correctedBitmap = rotateBitmapIfNeeded(originalBitmap, orientation)
+
+        val mutableBitmap = correctedBitmap.copy(Bitmap.Config.ARGB_8888, true)
+        val canvas = Canvas(mutableBitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        val hatBitmap = BitmapFactory.decodeResource(resources, R.drawable.hard_hat)
+
+        // Dimensioni dell'immagine finale (dopo la rotazione)
+        val finalWidth = mutableBitmap.width
+        val finalHeight = mutableBitmap.height
+
+        val widthScale = finalWidth.toFloat() / analyzedImageWidth.toFloat()
+        val heightScale = finalHeight.toFloat() / analyzedImageHeight.toFloat()
+
+        val horizontalOffset = 150f
+
+        for (faceRect in latestFaceRects) {
+            val scaledRect = RectF(
+                faceRect.left * widthScale,
+                faceRect.top * heightScale,
+                faceRect.right * widthScale,
+                faceRect.bottom * heightScale
+            )
+
+            val hatWidth = scaledRect.width()
+            val hatHeight = hatBitmap.height * (hatWidth / hatBitmap.width)
+
+            val hatRect = RectF(
+                scaledRect.left + horizontalOffset,
+                scaledRect.top - hatHeight + 50f,
+                scaledRect.right + horizontalOffset,
+                scaledRect.top + 50f
+            )
+
+            canvas.drawBitmap(hatBitmap, null, hatRect, paint)
+        }
+
+        // Sovrascriviamo il file con il bitmap finale già ruotato e con il cappello disegnato
+        val fos = FileOutputStream(photoFile)
+        mutableBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos)
+        fos.flush()
+        fos.close()
+
+        // Aggiorniamo la galleria
+        MediaScannerConnection.scanFile(
+            this,
+            arrayOf(photoFile.absolutePath),
+            null
+        ) { path, uri ->
+            Log.d("FaceActivity", "Scansione completata: $path, uri: $uri")
+        }
+
+        Toast.makeText(this, "Foto salvata", Toast.LENGTH_SHORT).show()
+    }
+
+    // Funzione di supporto per ruotare il bitmap se necessario
+    private fun rotateBitmapIfNeeded(bitmap: Bitmap, orientation: Int): Bitmap {
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+            // ExifInterface.ORIENTATION_NORMAL -> nessuna rotazione
+            else -> return bitmap
+        }
+
+        val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        bitmap.recycle()
+        return rotatedBitmap
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()

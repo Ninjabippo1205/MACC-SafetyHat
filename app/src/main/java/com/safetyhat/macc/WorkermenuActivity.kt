@@ -94,6 +94,8 @@ class WorkermenuActivity : AppCompatActivity() {
                     }
                     R.id.nav_face_worker -> {
                         val intent = Intent(this, FaceActivity::class.java)
+                        intent.putExtra("workerCF", workerCF)
+                        intent.putExtra("siteID", siteID)
                         startActivity(intent)
                         finish()
                     }
