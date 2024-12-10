@@ -46,6 +46,10 @@ class LoginActivity : AppCompatActivity() {
             }
 
             loginButton.setOnClickListener {
+                val intent = Intent(this, ArMeasureActivity::class.java)
+                startActivity(intent)
+                finish()
+/*
                 val cf = cfLogin.text.toString().uppercase()
                 val password = passwordLogin.text.toString()
                 if (cf.isNotEmpty() && password.isNotEmpty()) {
@@ -53,6 +57,7 @@ class LoginActivity : AppCompatActivity() {
                 } else {
                     Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 }
+ */
             }
         } catch (e: Exception) {
             Log.e("LoginActivity", "Error in onCreate: ${e.message}")
