@@ -1,10 +1,18 @@
 package com.safetyhat.macc
 
 import android.annotation.SuppressLint
+import android.app.NotificationManager
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import com.google.ar.core.HitResult
 import com.google.ar.core.Plane
 import com.google.ar.core.TrackingState
@@ -16,15 +24,32 @@ import kotlin.math.*
 
 class ArMeasureActivity : AppCompatActivity() {
     private lateinit var arSceneView: ARSceneView
+    private lateinit var textViewTotalLength: TextView // 1. Dichiarazione del TextView
     private val TAG = "AR_DEBUG"
     private val spherePositions = mutableListOf<Float3>()
+    private var totalLength: Float = 0f // 2. Variabile per il contatore totale
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
+    private val addedNodes = mutableListOf<ModelNode>() // 3. Lista per tracciare le entità aggiunte
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_ar_measure)
 
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.navigation_view_worker)
+        navigationView.itemIconTintList = null
+
+        findViewById<ImageView>(R.id.worker_menu_icon).setOnClickListener {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+
+        val workerCF = intent.getStringExtra("workerCF") ?: ""
+        val siteID = intent.getStringExtra("siteID") ?: ""
+
         arSceneView = findViewById(R.id.ar_scene_view)
+        textViewTotalLength = findViewById(R.id.text_view_total_length)
         configureARSceneView()
 
         arSceneView.setOnTouchListener { _, event ->
@@ -34,6 +59,58 @@ class ArMeasureActivity : AppCompatActivity() {
             true
         }
 
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_home_worker -> {
+                    val intent = Intent(this, WorkermenuActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_account_info_worker -> {
+                    val intent = Intent(this, WorkerinfoActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_site_info_worker -> {
+                    val intent = Intent(this, SiteInfoActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_alert_worker -> {
+                    val intent = Intent(this, AlertActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID)
+                    startActivity(intent)
+                    finish()
+                }
+                R.id.nav_logout_worker -> {
+                    val stopServiceIntent = Intent(this, AlertService::class.java)
+                    stopService(stopServiceIntent)
+
+                    // Cancel all notifications using NotificationManager
+                    val notificationManager = getSystemService(NotificationManager::class.java)
+                    notificationManager?.cancelAll()
+
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            drawerLayout.closeDrawer(GravityCompat.START)
+            true
+        }
+
+        // Inizializza il bottone reset
+        val resetButton: Button = findViewById(R.id.reset_button)
+        resetButton.setOnClickListener {
+            resetARScene()
+        }
     }
 
     private fun configureARSceneView() {
@@ -78,7 +155,7 @@ class ArMeasureActivity : AppCompatActivity() {
     }
 
     private fun placeSphere(position: Float3, planeNormal: Float3) {
-        val filePath = "models/sphere2.glb"
+        val filePath = "models/sphere.glb"
         try {
             arSceneView.modelLoader.loadModelAsync(
                 fileLocation = filePath,
@@ -92,6 +169,7 @@ class ArMeasureActivity : AppCompatActivity() {
                             Log.e(TAG, "Nessuna entità trovata nel modello sfera.")
                         } else {
                             arSceneView.scene?.addEntities(entities)
+                            addedNodes.add(modelNode) // Traccia le entità aggiunte
                             spherePositions.add(position)
                             // Se c'è più di una sfera, disegna il cilindro tra l'ultima e la penultima
                             if (spherePositions.size > 1) {
@@ -99,8 +177,6 @@ class ArMeasureActivity : AppCompatActivity() {
                                 val start = spherePositions[lastIndex - 1]
                                 val end = spherePositions[lastIndex]
                                 placeCylinderBetweenPoints(start, end, planeNormal)
-                                // Calcola la distanza e la logga
-                                val dist = distance(start, end)
                             }
                         }
                     } else {
@@ -164,6 +240,15 @@ class ArMeasureActivity : AppCompatActivity() {
                             Log.e(TAG, "Nessuna entità trovata nel modello cilindro.")
                         } else {
                             arSceneView.scene?.addEntities(entities)
+                            addedNodes.add(modelNode) // Traccia le entità aggiunte
+                            // 4. Aggiornamento del contatore totale
+                            totalLength += length
+                            runOnUiThread {
+                                // Formatta la lunghezza con due decimali
+                                val formattedLength = String.format("%.2f m", totalLength)
+                                textViewTotalLength.text = formattedLength
+                            }
+                            Log.d(TAG, "Lunghezza aggiunta: $length m, Totale: $totalLength m")
                         }
                     } else {
                         Log.e(TAG, "Errore: il modello del cilindro è null.")
@@ -265,5 +350,24 @@ class ArMeasureActivity : AppCompatActivity() {
         val dy = b.y - a.y
         val dz = b.z - a.z
         return sqrt(dx * dx + dy * dy + dz * dz)
+    }
+
+    /**
+     * Metodo per resettare la scena AR.
+     */
+    private fun resetARScene() {
+        runOnUiThread {
+            // Rimuovi da Filament tutte le entità per ogni ModelNode
+            addedNodes.forEach { node ->
+                node.modelInstance?.entities?.forEach { entity ->
+                    arSceneView.scene?.removeEntity(entity)
+                }
+                node.destroy()
+            }
+            addedNodes.clear()
+            spherePositions.clear()
+            totalLength = 0f
+            textViewTotalLength.text = "0.0 m"
+        }
     }
 }

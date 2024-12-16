@@ -13,6 +13,10 @@
         android:icon="@mipmap/crane_foreground"
         android:title="@string/site" />
     <item
+        android:id="@+id/nav_ar_measuring_tool_worker"
+        android:icon="@mipmap/meter_foreground"
+        android:title="@string/ar_measuring_tool" />
+    <item
         android:id="@+id/nav_logout_worker"
         android:icon="@drawable/logout_foreground"
         android:title="@string/logout" />

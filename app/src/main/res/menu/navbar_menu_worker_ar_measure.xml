@@ -6,6 +6,10 @@
         android:icon="@mipmap/safety_hat_big_foreground"
         android:title="@string/home" />
     <item
+        android:id="@+id/nav_account_info_worker"
+        android:icon="@mipmap/head_foreground"
+        android:title="@string/account" />
+    <item
         android:id="@+id/nav_site_info_worker"
         android:icon="@mipmap/crane_foreground"
         android:title="@string/site" />
@@ -13,10 +17,6 @@
         android:id="@+id/nav_alert_worker"
         android:icon="@mipmap/traffic_cone_foreground"
         android:title="@string/alerts" />
-    <item
-        android:id="@+id/nav_ar_measuring_tool_worker"
-        android:icon="@mipmap/meter_foreground"
-        android:title="@string/ar_measuring_tool" />
     <item
         android:id="@+id/nav_logout_worker"
         android:icon="@drawable/logout_foreground"

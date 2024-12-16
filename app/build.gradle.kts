@@ -58,6 +58,7 @@ dependencies {
     implementation("io.github.sceneview:sceneview:2.2.1")
     implementation("io.github.sceneview:arsceneview:2.2.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.0")
+    implementation("io.github.classgraph:classgraph:4.8.157")
 
 
     testImplementation(libs.junit)
