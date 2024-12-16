@@ -1,6 +1,7 @@
 package com.safetyhat.macc
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -75,6 +76,13 @@ class WorkermenuActivity : AppCompatActivity() {
                 when (menuItem.itemId) {
                     R.id.nav_account_info_worker -> {
                         val intent = Intent(this, WorkerinfoActivity::class.java)
+                        intent.putExtra("workerCF", workerCF)
+                        intent.putExtra("siteID", siteID)
+                        startActivity(intent)
+                        finish()
+                    }
+                    R.id.nav_ar_measuring_tool_worker -> {
+                        val intent = Intent(this, ArMeasureActivity::class.java)
                         intent.putExtra("workerCF", workerCF)
                         intent.putExtra("siteID", siteID)
                         startActivity(intent)
@@ -462,6 +470,7 @@ class WorkermenuActivity : AppCompatActivity() {
             return CommunicationViewHolder(view)
         }
 
+        @SuppressLint("ClickableViewAccessibility")
         override fun onBindViewHolder(holder: CommunicationViewHolder, position: Int) {
             val communication = communications[position]
 
@@ -473,6 +482,15 @@ class WorkermenuActivity : AppCompatActivity() {
                 } else {
                     "Timestamp not available"
                 }
+
+            // Aggiungi questo blocco per gestire lo scroll nested
+            holder.itemView.findViewById<ScrollView>(R.id.scrollView2).setOnTouchListener { v, event ->
+                v.parent.requestDisallowInterceptTouchEvent(true)
+                if (event.action == MotionEvent.ACTION_UP) {
+                    v.parent.requestDisallowInterceptTouchEvent(false)
+                }
+                false
+            }
 
             val countUrl =
                 "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communication.communicationID}"
@@ -513,6 +531,7 @@ class WorkermenuActivity : AppCompatActivity() {
                 }
             })
         }
+
 
         override fun getItemCount(): Int = communications.size
 

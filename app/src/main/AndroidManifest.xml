@@ -1,14 +1,10 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.safetyhat.macc">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permessi Esistenti -->
+    <!-- Permessi -->
     <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false"
-        />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -16,11 +12,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-feature android:name="android.hardware.location.gps" />
-    <uses-feature
-        android:name="android.hardware.telephony"
-        android:required="false" />
+    <uses-feature android:name="android.hardware.camera.ar" android:required="true" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
-    <!-- Nuovi Permessi Aggiunti -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
@@ -38,14 +32,18 @@
         <!-- Chiave API per Google Maps -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key"
-            />
+            android:value="@string/google_maps_key" />
         <meta-data
             android:name="com.accuweather.API_KEY"
-            android:value="@string/accuweather_api_key"
-            />
+            android:value="@string/accuweather_api_key" />
 
-        <!-- Dichiarazione delle Activity -->
+        <!-- Correggi il conflitto di com.google.ar.core -->
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="required"
+            tools:replace="android:value" />
+
+        <!-- Activity -->
         <activity
             android:name=".SplashActivity"
             android:theme="@style/Theme.MACC"
@@ -56,13 +54,7 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".MainActivity"
-            android:theme="@style/Theme.MACC"
-            android:exported="false" />
-
-
-        <!-- Altre Activity -->
+        <activity android:name=".MainActivity" android:theme="@style/Theme.MACC" android:exported="false" />
         <activity android:name=".LoginActivity" android:exported="false"/>
         <activity android:name=".RegistrationActivity" android:exported="false"/>
         <activity android:name=".ManagerInfoActivity" android:exported="false"/>
@@ -80,7 +72,7 @@
         <activity android:name=".VerifyCodeActivity" android:exported="false"/>
         <activity android:name=".ResetPasswordActivity" android:exported="false"/>
         <activity android:name=".FaceActivity" android:exported="false"/>
-
+        <activity android:name=".ArMeasureActivity" android:exported="true"/>
         <activity android:name=".FallAlertActivity"
             android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
             android:launchMode="singleTask"
@@ -93,6 +85,5 @@
             android:exported="false"
             android:stopWithTask="true"
             android:foregroundServiceType="location|microphone" />
-
     </application>
 </manifest>

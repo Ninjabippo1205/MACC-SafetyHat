@@ -66,6 +66,13 @@ class SiteInfoActivity : AppCompatActivity() {
                         startActivity(intent)
                         finish()
                     }
+                    R.id.nav_ar_measuring_tool_worker -> {
+                        val intent = Intent(this, ArMeasureActivity::class.java)
+                        intent.putExtra("workerCF", workerCF)
+                        intent.putExtra("siteID", siteID)
+                        startActivity(intent)
+                        finish()
+                    }
                     R.id.nav_logout_worker -> {
                         val stopServiceIntent = Intent(this, AlertService::class.java)
                         stopService(stopServiceIntent)
