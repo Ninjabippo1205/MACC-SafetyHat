@@ -11,6 +11,10 @@
         android:icon="@mipmap/meter_foreground"
         android:title="@string/ar_measuring_tool" />
     <item
+        android:id="@+id/nav_face_worker"
+        android:icon="@mipmap/photo_foreground"
+        android:title="@string/photo" />
+    <item
         android:id="@+id/nav_logout_worker"
         android:icon="@drawable/logout_foreground"
         android:title="@string/logout" />

@@ -30,6 +30,8 @@ cameraViewVersion = "1.3.4"
 cameraCoreVersion = "1.3.4"
 sceneformAndroid = "1.16.0"
 zxingAndroidEmbedded = "4.2.0"
+visionCommon = "17.3.0"
+playServicesMlkitFaceDetection = "17.1.0"
 googleCore = "1.17.1"
 sceneformUx = "1.17.1"
 
@@ -37,7 +39,6 @@ arcore = "1.45.0"
 sceneformBase = "1.17.1"
 material3Android = "1.3.1"
 common = "18.11.0"
-
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -71,6 +72,8 @@ sceneform-android = { module = "com.google.ar.sceneform:sceneform-android", vers
 ux = { module = "dev.romainguy.sceneform:ux", version.ref = "devCore" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "coreVersion" }
+vision-common = { group = "com.google.mlkit", name = "vision-common", version.ref = "visionCommon" }
+play-services-mlkit-face-detection = { group = "com.google.android.gms", name = "play-services-mlkit-face-detection", version.ref = "playServicesMlkitFaceDetection" }
 sceneform-core = { group = "com.google.ar.sceneform", name = "core", version.ref = "googleCore" }
 sceneform-ux = { group = "com.google.ar.sceneform.ux", name = "sceneform-ux", version.ref = "sceneformUx" }
 

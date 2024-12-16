@@ -54,12 +54,16 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle.v110)
     implementation(libs.androidx.camera.core)
 
+    implementation(libs.zxing.core)
+    implementation(libs.zxing.android.embedded)
+    implementation(libs.places)
+    implementation(libs.vision.common)
+    implementation(libs.play.services.mlkit.face.detection)
     implementation("com.google.ar:core:1.45.0")
     implementation("io.github.sceneview:sceneview:2.2.1")
     implementation("io.github.sceneview:arsceneview:2.2.1")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.0")
     implementation("io.github.classgraph:classgraph:4.8.157")
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
