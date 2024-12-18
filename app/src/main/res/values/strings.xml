@@ -12,7 +12,7 @@
     <string name="password_hint">Type the password</string>
     <string name="forgot_password">Forgot password?</string>
     <string name="menù">Menu Icon</string>
-    <string name="site">Sites Info</string>
+    <string name="site">Site Info</string>
     <string name="account">Account Info</string>
     <string name="create_site">Create Site</string>
     <string name="logout">Logout</string>
@@ -80,5 +80,8 @@
     <string name="email">Email</string>
     <string name="verification_code">Insert Verification Code</string>
     <string name="delete_account">Delete Account</string>
+    <string name="photo">Add Photo</string>
+    <string name="picture">Take a Picture</string>
+    <string name="ar_measuring_tool">AR Measuring Tool</string>
 
 </resources>
