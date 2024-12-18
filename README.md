@@ -30,6 +30,12 @@ In addition to managing communications, the app incorporates an advanced alert s
 
 4. **Fall Detection**: SafetyHat leverages the smartphone’s accelerometer and gyroscope to detect sudden movements indicative of a fall. If a fall is detected, the app automatically sends an emergency SMS to all Workers associated with the site. The message includes the GPS coordinates of the Worker involved, enabling swift assistance.
 
+Workers also have access to two additional features:
+
+- **SafetyHat Filter for Photos**: Workers can take photos with a SafetyHat filter that shows the helmet from the SafetyHat logo on their heads. This feature is implemented thanks to a face detection algorithm and 2D graphics tools.
+
+- **Virtual Measuring Tool**: Workers can use an augmented reality-based virtual measuring tool. By pointing their camera on a surface and tapping on the screen to define points, the app calculates and displays the distance between the selected points.
+
 ## Mockups
 
 Below is an image illustrating the application flow and UI design:
