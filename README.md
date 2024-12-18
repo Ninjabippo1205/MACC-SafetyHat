@@ -39,7 +39,7 @@ Workers also have access to two additional features:
 ## Mockups
 
 Below is an image illustrating the application flow and UI design:
-<img src="mokup.png" alt="SafetyHat Mockups" width="60%">
+<img src="SafetyHat Mokup.png" alt="SafetyHat Mockups" width="60%">
 
 SafetyHat has been designed to provide a seamless user experience in both **portrait (vertical)** and **landscape (horizontal)** orientations. This flexibility ensures that the application is usable in various contexts, whether the user is holding their device vertically for quick access or horizontally.
 
