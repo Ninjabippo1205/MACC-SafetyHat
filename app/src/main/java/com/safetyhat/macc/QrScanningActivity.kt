@@ -34,6 +34,13 @@ class QrScanningActivity : AppCompatActivity() {
 
             // Check for camera permission
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+/*
+                val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
+                intent.putExtra("workerCF", workerCF)
+                intent.putExtra("siteID", "64")
+                startActivity(intent)
+                finish()
+*/
                 initializeScanner(workerCF)
             } else {
                 Toast.makeText(this, "Camera permission not granted.", Toast.LENGTH_SHORT).show()

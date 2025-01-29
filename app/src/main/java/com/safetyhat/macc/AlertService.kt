@@ -81,7 +81,7 @@ class AlertService : Service(), SensorEventListener {
     // Alert Management
     private var lastAudioAlertTime: Long = 0
     private var lastAlertTime: Long = 0    // Keeps track of the last time an alert was sent to prevent spamming
-    private val safetyThreshold = 85       // Noise level threshold in decibels for triggering an alert
+    private val safetyThreshold = 75       // Noise level threshold in decibels for triggering an alert
 
     // Fall Detection Thresholds
     private val fallAccelerationThreshold = 2.0
