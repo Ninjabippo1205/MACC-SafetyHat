@@ -127,7 +127,12 @@ class QrScanningActivity : AppCompatActivity() {
 
                     runOnUiThread {
                         if (response.isSuccessful && !jsonObject.has("message")) {
-                            val currentSiteID = jsonObject.optString("SiteCode", "")
+                            var currentSiteID = jsonObject.optString("SiteCode", "")
+
+                            if (currentSiteID == "null") {
+                                currentSiteID = "-1"
+                            }
+
                             if (currentSiteID.isNotEmpty() && currentSiteID.toInt() == siteID) {
                                 val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
                                 intent.putExtra("workerCF", workerCF)
