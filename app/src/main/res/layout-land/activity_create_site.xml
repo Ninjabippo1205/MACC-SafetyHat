@@ -189,7 +189,9 @@
                     android:fontFamily="sans-serif-condensed"
                     android:hint="@string/insert_scaffolding"
                     android:inputType="number"
-                    android:minHeight="48dp" />
+                    android:minHeight="48dp"
+                    android:text="5"
+                    />
 
                 <!-- Site Radius -->
                 <TextView
@@ -210,7 +212,9 @@
                     android:fontFamily="sans-serif-condensed"
                     android:hint="@string/insert_radius"
                     android:inputType="number"
-                    android:minHeight="48dp" />
+                    android:minHeight="48dp"
+                    android:text="5"
+                    />
 
             </LinearLayout>
 
