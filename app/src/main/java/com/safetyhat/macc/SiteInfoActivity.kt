@@ -162,6 +162,7 @@ class SiteInfoActivity : AppCompatActivity() {
                     val jsonObject = JSONObject(responseData ?: "")
 
                     val locationKey = jsonObject.optString("LocationKey", "")
+                    val managerCF = jsonObject.optString("ManagerCF", "")
 
                     runOnUiThread {
                         if (response.isSuccessful && !jsonObject.has("message")) {
@@ -172,7 +173,12 @@ class SiteInfoActivity : AppCompatActivity() {
                             findViewById<TextView>(R.id.scaffolding_number_text).text = jsonObject.optString("ScaffoldingCount", "N/A")
                             findViewById<TextView>(R.id.site_address_text).text = jsonObject.optString("Address", "N/A")
                             findViewById<TextView>(R.id.site_radius_text).text = jsonObject.optString("SiteRadius", "N/A")
-                            findViewById<TextView>(R.id.site_manager_info_text).text = jsonObject.optString("ManagerCF", "N/A")
+
+                            if (managerCF.isNotEmpty()) {
+                                fetchManagerInfo(managerCF)
+                            } else {
+                                findViewById<TextView>(R.id.site_manager_info_text).text = "Manager info not available"
+                            }
 
                             if (locationKey.isNotEmpty()) {
                                 fetchWeatherByCityKey(locationKey)
@@ -187,6 +193,45 @@ class SiteInfoActivity : AppCompatActivity() {
                     Log.e("SiteInfoActivity", "JSON parsing error: ${e.message}")
                     runOnUiThread {
                         Toast.makeText(this@SiteInfoActivity, "Error processing data.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        })
+    }
+
+    private fun fetchManagerInfo(managerCF: String) {
+        val url = "https://NoemiGiustini01.pythonanywhere.com/manager/read?cf=$managerCF"
+        val request = Request.Builder().url(url).get().build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("SiteInfoActivity", "Network error fetching manager info: ${e.message}")
+                runOnUiThread {
+                    Toast.makeText(this@SiteInfoActivity, "Failed to retrieve manager information.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                try {
+                    val responseData = response.body?.string()
+                    val jsonObject = JSONObject(responseData ?: "")
+
+                    runOnUiThread {
+                        if (response.isSuccessful && !jsonObject.has("message")) {
+                            val managerName = jsonObject.optString("FirstName", "N/A")
+                            val managerSurname = jsonObject.optString("LastName", "N/A")
+                            val managerPhone = jsonObject.optString("Telephone", "N/A")
+
+                            val managerInfo = "$managerName $managerSurname - $managerPhone"
+                            findViewById<TextView>(R.id.site_manager_info_text).text = managerInfo
+                        } else {
+                            findViewById<TextView>(R.id.site_manager_info_text).text = "Manager details not found"
+                        }
+                    }
+                } catch (e: JSONException) {
+                    Log.e("SiteInfoActivity", "JSON parsing error in manager info: ${e.message}")
+                    runOnUiThread {
+                        Toast.makeText(this@SiteInfoActivity, "Error processing manager data.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
