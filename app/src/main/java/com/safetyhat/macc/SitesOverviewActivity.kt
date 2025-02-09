@@ -524,7 +524,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                 val siteId = site.id
                 Toast.makeText(context, "Deleting site: $siteId", Toast.LENGTH_SHORT).show()
 
-                val url = "https://noemigiustini01.pythonanywhere.com/site/delete/$siteId"
+                val url = "https://noemigiustini01.pythonanywhere.com/communication/delete_communication_site/$siteId"
                 val request = Request.Builder()
                     .url(url)
                     .delete()
@@ -535,7 +535,7 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                         (context as? Activity)?.runOnUiThread {
                             Toast.makeText(
                                 context,
-                                "Failed to delete site: ${e.localizedMessage}",
+                                "Failed to Site's Communication: ${e.localizedMessage}",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -544,24 +544,57 @@ class SitesOverviewActivity : AppCompatActivity(), OnMapReadyCallback {
                     override fun onResponse(call: Call, response: Response) {
                         (context as? Activity)?.runOnUiThread {
                             if (response.isSuccessful) {
-                                Toast.makeText(
-                                    context,
-                                    "Site deleted successfully",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                val url2 = "https://noemigiustini01.pythonanywhere.com/site/delete/$siteId"
+                                val request2 = Request.Builder()
+                                    .url(url2)
+                                    .delete()
+                                    .build()
 
-                                // Remove the site from the list and update the RecyclerView
-                                val position = holder.adapterPosition
-                                sitesList.removeAt(position)
-                                notifyItemRemoved(position)
-                                notifyItemRangeChanged(position, sitesList.size)
-                                addMarkersToMap()
+                                client.newCall(request2).enqueue(object : Callback {
+                                    override fun onFailure(call: Call, e: IOException) {
+                                        (context as? Activity)?.runOnUiThread {
+                                            Toast.makeText(
+                                                context,
+                                                "Failed to delete site: ${e.localizedMessage}",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+
+                                    override fun onResponse(call: Call, response: Response) {
+                                        (context as? Activity)?.runOnUiThread {
+                                            if (response.isSuccessful) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Site deleted successfully",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+
+                                                // Remove the site from the list and update the RecyclerView
+                                                val position = holder.adapterPosition
+                                                sitesList.removeAt(position)
+                                                notifyItemRemoved(position)
+                                                notifyItemRangeChanged(position, sitesList.size)
+                                                addMarkersToMap()
+                                            } else {
+                                                val errorMessage =
+                                                    response.body?.string() ?: "Unknown error"
+                                                Toast.makeText(
+                                                    context,
+                                                    "Failed to delete site: $errorMessage",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                })
+
                             } else {
                                 val errorMessage =
                                     response.body?.string() ?: "Unknown error"
                                 Toast.makeText(
                                     context,
-                                    "Failed to delete site: $errorMessage",
+                                    "Failed to delete site's communication: $errorMessage",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }

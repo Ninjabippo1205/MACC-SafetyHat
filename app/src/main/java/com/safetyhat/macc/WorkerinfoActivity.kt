@@ -182,50 +182,90 @@ class WorkerinfoActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun deleteAccount(cf: String) {
-        val url = "https://NoemiGiustini01.pythonanywhere.com/worker/delete/$cf"
 
-        val request = Request.Builder()
-            .url(url)
+        val deleteVisualizationsUrl = "https://noemigiustini01.pythonanywhere.com/visualization/delete_all_worker/$cf"
+        val deleteVisualizationsRequest = Request.Builder()
+            .url(deleteVisualizationsUrl)
             .delete()
             .build()
 
-        client.newCall(request).enqueue(object : Callback {
+        client.newCall(deleteVisualizationsRequest).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                Log.e("WorkerinfoActivity", "Failed to delete worker: ${e.message}")
+                Log.e("WorkerinfoActivity", "Error deleting visualization")
                 runOnUiThread {
                     Toast.makeText(
                         this@WorkerinfoActivity,
-                        "Failed to delete worker: ${e.message}",
+                        "Error deleting visualization",
                         Toast.LENGTH_LONG
                     ).show()
                 }
             }
 
             override fun onResponse(call: Call, response: Response) {
-                response.use {
-                    if (!response.isSuccessful) {
-                        val errorBody = response.body?.string()
-                        Log.e("WorkerinfoActivity", "Error deleting worker: $errorBody")
-                        runOnUiThread {
-                            Toast.makeText(
-                                this@WorkerinfoActivity,
-                                "Error deleting worker: $errorBody",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
+                response.use{
+                    if (response.isSuccessful) {
+                        // 2) Se la cancellazione delle visualizzazioni è andata a buon fine,
+                        //    procedo a eliminare la comunicazione
+
+                        val url = "https://NoemiGiustini01.pythonanywhere.com/worker/delete/$cf"
+
+                        val request = Request.Builder()
+                            .url(url)
+                            .delete()
+                            .build()
+
+                        client.newCall(request).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                Log.e("WorkerinfoActivity", "Failed to delete worker: ${e.message}")
+                                runOnUiThread {
+                                    Toast.makeText(
+                                        this@WorkerinfoActivity,
+                                        "Failed to delete worker: ${e.message}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                response.use {
+                                    if (!response.isSuccessful) {
+                                        val errorBody = response.body?.string()
+                                        Log.e("WorkerinfoActivity", "Error deleting worker: $errorBody")
+                                        runOnUiThread {
+                                            Toast.makeText(
+                                                this@WorkerinfoActivity,
+                                                "Error deleting worker: $errorBody",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                    } else {
+                                        runOnUiThread {
+                                            Toast.makeText(
+                                                this@WorkerinfoActivity,
+                                                "Worker deleted successfully",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                            // Navigate to MainActivity after successful deletion
+                                            val intent = Intent(this@WorkerinfoActivity, MainActivity::class.java)
+                                            startActivity(intent)
+                                            finish()
+                                        }
+                                    }
+                                }
+                            }
+                        })
                     } else {
+                        val errorBody = response.body?.string()
+                        Log.e("WorkerinfoActivity", "Error deleting visualization: $errorBody")
                         runOnUiThread {
                             Toast.makeText(
                                 this@WorkerinfoActivity,
-                                "Worker deleted successfully",
+                                "Error deleting visualization: $errorBody",
                                 Toast.LENGTH_LONG
                             ).show()
-                            // Navigate to MainActivity after successful deletion
-                            val intent = Intent(this@WorkerinfoActivity, MainActivity::class.java)
-                            startActivity(intent)
-                            finish()
                         }
                     }
+
                 }
             }
         })

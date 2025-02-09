@@ -89,6 +89,13 @@ class ArMeasureActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 }
+                R.id.nav_face_worker -> {
+                    val intent = Intent(this, FaceActivity::class.java)
+                    intent.putExtra("workerCF", workerCF)
+                    intent.putExtra("siteID", siteID)
+                    startActivity(intent)
+                    finish()
+                }
                 R.id.nav_logout_worker -> {
                     val stopServiceIntent = Intent(this, AlertService::class.java)
                     stopService(stopServiceIntent)
