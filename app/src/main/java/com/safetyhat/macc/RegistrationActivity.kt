@@ -65,6 +65,19 @@ class RegistrationActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        navigateBack()
+    }
+
+    private fun navigateBack() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        startActivity(intent)
+        finish()
+    }
+
     private fun showDatePickerDialog(birthdateField: EditText) {
         val calendar = Calendar.getInstance()
 

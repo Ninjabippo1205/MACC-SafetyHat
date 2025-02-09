@@ -82,6 +82,23 @@ class FaceActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val workerCF = intent.getStringExtra("workerCF") ?: ""
+        val siteID = intent.getStringExtra("siteID") ?: ""
+        navigateBack(workerCF, siteID)
+    }
+
+    private fun navigateBack(workerCF: String, siteID: String) {
+        val intent = Intent(this, WorkermenuActivity::class.java)
+        intent.putExtra("workerCF", workerCF)
+        intent.putExtra("siteID", siteID)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        startActivity(intent)
+        finish()
+    }
+
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 

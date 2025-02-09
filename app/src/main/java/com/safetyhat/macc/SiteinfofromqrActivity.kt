@@ -77,6 +77,21 @@ class SiteinfofromqrActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val workerCF = intent.getStringExtra("workerCF") ?: ""
+        navigateBack(workerCF)
+    }
+
+    private fun navigateBack(workerCF: String) {
+        val intent = Intent(this, QrScanningActivity::class.java)
+        intent.putExtra("workerCF", workerCF)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        startActivity(intent)
+        finish()
+    }
+
     private fun verifySecurityCode(workerCF: String, siteID: Int, sc: String) {
         val url = "https://NoemiGiustini01.pythonanywhere.com/site/read_security_code?id=$siteID"
         val request = Request.Builder().url(url).get().build()
