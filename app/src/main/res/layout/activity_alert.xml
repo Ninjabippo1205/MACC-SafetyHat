@@ -29,7 +29,7 @@
         <LinearLayout
             android:id="@+id/alert_container"
             android:layout_width="350dp"
-            android:layout_height="500dp"
+            android:layout_height="530dp"
             android:layout_marginStart="5dp"
             android:layout_marginTop="190dp"
             android:layout_marginEnd="6dp"
@@ -53,8 +53,8 @@
 
             <ScrollView
                 android:id="@+id/scrollView_alert"
-                android:layout_width="350dp"
-                android:layout_height="500dp"
+                android:layout_width="340dp"
+                android:layout_height="480dp"
                 android:layout_marginStart="5dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="5dp"
