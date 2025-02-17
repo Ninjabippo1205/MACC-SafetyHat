@@ -34,6 +34,13 @@ class QrScanningActivity : AppCompatActivity() {
 
             // Check for camera permission
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+/*
+                val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
+                intent.putExtra("workerCF", workerCF)
+                intent.putExtra("siteID", "64")
+                startActivity(intent)
+                finish()
+*/
                 initializeScanner(workerCF)
             } else {
                 Toast.makeText(this, "Camera permission not granted.", Toast.LENGTH_SHORT).show()
@@ -44,6 +51,19 @@ class QrScanningActivity : AppCompatActivity() {
             Toast.makeText(this, "An error occurred.", Toast.LENGTH_SHORT).show()
             finish()
         }
+    }
+
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        navigateBack()
+    }
+
+    private fun navigateBack() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        startActivity(intent)
+        finish()
     }
 
     // Initialize the CodeScanner
@@ -120,7 +140,12 @@ class QrScanningActivity : AppCompatActivity() {
 
                     runOnUiThread {
                         if (response.isSuccessful && !jsonObject.has("message")) {
-                            val currentSiteID = jsonObject.optString("SiteCode", "")
+                            var currentSiteID = jsonObject.optString("SiteCode", "")
+
+                            if (currentSiteID == "null") {
+                                currentSiteID = "-1"
+                            }
+
                             if (currentSiteID.isNotEmpty() && currentSiteID.toInt() == siteID) {
                                 val intent = Intent(this@QrScanningActivity, WorkermenuActivity::class.java)
                                 intent.putExtra("workerCF", workerCF)

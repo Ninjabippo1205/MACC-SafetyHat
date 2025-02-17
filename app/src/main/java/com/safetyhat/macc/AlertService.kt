@@ -81,7 +81,7 @@ class AlertService : Service(), SensorEventListener {
     // Alert Management
     private var lastAudioAlertTime: Long = 0
     private var lastAlertTime: Long = 0    // Keeps track of the last time an alert was sent to prevent spamming
-    private val safetyThreshold = 85       // Noise level threshold in decibels for triggering an alert
+    private val safetyThreshold = 70       // Noise level threshold in decibels for triggering an alert
 
     // Fall Detection Thresholds
     private val fallAccelerationThreshold = 2.0
@@ -517,7 +517,7 @@ class AlertService : Service(), SensorEventListener {
         if (ice > 2.0) {
             alerts.add("High ice: $ice mm.\nBe cautious of icy roads." to R.mipmap.ice_alert_foreground)
         }
-        if (windSpeed > 10.0) {
+        if (windSpeed > 5.0) {
             alerts.add("High wind speed: $windSpeed km/h.\nSecure exposed areas and be cautious." to R.mipmap.wind_alert_foreground)
         }
         if (maxTemp > 30.0) {

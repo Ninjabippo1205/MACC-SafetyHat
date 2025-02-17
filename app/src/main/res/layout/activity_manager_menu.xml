@@ -171,7 +171,7 @@
             android:id="@+id/create_site_title2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="70dp"
             android:fontFamily="sans-serif-condensed"
             android:gravity="center"
             android:text="@string/communications"

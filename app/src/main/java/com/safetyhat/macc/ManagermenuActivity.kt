@@ -32,13 +32,17 @@ import android.widget.ScrollView
 import android.widget.Spinner
 
 class ManagermenuActivity : AppCompatActivity() {
+
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navigationView: NavigationView
     private val client = OkHttpClient()
 
     private lateinit var communicationsRecyclerView: RecyclerView
     private lateinit var communicationsAdapter: CommunicationsAdapter
+
+    // Lista mutabile (necessaria per poter rimuovere items dopo la DELETE)
     private val communicationsList = mutableListOf<Communication>()
+
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
 
@@ -47,17 +51,19 @@ class ManagermenuActivity : AppCompatActivity() {
         try {
             setContentView(R.layout.activity_manager_menu)
 
+            // Drawer layout e navigation view
             drawerLayout = findViewById(R.id.drawer_layout)
             navigationView = findViewById(R.id.navigation_view_manager)
             navigationView.itemIconTintList = null
 
+            // Icona del menù laterale
             findViewById<ImageView>(R.id.manager_menu_icon).setOnClickListener {
                 drawerLayout.openDrawer(GravityCompat.START)
             }
 
             val managerCF = intent.getStringExtra("managerCF") ?: ""
 
-            // Impostazioni della navigazione tramite il menu
+            // Gestione selezione item nel navigation drawer
             navigationView.setNavigationItemSelectedListener { menuItem ->
                 when (menuItem.itemId) {
                     R.id.nav_account_info_manager -> {
@@ -76,7 +82,7 @@ class ManagermenuActivity : AppCompatActivity() {
                 true
             }
 
-            // Inizializza gli elementi dell'interfaccia e imposta i listener
+            // Collego alcuni campi e bottoni
             val sitesInfoText = findViewById<LinearLayout>(R.id.sites_manager_info_field)
             val alertsText = findViewById<LinearLayout>(R.id.alerts_field)
 
@@ -94,11 +100,15 @@ class ManagermenuActivity : AppCompatActivity() {
                 finish()
             }
 
-            fetchSites(managerCF)
+            // Spinner dei SiteID e campo di testo per la comunicazione
             val communicationTextField = findViewById<TextView>(R.id.communication_text)
             val siteIDField = findViewById<Spinner>(R.id.site_id_spinner)
             val submitButton = findViewById<Button>(R.id.send_communication_button)
 
+            // Prima carico i site id
+            fetchSites(managerCF)
+
+            // Listener per il bottone di invio comunicazione
             submitButton.setOnClickListener {
                 val communicationText = communicationTextField.text.toString()
                 val siteID = siteIDField.selectedItem.toString()
@@ -110,15 +120,17 @@ class ManagermenuActivity : AppCompatActivity() {
                 }
             }
 
+            // Configurazione della RecyclerView
             communicationsRecyclerView = findViewById(R.id.communications_recycler_view)
             communicationsRecyclerView.layoutManager = LinearLayoutManager(this)
+
+            // Istanzio l'adapter, passandogli la lista mutabile
             communicationsAdapter = CommunicationsAdapter(communicationsList)
             communicationsRecyclerView.isNestedScrollingEnabled = true
             communicationsRecyclerView.adapter = communicationsAdapter
 
+            // Setup Handler e Runnable per fetchare periodicamente le comunicazioni
             handler = Handler(mainLooper)
-
-            // Definisci il runnable
             runnable = object : Runnable {
                 override fun run() {
                     try {
@@ -128,12 +140,12 @@ class ManagermenuActivity : AppCompatActivity() {
                     } catch (e: Exception) {
                         Log.e("ManagermenuActivity", "Error in fetchCommunications: ${e.message}")
                     } finally {
-                        handler.postDelayed(this, 10000)
+                        handler.postDelayed(this, 10000) // ogni 10 secondi
                     }
                 }
             }
-
             handler.post(runnable)
+
         } catch (e: Exception) {
             Log.e("ManagermenuActivity", "Error in onCreate: ${e.message}")
             Toast.makeText(this, "An error occurred during initialization.", Toast.LENGTH_SHORT).show()
@@ -141,6 +153,22 @@ class ManagermenuActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        navigateBack()
+    }
+
+    private fun navigateBack() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        startActivity(intent)
+        finish()
+    }
+
+    /**
+     * Effettua il fetch di tutte le comunicazioni associate al Manager
+     */
     private fun fetchCommunications(managerCF: String) {
         val url = "https://noemigiustini01.pythonanywhere.com/communication/read_all?CF=$managerCF"
         val request = Request.Builder().url(url).build()
@@ -166,16 +194,24 @@ class ManagermenuActivity : AppCompatActivity() {
                             val siteID = communicationJson.getInt("SiteID")
                             val timestamp = communicationJson.getString("Timestamp")
 
-                            val communication = Communication(text, 0, communicationID, siteID, timestamp)
+                            val communication = Communication(
+                                message = text,
+                                thumbsUpCount = 0,
+                                communicationID = communicationID,
+                                siteID = siteID,
+                                timestamp = timestamp
+                            )
                             newCommunicationsList.add(communication)
                         }
 
                         runOnUiThread {
                             updateCommunicationsList(newCommunicationsList)
                         }
+
                     } ?: runOnUiThread {
                         updateCommunicationsList(emptyList())
                     }
+
                 } catch (e: JSONException) {
                     Log.e("ManagermenuActivity", "JSON parsing error: ${e.message}")
                     runOnUiThread {
@@ -188,9 +224,13 @@ class ManagermenuActivity : AppCompatActivity() {
         })
     }
 
+    /**
+     * Aggiorna la lista della RecyclerView (aggiunge o sostituisce comunicazioni)
+     */
     private fun updateCommunicationsList(newCommunications: List<Communication>) {
         val noCommunicationsText = findViewById<TextView>(R.id.no_communications_text)
 
+        // Se non ci sono comunicazioni, mostro la scritta e nascondo la RecyclerView
         if (newCommunications.isEmpty()) {
             noCommunicationsText.visibility = View.VISIBLE
             communicationsRecyclerView.visibility = View.GONE
@@ -200,14 +240,17 @@ class ManagermenuActivity : AppCompatActivity() {
 
             val existingIds = communicationsList.map { it.communicationID }.toSet()
 
+            // Aggiunge o aggiorna le comunicazioni
             newCommunications.forEach { newCommunication ->
                 if (existingIds.contains(newCommunication.communicationID)) {
+                    // Se esiste già, la sostituisco
                     val index = communicationsList.indexOfFirst { it.communicationID == newCommunication.communicationID }
                     if (index != -1) {
                         communicationsList[index] = newCommunication
                         communicationsAdapter.notifyItemChanged(index)
                     }
                 } else {
+                    // Se non esiste, la aggiungo
                     communicationsList.add(newCommunication)
                     communicationsAdapter.notifyItemInserted(communicationsList.size - 1)
                 }
@@ -215,6 +258,9 @@ class ManagermenuActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Effettua il fetch di tutti i SiteID gestiti dal Manager (per popolare lo spinner)
+     */
     private fun fetchSites(managerCF: String) {
         val url = "https://noemigiustini01.pythonanywhere.com/site/read_all?CF=$managerCF"
         val request = Request.Builder().url(url).build()
@@ -238,9 +284,14 @@ class ManagermenuActivity : AppCompatActivity() {
                             siteIds.add(site.getString("ID"))
                         }
 
+                        // Aggiorno lo spinner nella UI thread
                         runOnUiThread {
                             val siteIDField = findViewById<Spinner>(R.id.site_id_spinner)
-                            val adapter = ArrayAdapter(this@ManagermenuActivity, android.R.layout.simple_spinner_item, siteIds)
+                            val adapter = ArrayAdapter(
+                                this@ManagermenuActivity,
+                                android.R.layout.simple_spinner_item,
+                                siteIds
+                            )
                             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                             siteIDField.adapter = adapter
                         }
@@ -257,6 +308,9 @@ class ManagermenuActivity : AppCompatActivity() {
         })
     }
 
+    /**
+     * Invia una nuova comunicazione (POST)
+     */
     private fun createCommunication(text: String, managerCF: String, siteID: String) {
         val url = "https://noemigiustini01.pythonanywhere.com/communication/create"
         val json = JSONObject()
@@ -266,7 +320,12 @@ class ManagermenuActivity : AppCompatActivity() {
 
         val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
 
-        client.newCall(Request.Builder().url(url).post(requestBody).build()).enqueue(object : Callback {
+        client.newCall(
+            Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build()
+        ).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("ManagermenuActivity", "Failed to create communication: ${e.message}")
                 runOnUiThread {
@@ -278,6 +337,8 @@ class ManagermenuActivity : AppCompatActivity() {
                 runOnUiThread {
                     if (response.isSuccessful) {
                         Toast.makeText(this@ManagermenuActivity, "Communication created successfully!", Toast.LENGTH_SHORT).show()
+
+                        // Ricarico la stessa activity per vedere l'aggiornamento
                         val intent = Intent(this@ManagermenuActivity, ManagermenuActivity::class.java)
                         intent.putExtra("managerCF", managerCF)
                         startActivity(intent)
@@ -291,6 +352,7 @@ class ManagermenuActivity : AppCompatActivity() {
         })
     }
 
+    // -- Data class che rappresenta una comunicazione
     data class Communication(
         val message: String,
         val thumbsUpCount: Int,
@@ -299,8 +361,14 @@ class ManagermenuActivity : AppCompatActivity() {
         val timestamp: String
     )
 
-    class CommunicationsAdapter(private val communications: List<Communication>) :
-        RecyclerView.Adapter<CommunicationsAdapter.CommunicationViewHolder>() {
+    /**
+     * Adapter delle comunicazioni con logica di rimozione (DELETE) integrata sul binButton.
+     * Si usa un MutableList<Communication> per poter rimuovere item dal dataset.
+     */
+    class CommunicationsAdapter(
+        private val communications: MutableList<Communication>
+    ) : RecyclerView.Adapter<CommunicationsAdapter.CommunicationViewHolder>() {
+
         private val client = OkHttpClient()
 
         inner class CommunicationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -308,6 +376,8 @@ class ManagermenuActivity : AppCompatActivity() {
             val thumbsUpIcon: ImageView = view.findViewById(R.id.thumbs_up_icon)
             val viewCountTextView: TextView = view.findViewById(R.id.view_count_text_view)
             val siteIDTextView: TextView = view.findViewById(R.id.siteID_text_view)
+            val timestampTextView: TextView = view.findViewById(R.id.timestamp_text_view)
+            val binButton: Button = view.findViewById(R.id.bin)  // Pulsante "cestino"
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommunicationViewHolder {
@@ -320,11 +390,12 @@ class ManagermenuActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: CommunicationViewHolder, position: Int) {
             val communication = communications[position]
 
+            // Popolo i campi
             holder.communicationTextView.text = communication.message
             holder.siteIDTextView.text = "Site ${communication.siteID}"
-            holder.itemView.findViewById<TextView>(R.id.timestamp_text_view).text = communication.timestamp
+            holder.timestampTextView.text = communication.timestamp
 
-            // Abilita lo scroll solo quando l'utente interagisce con la ScrollView interna
+            // Abilita lo scroll solo quando l'utente tocca la ScrollView
             holder.itemView.findViewById<ScrollView>(R.id.scrollView2).setOnTouchListener { v, event ->
                 v.parent.requestDisallowInterceptTouchEvent(true)
                 if (event.action == MotionEvent.ACTION_UP) {
@@ -333,6 +404,7 @@ class ManagermenuActivity : AppCompatActivity() {
                 false
             }
 
+            // Carico il numero di visualizzazioni da un endpoint dedicato (opzionale)
             val countUrl = "https://noemigiustini01.pythonanywhere.com/visualization/count?CommunicationID=${communication.communicationID}"
             val countRequest = Request.Builder().url(countUrl).build()
 
@@ -363,10 +435,93 @@ class ManagermenuActivity : AppCompatActivity() {
                     }
                 }
             })
-        }
 
+            // Clic sul pulsante "cestino" -> prima cancello le visualizzazioni, poi la comunicazione
+            holder.binButton.setOnClickListener {
+                val context = holder.itemView.context
+                val communicationId = communication.communicationID
+
+                // 1) Chiamata DELETE per eliminare tutte le visualizzazioni di questa comunicazione
+                val deleteVisualizationsUrl = "https://noemigiustini01.pythonanywhere.com/visualization/delete_all/$communicationId"
+                val deleteVisualizationsRequest = Request.Builder()
+                    .url(deleteVisualizationsUrl)
+                    .delete()
+                    .build()
+
+                client.newCall(deleteVisualizationsRequest).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        (context as? AppCompatActivity)?.runOnUiThread {
+                            Toast.makeText(
+                                context,
+                                "Errore cancellazione visualizzazioni: ${e.localizedMessage}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        (context as? AppCompatActivity)?.runOnUiThread {
+                            if (response.isSuccessful) {
+                                // 2) Se la cancellazione delle visualizzazioni è andata a buon fine,
+                                //    procedo a eliminare la comunicazione
+                                val deleteCommunicationUrl = "https://noemigiustini01.pythonanywhere.com/communication/delete/$communicationId"
+                                val deleteCommunicationRequest = Request.Builder()
+                                    .url(deleteCommunicationUrl)
+                                    .delete()
+                                    .build()
+
+                                client.newCall(deleteCommunicationRequest).enqueue(object : Callback {
+                                    override fun onFailure(call: Call, e: IOException) {
+                                        (context as? AppCompatActivity)?.runOnUiThread {
+                                            Toast.makeText(
+                                                context,
+                                                "Errore cancellazione comunicazione: ${e.localizedMessage}",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+
+                                    override fun onResponse(call: Call, response: Response) {
+                                        (context as? AppCompatActivity)?.runOnUiThread {
+                                            if (response.isSuccessful) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Comunicazione cancellata con successo",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+
+                                                // Rimuovo dalla lista e aggiorno la RecyclerView
+                                                val positionInAdapter = holder.adapterPosition
+                                                if (positionInAdapter != RecyclerView.NO_POSITION) {
+                                                    communications.removeAt(positionInAdapter)
+                                                    notifyItemRemoved(positionInAdapter)
+                                                    notifyItemRangeChanged(positionInAdapter, communications.size)
+                                                }
+                                            } else {
+                                                val errorMessage = response.body?.string() ?: "Unknown error"
+                                                Toast.makeText(
+                                                    context,
+                                                    "Impossibile cancellare la comunicazione: $errorMessage",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                })
+                            } else {
+                                val errorMessage = response.body?.string() ?: "Unknown error"
+                                Toast.makeText(
+                                    context,
+                                    "Impossibile cancellare visualizzazioni: $errorMessage",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                })
+            }
+        }
 
         override fun getItemCount(): Int = communications.size
     }
-
 }

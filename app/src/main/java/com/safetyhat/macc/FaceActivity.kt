@@ -82,6 +82,23 @@ class FaceActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val workerCF = intent.getStringExtra("workerCF") ?: ""
+        val siteID = intent.getStringExtra("siteID") ?: ""
+        navigateBack(workerCF, siteID)
+    }
+
+    private fun navigateBack(workerCF: String, siteID: String) {
+        val intent = Intent(this, WorkermenuActivity::class.java)
+        intent.putExtra("workerCF", workerCF)
+        intent.putExtra("siteID", siteID)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        startActivity(intent)
+        finish()
+    }
+
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
@@ -211,35 +228,30 @@ class FaceActivity : AppCompatActivity() {
     }
 
     private fun addHatsToImage(photoFile: File) {
-        // Carichiamo il bitmap originale
         val originalBitmap = BitmapFactory.decodeFile(photoFile.absolutePath) ?: run {
             Toast.makeText(this, "Impossibile caricare l'immagine salvata", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Leggiamo l'orientamento EXIF
         val exif = ExifInterface(photoFile.absolutePath)
         val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-
-        // Ruotiamo il bitmap se necessario
         val correctedBitmap = rotateBitmapIfNeeded(originalBitmap, orientation)
 
         val mutableBitmap = correctedBitmap.copy(Bitmap.Config.ARGB_8888, true)
         val canvas = Canvas(mutableBitmap)
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
         val hatBitmap = BitmapFactory.decodeResource(resources, R.drawable.hard_hat)
 
-        // Dimensioni dell'immagine finale (dopo la rotazione)
+        // Dimensioni dell'immagine finale
         val finalWidth = mutableBitmap.width
         val finalHeight = mutableBitmap.height
 
+        // Calcola i fattori di scala dalle dimensioni analizzate a quelle finali
         val widthScale = finalWidth.toFloat() / analyzedImageWidth.toFloat()
         val heightScale = finalHeight.toFloat() / analyzedImageHeight.toFloat()
 
-        val horizontalOffset = 150f
-
         for (faceRect in latestFaceRects) {
+            // Scala il rettangolo della faccia
             val scaledRect = RectF(
                 faceRect.left * widthScale,
                 faceRect.top * heightScale,
@@ -247,26 +259,30 @@ class FaceActivity : AppCompatActivity() {
                 faceRect.bottom * heightScale
             )
 
-            val hatWidth = scaledRect.width()
+            // Calcola il centro della faccia
+            val faceCenterX = scaledRect.left + (scaledRect.width() / 2)
+
+            // Riduci la larghezza del cappellino (modifica il fattore se necessario)
+            val hatScaleFactor = 0.8f
+            val hatWidth = scaledRect.width() * hatScaleFactor
             val hatHeight = hatBitmap.height * (hatWidth / hatBitmap.width)
 
-            val hatRect = RectF(
-                scaledRect.left + horizontalOffset,
-                scaledRect.top - hatHeight + 50f,
-                scaledRect.right + horizontalOffset,
-                scaledRect.top + 50f
-            )
+            // Posiziona il cappellino centrato, poi applica un offset per spostarlo a destra
+            val horizontalOffset = 180f  // Aumenta questo valore se vuoi spostarlo ulteriormente a destra
+            val verticalOffset = 150f
+            val hatLeft = faceCenterX - (hatWidth / 2) + horizontalOffset
+            val hatTop = scaledRect.top - hatHeight + verticalOffset
+
+            val hatRect = RectF(hatLeft, hatTop, hatLeft + hatWidth, hatTop + hatHeight)
 
             canvas.drawBitmap(hatBitmap, null, hatRect, paint)
         }
 
-        // Sovrascriviamo il file con il bitmap finale già ruotato e con il cappello disegnato
         val fos = FileOutputStream(photoFile)
         mutableBitmap.compress(Bitmap.CompressFormat.JPEG, 90, fos)
         fos.flush()
         fos.close()
 
-        // Aggiorniamo la galleria
         MediaScannerConnection.scanFile(
             this,
             arrayOf(photoFile.absolutePath),
@@ -277,6 +293,8 @@ class FaceActivity : AppCompatActivity() {
 
         Toast.makeText(this, "Foto salvata", Toast.LENGTH_SHORT).show()
     }
+
+
 
     // Funzione di supporto per ruotare il bitmap se necessario
     private fun rotateBitmapIfNeeded(bitmap: Bitmap, orientation: Int): Bitmap {

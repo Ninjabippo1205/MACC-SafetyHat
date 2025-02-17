@@ -179,6 +179,7 @@
                     android:hint="@string/insert_max_workers"
                     android:inputType="number"
                     android:minHeight="48dp"
+                    android:text="5"
                 />
 
                 <!-- N° Scaffolding -->
@@ -202,6 +203,7 @@
                     android:hint="@string/insert_scaffolding"
                     android:inputType="number"
                     android:minHeight="48dp"
+                    android:text="5"
                 />
 
                 <!-- Site Radius -->
@@ -225,6 +227,7 @@
                     android:hint="@string/insert_radius"
                     android:inputType="number"
                     android:minHeight="48dp"
+                    android:text="300"
                 />
 
             </LinearLayout>

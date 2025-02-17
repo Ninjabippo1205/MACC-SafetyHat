@@ -22,7 +22,7 @@
 
     <TextView
         android:id="@+id/forgot_password_title"
-        android:layout_width="350dp"
+        android:layout_width="400dp"
         android:layout_height="92dp"
         android:layout_marginTop="52dp"
         android:fontFamily="sans-serif-condensed-light"

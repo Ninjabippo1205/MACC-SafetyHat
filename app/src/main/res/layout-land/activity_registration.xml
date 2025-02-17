@@ -103,7 +103,9 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_email"
                 android:inputType="textEmailAddress"
-                android:minHeight="48dp" />
+                android:minHeight="48dp"
+                android:text="ludovicagarufi9@gmail.com"
+                />
             <!-- First Name -->
             <TextView
                 android:id="@+id/first_name_registration_label"
@@ -122,7 +124,9 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_first_name"
                 android:inputType="text"
-                android:minHeight="48dp" />
+                android:minHeight="48dp"
+                android:text="Ludovica"
+                />
 
             <!-- Last Name -->
             <TextView
@@ -143,7 +147,9 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_last_name"
                 android:inputType="text"
-                android:minHeight="48dp" />
+                android:minHeight="48dp"
+                android:text="Garufi"
+                />
 
             <!-- Birthdate -->
             <TextView
@@ -167,7 +173,9 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_birthdate"
                 android:inputType="date"
-                android:minHeight="48dp" />
+                android:minHeight="48dp"
+                android:text="09/06/2002"
+                />
 
 
             <TextView
@@ -188,7 +196,9 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_cf"
                 android:inputType="text"
-                android:minHeight="48dp" />
+                android:minHeight="48dp"
+                android:text="GRFLVC01H49C351K"
+                />
 
             <!-- Phone Number -->
             <TextView
@@ -209,7 +219,9 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_telephone"
                 android:inputType="phone"
-                android:minHeight="48dp" />
+                android:minHeight="48dp"
+                android:text="3272914740"
+                />
 
             <!-- Password -->
             <TextView
@@ -230,7 +242,9 @@
                 android:fontFamily="sans-serif-condensed"
                 android:hint="@string/hint_password"
                 android:inputType="textPassword"
-                android:minHeight="48dp" />
+                android:minHeight="48dp"
+                android:text="Ci@o2001"
+                />
 
         </LinearLayout>
     </ScrollView>
