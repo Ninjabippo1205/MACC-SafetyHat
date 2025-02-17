@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/drawer_layout"
+    android:orientation="horizontal">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#E0E0E0">
+
+        <ImageView
+            android:id="@+id/worker_menu_icon"
+            android:layout_width="72dp"
+            android:layout_height="67dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:contentDescription="@string/menù"
+            android:foregroundGravity="top|left"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/menu_foreground" />
+
+        <LinearLayout
+            android:id="@+id/alert_container"
+            android:layout_width="350dp"
+            android:layout_height="530dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="190dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/rounded_background"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- TextView per mostrare le informazioni meteo riassuntive -->
+            <TextView
+                android:id="@+id/weather_summary_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:text="Alerts Overview"
+                android:textAlignment="center"
+                android:textColor="#2C2C2C"
+                android:textSize="18sp" /> <!-- Testo segnaposto -->
+
+            <ScrollView
+                android:id="@+id/scrollView_alert"
+                android:layout_width="340dp"
+                android:layout_height="480dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginBottom="10dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/alert_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/rounded_background" />
+            </ScrollView>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="84dp"
+            android:layout_marginEnd="24dp"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:text="@string/alerts"
+            android:textColor="@color/black"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/separator_line"
+            android:layout_width="130dp"
+            android:layout_height="1dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="100dp"
+            android:background="#2C2C2C"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigation_view_worker"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:itemIconSize="100dp"
+        app:itemTextAppearance="@style/NavMenuTextAppearance"
+        app:menu="@menu/navbar_menu_worker_alerts" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

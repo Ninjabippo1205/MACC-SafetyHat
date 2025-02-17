@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_account_info_worker"
+        android:icon="@mipmap/head_foreground"
+        android:title="@string/account" />
+    <!-- TODO: add a logo for AR Measure Tool -->
+    <item
+        android:id="@+id/nav_ar_measuring_tool_worker"
+        android:icon="@mipmap/meter_foreground"
+        android:title="@string/ar_measuring_tool" />
+    <item
+        android:id="@+id/nav_face_worker"
+        android:icon="@mipmap/photo_foreground"
+        android:title="@string/photo" />
+    <item
+        android:id="@+id/nav_logout_worker"
+        android:icon="@drawable/logout_foreground"
+        android:title="@string/logout" />
+</menu>

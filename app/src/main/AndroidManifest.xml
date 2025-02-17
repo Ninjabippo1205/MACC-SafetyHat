@@ -1,5 +1,23 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permessi -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-feature android:name="android.hardware.location.gps" />
+    <uses-feature android:name="android.hardware.camera.ar" android:required="true" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
     <application
         android:allowBackup="true"
@@ -9,9 +27,23 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/safety_hat_foreground"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MACC"> <!-- Usa il tema corretto -->
+        android:theme="@style/Theme.MACC">
 
-        <!-- SplashActivity sarà l'unica con MAIN e LAUNCHER -->
+        <!-- Chiave API per Google Maps -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+        <meta-data
+            android:name="com.accuweather.API_KEY"
+            android:value="@string/accuweather_api_key" />
+
+        <!-- Correggi il conflitto di com.google.ar.core -->
+        <meta-data
+            android:name="com.google.ar.core"
+            android:value="required"
+            tools:replace="android:value" />
+
+        <!-- Activity -->
         <activity
             android:name=".SplashActivity"
             android:theme="@style/Theme.MACC"
@@ -22,12 +54,36 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".MainActivity"
-            android:theme="@style/Theme.MACC"
-            android:exported="true">
-        </activity>
+        <activity android:name=".MainActivity" android:theme="@style/Theme.MACC" android:exported="false" />
+        <activity android:name=".LoginActivity" android:exported="false"/>
+        <activity android:name=".RegistrationActivity" android:exported="false"/>
+        <activity android:name=".ManagerInfoActivity" android:exported="false"/>
+        <activity android:name=".ManagermenuActivity" android:exported="false"/>
+        <activity android:name=".WorkermenuActivity" android:exported="false"/>
+        <activity android:name=".CreatesiteActivity" android:exported="false"/>
+        <activity android:name=".SiteInfoActivity" android:exported="false"/>
+        <activity android:name=".QrScanningActivity" android:exported="false"/>
+        <activity android:name=".SiteinfofromqrActivity" android:exported="false"/>
+        <activity android:name=".QRGenerationActivity" android:exported="false"/>
+        <activity android:name=".SitesOverviewActivity" android:exported="false"/>
+        <activity android:name=".WorkerinfoActivity" android:exported="false"/>
+        <activity android:name=".AlertActivity" android:exported="false"/>
+        <activity android:name=".ForgotPasswordActivity" android:exported="false"/>
+        <activity android:name=".VerifyCodeActivity" android:exported="false"/>
+        <activity android:name=".ResetPasswordActivity" android:exported="false"/>
+        <activity android:name=".FaceActivity" android:exported="false"/>
+        <activity android:name=".ArMeasureActivity" android:exported="true"/>
+        <activity android:name=".FallAlertActivity"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+            android:launchMode="singleTask"
+            android:exported="false" />
 
-
+        <!-- Dichiarazione del Servizio -->
+        <service
+            android:name=".AlertService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="true"
+            android:foregroundServiceType="location|microphone" />
     </application>
 </manifest>

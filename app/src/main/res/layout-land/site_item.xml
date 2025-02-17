@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:orientation="horizontal"
+    app:cardCornerRadius="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:elevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="2dp">
+
+            <TextView
+                android:id="@+id/site_id_label"
+                android:layout_width="102dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/site_id"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/siteID"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="#2C2C2C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="2dp">
+
+            <TextView
+                android:id="@+id/site_address_label"
+                android:layout_width="103dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/site_address"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/siteAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="#2C2C2C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="2dp">
+
+            <TextView
+                android:id="@+id/site_radius_label"
+                android:layout_width="105dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/site_radius"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/siteRadius"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="#2C2C2C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="2dp">
+
+            <TextView
+                android:id="@+id/total_worker_label"
+                android:layout_width="103dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/total_worker"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/totalWorkers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="#2C2C2C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="2dp">
+
+            <TextView
+                android:id="@+id/scaffolding_number_label"
+                android:layout_width="103dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/scaffolding_number"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/scaffoldingCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="#2C2C2C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Start Date -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="2dp">
+
+            <TextView
+                android:id="@+id/start_date_label"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/start_date"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/startDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="#2C2C2C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="2dp">
+
+            <TextView
+                android:id="@+id/end_date_label"
+                android:layout_width="102dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/end_date"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/estimatedEndDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="#2C2C2C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Security Code -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingBottom="2dp">
+
+            <TextView
+                android:id="@+id/sc_label"
+                android:layout_width="102dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/security_code"
+                android:textColor="#212121"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/securityCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:text=""
+                android:textColor="#2C2C2C"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Bottoni -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="1dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <!-- Bottone QR -->
+            <Button
+                android:id="@+id/qrButton"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="#2C2C2C"
+                android:elevation="4dp"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/see_qr_button"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+
+            <!-- Bottone Delete -->
+            <ImageButton
+                android:id="@+id/binButton"
+                android:layout_width="70dp"
+                android:layout_height="57dp"
+                android:layout_gravity="center"
+                android:layout_marginBottom="3dp"
+                android:background="?attr/selectableItemBackground"
+                android:contentDescription="Delete"
+                android:scaleX="0.75"
+                android:scaleY="0.75"
+                android:src="@mipmap/red_bin_foreground" />
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
